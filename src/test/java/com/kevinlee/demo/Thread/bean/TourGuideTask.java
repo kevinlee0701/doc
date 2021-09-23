@@ -1,4 +1,4 @@
-package com.kevinlee.demo.Thread;
+package com.kevinlee.demo.Thread.bean;
 
 import lombok.extern.slf4j.Slf4j;
 

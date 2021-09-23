@@ -1,5 +1,8 @@
 package com.kevinlee.demo.Thread;
 
+import com.kevinlee.demo.Thread.bean.TourGuideTask;
+import com.kevinlee.demo.Thread.bean.TravelTask;
+import com.kevinlee.demo.Thread.bean.TravelTask2;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
