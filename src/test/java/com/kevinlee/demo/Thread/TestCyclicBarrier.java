@@ -8,9 +8,14 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.*;
 @Slf4j
 public class TestCyclicBarrier {
+    private  Vector<Integer> orders = new Vector();
+    private  Vector<Integer> transportation = new Vector();
+    boolean isRemainOrder= true;//剩余订单
+    boolean isRemainTransportation = true;//剩余对账单
 
     @Test
     void Test() throws InterruptedException {
@@ -44,5 +49,96 @@ public class TestCyclicBarrier {
         log.info("主线程执行完毕");
 
 
+    }
+
+
+    @Test
+    void Test3(){
+        final CyclicBarrier barrier = new CyclicBarrier(3);
+        producer(barrier);
+        consumer(barrier);
+    }
+
+    void producer(CyclicBarrier barrier){
+        log.info("开始生产");
+        // 循环查询订单库
+        Thread T1 = new Thread(()->{
+            int i =0;
+            while(isRemainOrder){
+                // 查询订单库
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if(i<3){
+                    log.info("生产订单：{}",i);
+                    orders.add(i);
+                    i++;
+                }else{
+                    isRemainOrder=false;
+                    log.info("订单生产完毕");
+                }
+                // 等待
+                try {
+                    barrier.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
+        // 循环查询运单库
+        Thread T2 = new Thread(()->{
+            int i =0;
+            while(isRemainTransportation){
+                // 查询运单库
+                if(i<3){
+                    log.info("生产运单库：{}",i);
+                    transportation.add(i);
+                    i++;
+                }else{
+                    isRemainTransportation =false;
+                    log.info("运单库生产完毕");
+                }
+                // 等待
+                try {
+                    barrier.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        T1.start();
+        T2.start();
+
+    }
+    void consumer(CyclicBarrier cyclicBarrier){
+
+        while ((!orders.isEmpty() || !transportation.isEmpty()) || isRemainTransportation || isRemainOrder){
+            try {
+                cyclicBarrier.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (BrokenBarrierException e) {
+                e.printStackTrace();
+            }
+            Integer order = null;
+            Integer tr = null;
+            if(!orders.isEmpty()){
+                order = orders.remove(0);
+            }
+            if(!transportation.isEmpty()) {
+                tr = transportation.remove(0);
+            }
+            // 执行对账操作
+            log.info("开始消费：order:{}:Transportation:{},isRemainTransportation:{},isRemainOrder:{}",order,tr,isRemainTransportation,isRemainOrder);
+        }
+        log.info("消费完毕");
     }
 }
