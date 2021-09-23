@@ -58,7 +58,6 @@ public class TestCyclicBarrier {
         producer(barrier);
         consumer(barrier);
     }
-
     void producer(CyclicBarrier barrier){
         log.info("开始生产");
         // 循环查询订单库

@@ -28,10 +28,6 @@ public class JobAccountingTest {
 
     private static final int child_max = 2 * max;
 
-//    private static final int max = 30;
-
-//    private static final int child_max = 15;
-
     private BlockingQueue<List<JobAccountingBo>> buffer = null;
 
     private ThreadPoolExecutor executor = null;
@@ -123,6 +119,9 @@ public class JobAccountingTest {
             for(;;) {
                 //分页查询，根据产品线ID查询
                 List result = new ArrayList<>();
+                //查询result数据，省略。。。。
+
+                //判断容器为空时跳出循环
                 if (CollectionUtils.isEmpty(result)) {
                     log.info("根据产品线分页查询，完成！！");
                     break;
