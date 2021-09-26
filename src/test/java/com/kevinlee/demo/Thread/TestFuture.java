@@ -1,9 +1,19 @@
-package com.kevinlee.demo.Thread.bean;
+package com.kevinlee.demo.Thread;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
+@Slf4j
 public class TestFuture {
 
     @Test
@@ -21,6 +31,7 @@ public class TestFuture {
         // 等待线程T1执行结果
         System.out.println(ft1.get());
     }
+
     @Test
     void testCompletableFuture() {
         //任务1：洗水壶->烧开水
@@ -58,7 +69,7 @@ public class TestFuture {
         System.out.println(f3.join());
     }
 
-    void sleep ( int t, TimeUnit u){
+    void sleep(int t, TimeUnit u) {
         try {
             u.sleep(t);
         } catch (InterruptedException e) {
@@ -109,4 +120,88 @@ public class TestFuture {
         }
     }
 
+    //无返回值
+    @Test
+    void runAsync() throws Exception {
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+            }
+            System.out.println("run end ...");
+        });
+
+        future.get();
+    }
+
+    //有返回值
+    @Test
+    void supplyAsync() throws Exception {
+        CompletableFuture<Long> future = CompletableFuture.supplyAsync(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+            }
+            System.out.println("run end ...");
+            return System.currentTimeMillis();
+        });
+        future.whenComplete((aLong, throwable) -> {
+            log.info("whenComplete is running,result:{}", aLong);
+        });
+        long time = future.get();
+        System.out.println("time = " + time);
+    }
+    @Test
+    void whenComplete() throws Exception {
+        AtomicBoolean iswhenComplete= new AtomicBoolean(false);
+        AtomicBoolean isExceptionally= new AtomicBoolean(false);
+        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
+           return  12 / 0;
+        });
+
+
+        future.whenComplete(new BiConsumer<Integer, Throwable>() {
+            @Override
+            public void accept(Integer t, Throwable action) {
+                System.out.println("执行完成！");
+                iswhenComplete.set(true);
+            }
+
+        });
+
+        future.exceptionally(new Function<Throwable, Integer>() {
+            @Override
+            public Integer apply(Throwable t) {
+                System.out.println("执行失败！" + t.getMessage());
+                isExceptionally.set(true);
+                return null;
+            }
+        });
+        System.out.println(iswhenComplete.get()+","+isExceptionally.get());
+        while(!iswhenComplete.get() && !isExceptionally.get()){
+            TimeUnit.SECONDS.sleep(2);
+        }
+    }
+    @Test
+    void thenApply() throws Exception {
+        CompletableFuture<Long> future = CompletableFuture.supplyAsync(new Supplier<Long>() {
+            @Override
+            public Long get() {
+                long result = new Random().nextInt(100);
+                System.out.println("result1="+result);
+                return result;
+            }
+        });
+        CompletableFuture<String> future1 = future.thenApply(new Function<Long, String>() {
+            @Override
+            public String apply(Long t) {
+                long result = t * 5;
+                System.out.println("result2=" + result);
+                return String.valueOf(result);
+            }
+        });
+
+        System.out.println(future1.get());
+        System.out.println(future.get());
+    }
 }
