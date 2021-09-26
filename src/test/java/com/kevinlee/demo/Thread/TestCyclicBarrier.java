@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.*;
 @Slf4j
@@ -58,6 +59,23 @@ public class TestCyclicBarrier {
         producer(barrier);
         consumer(barrier);
     }
+
+    @Test
+    void Test4(){
+        Executor executor =   Executors.newFixedThreadPool(1);
+
+        final CyclicBarrier barrier = new CyclicBarrier(2,()->{
+            executor.execute(()->consumer());
+        });
+        producer(barrier);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     void producer(CyclicBarrier barrier){
         log.info("开始生产");
         // 循环查询订单库
@@ -117,6 +135,21 @@ public class TestCyclicBarrier {
         T2.start();
 
     }
+    void consumer(){
+        Integer order = null;
+        Integer tr = null;
+
+        if(!orders.isEmpty())
+            order = orders.remove(0);
+
+        if(!transportation.isEmpty())
+            tr = transportation.remove(0);
+        // 执行对账操作
+        if(order !=null && tr !=null)
+            log.info("开始消费：order:{}:tr:{},isRemainTransportation:{},isRemainOrder:{}",order,tr,isRemainTransportation,isRemainOrder);
+        log.info("消费完毕");
+    }
+
     void consumer(CyclicBarrier cyclicBarrier){
 
         while ((!orders.isEmpty() || !transportation.isEmpty()) || isRemainTransportation || isRemainOrder){
