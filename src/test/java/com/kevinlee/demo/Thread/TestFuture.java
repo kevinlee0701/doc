@@ -30,6 +30,7 @@ public class TestFuture {
         T2.start();
         // 等待线程T1执行结果
         System.out.println(ft1.get());
+
     }
 
     @Test
