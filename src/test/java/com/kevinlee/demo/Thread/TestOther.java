@@ -1,13 +1,22 @@
 package com.kevinlee.demo.Thread;
 
-import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
+import com.kevinlee.demo.DemoApplication;
 
-import java.util.Collection;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.test.context.junit4.SpringRunner;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = DemoApplication.class)
 public class TestOther {
+    @Autowired
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
     @Test
-    void test(){
-   //     Lists.newArrayList().stream().filter();
+    public void test(){
+        System.out.println(threadPoolTaskExecutor);
     }
 }
