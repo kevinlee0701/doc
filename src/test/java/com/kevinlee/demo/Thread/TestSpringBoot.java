@@ -18,11 +18,6 @@ public class TestSpringBoot {
 
     @Test
     public void test(){
-        threadPoolTaskExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                log.info("线程id={},name={}",Thread.currentThread().getId(),Thread.currentThread().getName());
-            }
-        });
+        threadPoolTaskExecutor.execute(() -> log.info("线程id={},name={}",Thread.currentThread().getId(),Thread.currentThread().getName()));
     }
 }
