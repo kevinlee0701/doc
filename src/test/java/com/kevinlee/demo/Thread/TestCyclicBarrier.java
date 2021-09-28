@@ -4,7 +4,8 @@ import com.kevinlee.demo.Thread.bean.TourGuideTask;
 import com.kevinlee.demo.Thread.bean.TravelTask;
 import com.kevinlee.demo.Thread.bean.TravelTask2;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class TestCyclicBarrier {
     boolean isRemainTransportation = true;//剩余对账单
 
     @Test
-    void Test() throws InterruptedException {
+    public void Test() throws InterruptedException {
         CyclicBarrier cyclicBarrier = new CyclicBarrier(3,new TourGuideTask());
         List<Callable<TravelTask>> listCall = new ArrayList<Callable<TravelTask>>();
         listCall.add(new TravelTask(cyclicBarrier,"哈登",5));
@@ -32,7 +33,7 @@ public class TestCyclicBarrier {
     }
 
     @Test
-    void Test2() throws InterruptedException {
+    public void Test2() throws InterruptedException {
         CyclicBarrier cyclicBarrier = new CyclicBarrier(3+1,new TourGuideTask());
         ExecutorService executor = Executors.newFixedThreadPool(3);
         //登哥最大牌，到的最晚
@@ -54,14 +55,14 @@ public class TestCyclicBarrier {
 
 
     @Test
-    void Test3(){
+    public void Test3(){
         final CyclicBarrier barrier = new CyclicBarrier(3);
         producer(barrier);
         consumer(barrier);
     }
 
     @Test
-    void Test4(){
+    public void Test4(){
         Executor executor =   Executors.newFixedThreadPool(1);
 
         final CyclicBarrier barrier = new CyclicBarrier(2,()->{
@@ -76,7 +77,7 @@ public class TestCyclicBarrier {
 
     }
 
-    void producer(CyclicBarrier barrier){
+    public void producer(CyclicBarrier barrier){
         log.info("开始生产");
         // 循环查询订单库
         Thread T1 = new Thread(()->{
@@ -135,7 +136,7 @@ public class TestCyclicBarrier {
         T2.start();
 
     }
-    void consumer(){
+    public void consumer(){
         Integer order = null;
         Integer tr = null;
 
@@ -150,7 +151,7 @@ public class TestCyclicBarrier {
         log.info("消费完毕");
     }
 
-    void consumer(CyclicBarrier cyclicBarrier){
+    public void consumer(CyclicBarrier cyclicBarrier){
 
         while ((!orders.isEmpty() || !transportation.isEmpty()) || isRemainTransportation || isRemainOrder){
             try {

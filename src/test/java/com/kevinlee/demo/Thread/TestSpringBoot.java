@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DemoApplication.class)
-public class TestOther {
+public class TestSpringBoot {
     @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 

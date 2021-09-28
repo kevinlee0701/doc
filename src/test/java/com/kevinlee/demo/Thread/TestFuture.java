@@ -1,7 +1,14 @@
 package com.kevinlee.demo.Thread;
 
+import com.kevinlee.demo.DemoApplication;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.test.context.junit4.SpringRunner;
+
 
 import java.util.Random;
 import java.util.concurrent.*;
@@ -9,12 +16,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = DemoApplication.class)
 @Slf4j
 public class TestFuture {
+    @Autowired
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     @Test
-    void testTaskFuture() throws ExecutionException, InterruptedException {
+    public void testTaskFuture() throws ExecutionException, InterruptedException {
         // 创建任务T2的FutureTask
         FutureTask<String> ft2 = new FutureTask(new T2Task());
         // 创建任务T1的FutureTask
@@ -31,7 +41,7 @@ public class TestFuture {
     }
 
     @Test
-    void testCompletableFuture() {
+    public void testCompletableFuture() {
         //任务1：洗水壶->烧开水
         CompletableFuture<Void> f1 =
                 CompletableFuture.runAsync(() -> {
@@ -67,7 +77,7 @@ public class TestFuture {
         System.out.println(f3.join());
     }
 
-    void sleep(int t, TimeUnit u) {
+    public void sleep(int t, TimeUnit u) {
         try {
             u.sleep(t);
         } catch (InterruptedException e) {
@@ -120,8 +130,8 @@ public class TestFuture {
 
     //无返回值
     @Test
-    void runAsync() throws Exception {
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+    public void runAsync() throws Exception {
+        CompletableFuture future = CompletableFuture.runAsync(() -> {
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
@@ -134,7 +144,7 @@ public class TestFuture {
 
     //有返回值
     @Test
-    void supplyAsync() throws Exception {
+    public void supplyAsync() throws Exception {
         CompletableFuture<Long> future = CompletableFuture.supplyAsync(() -> {
             try {
                 TimeUnit.SECONDS.sleep(1);
@@ -150,7 +160,7 @@ public class TestFuture {
         System.out.println("time = " + time);
     }
     @Test
-    void whenComplete() throws Exception {
+    public void whenComplete() throws Exception {
         AtomicBoolean iswhenComplete= new AtomicBoolean(false);
         AtomicBoolean isExceptionally= new AtomicBoolean(false);
         CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
@@ -181,7 +191,7 @@ public class TestFuture {
         }
     }
     @Test
-    void thenApply() throws Exception {
+    public void thenApply() throws Exception {
         CompletableFuture<Long> future = CompletableFuture.supplyAsync(new Supplier<Long>() {
             @Override
             public Long get() {
@@ -202,7 +212,7 @@ public class TestFuture {
         System.out.println(future.get());
     }
     @Test
-    void thenCompose() throws ExecutionException, InterruptedException {
+    public void thenCompose() throws ExecutionException, InterruptedException {
         CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
             return 100;
         });
@@ -216,7 +226,7 @@ public class TestFuture {
     }
 
     @Test
-    void thenCombine(){
+    public void thenCombine(){
         CompletableFuture<String> future1 = CompletableFuture.supplyAsync(() -> "100");
         CompletableFuture<Integer> future2 = CompletableFuture.supplyAsync(() -> 100);
 
@@ -232,7 +242,7 @@ public class TestFuture {
     }
 
     @Test
-    void runAfterBoth() throws InterruptedException {
+    public void runAfterBoth() throws InterruptedException {
         CompletableFuture.supplyAsync(() -> {
             try {
                 Thread.sleep(3000);
@@ -255,7 +265,7 @@ public class TestFuture {
     }
 
     @Test
-    void applyToEither(){
+    public void applyToEither(){
         Random random = new Random();
 
         CompletableFuture<String> future1 = CompletableFuture.supplyAsync(()->{
@@ -280,9 +290,9 @@ public class TestFuture {
             return "from future2";
         });
 
-        CompletableFuture<Void> future =  future1.applyToEither(future2, new Function<String, Void>() {
+        CompletableFuture<String> future =  future1.applyToEither(future2, new Function<String,  String>() {
             @Override
-            public Void apply(String s) {
+            public String apply(String s) {
                log.info("s={}",s);
                 return null;
             }
@@ -299,7 +309,7 @@ public class TestFuture {
     }
 
     @Test
-    void acceptEither(){
+    public void acceptEither(){
         Random random = new Random();
 
         CompletableFuture<String> future1 = CompletableFuture.supplyAsync(()->{
