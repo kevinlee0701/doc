@@ -201,8 +201,59 @@ public class TestFuture {
                 return String.valueOf(result);
             }
         });
-
         System.out.println(future1.get());
         System.out.println(future.get());
+    }
+    @Test
+    void thenCompose() throws ExecutionException, InterruptedException {
+        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
+            return 100;
+        });
+        CompletableFuture<String> f = future.thenCompose( i -> {
+            return CompletableFuture.supplyAsync(() -> {
+                return (i * 10) + "";
+            });
+        });
+
+       log.info(f.get());
+    }
+
+    @Test
+    void thenCombine(){
+        CompletableFuture<String> future1 = CompletableFuture.supplyAsync(() -> "100");
+        CompletableFuture<Integer> future2 = CompletableFuture.supplyAsync(() -> 100);
+
+        CompletableFuture<Double> future = future1.thenCombine(future2, (s, i) -> Double.parseDouble(s + i));
+
+        try {
+            System.out.println(future.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void runAfterBoth() throws InterruptedException {
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info("s1 is done");
+            return "s1";
+        }).runAfterBoth(CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info("s2 is done");
+            return "s2";
+        }), () -> log.info("last done"));  //() -> System.out.println("hello world")；
+
+        Thread.sleep(10000);
     }
 }
