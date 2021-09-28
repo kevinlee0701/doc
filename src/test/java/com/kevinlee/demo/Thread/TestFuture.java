@@ -256,4 +256,85 @@ public class TestFuture {
 
         Thread.sleep(10000);
     }
+
+    @Test
+    void applyToEither(){
+        Random random = new Random();
+
+        CompletableFuture<String> future1 = CompletableFuture.supplyAsync(()->{
+
+            try {
+                Thread.sleep(random.nextInt(1000));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info("from future1");
+            return "from future1";
+        });
+
+        CompletableFuture<String> future2 = CompletableFuture.supplyAsync(()->{
+
+            try {
+                Thread.sleep(random.nextInt(1000));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info("from future2");
+            return "from future2";
+        });
+
+        CompletableFuture<Void> future =  future1.applyToEither(future2, new Function<String, Void>() {
+            @Override
+            public Void apply(String s) {
+               log.info("s={}",s);
+                return null;
+            }
+        });
+
+        try {
+            future.get();
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void acceptEither(){
+        Random random = new Random();
+
+        CompletableFuture<String> future1 = CompletableFuture.supplyAsync(()->{
+
+            try {
+                Thread.sleep(random.nextInt(1000));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info("from future1");
+            return "from future1";
+        });
+
+        CompletableFuture<String> future2 = CompletableFuture.supplyAsync(()->{
+
+            try {
+                Thread.sleep(random.nextInt(1000));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info("from future2");
+            return "from future2";
+        });
+
+        CompletableFuture<Void> future =  future1.acceptEither(future2,str->System.out.println("The future is "+str));
+
+        try {
+            future.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
 }
