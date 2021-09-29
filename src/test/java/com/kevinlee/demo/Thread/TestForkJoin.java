@@ -42,7 +42,7 @@ public class TestForkJoin {
     }
 
     class SumTask extends RecursiveTask<Long> {
-        static final int THRESHOLD = 5;
+        static final int THRESHOLD = 2;
         long[] array;
         int start;
         int end;
@@ -63,7 +63,7 @@ public class TestForkJoin {
                     sum += p;
                     // 故意放慢计算速度:
 //                    try {
-//                        Thread.sleep(1);
+//                        Thread.sleep(10000);
 //                    } catch (InterruptedException e) {
 //                    }
                 }
@@ -71,7 +71,7 @@ public class TestForkJoin {
             }
             // 任务太大,一分为二:
             int middle = (end + start) / 2;
-            System.out.println(String.format("split %d~%d ==> %d~%d, %d~%d", start, end, start, middle, middle, end));
+            System.out.println(String.format("split %d~%d ==> %d~%d, %d~%d", start, end, start, middle, middle, end)+",Thread name "+Thread.currentThread().getName());
             SumTask subtask1 = new SumTask(this.array, start, middle);
             SumTask subtask2 = new SumTask(this.array, middle, end);
             invokeAll(subtask1, subtask2);
