@@ -21,7 +21,7 @@ public class TestForkJoin {
     public void forkJoin(){
         // 创建2000个随机数组成的数组:
 
-        long[] array = new long[10];
+        long[] array = new long[20];
         long expectedSum = 0;
         for (int i = 0; i < array.length; i++) {
             array[i] = random();
@@ -30,19 +30,22 @@ public class TestForkJoin {
         for (long param : array) {
             expectedSum+=param;
         }
-        log.info("array is {}",array);
-        System.out.println("Expected sum: " + expectedSum +",in "+(System.currentTimeMillis()-start) +" ms");
+        long end =System.currentTimeMillis();
+//        log.info("array is {}",array);
+
 
         // fork/join:
         ForkJoinTask<Long> task = new SumTask(array, 0, array.length);
         long startTime = System.currentTimeMillis();
         Long result = ForkJoinPool.commonPool().invoke(task);
         long endTime = System.currentTimeMillis();
+        log.info("当前线程池大小为：{}",ForkJoinPool.commonPool().getParallelism());
         System.out.println("Fork/join sum: " + result + " in " + (endTime - startTime) + " ms.");
+        System.out.println("Expected sum: " + expectedSum +",in "+(end-start) +" ms");
     }
 
     class SumTask extends RecursiveTask<Long> {
-        static final int THRESHOLD = 2;
+        static final int THRESHOLD = 100;
         long[] array;
         int start;
         int end;
@@ -63,7 +66,7 @@ public class TestForkJoin {
                     sum += p;
                     // 故意放慢计算速度:
 //                    try {
-//                        Thread.sleep(10000);
+//                        Thread.sleep(1000);
 //                    } catch (InterruptedException e) {
 //                    }
                 }
