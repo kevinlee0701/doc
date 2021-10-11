@@ -1,23 +1,39 @@
-package com.kevinlee.demo.Thread.tool;
+package com.kevinlee.demo.Thread.bean;
 
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
 
+
 public class GuardedObject<T> {
     //受保护的对象
     T obj;
-    final Lock lock =
-            new ReentrantLock();
-    final Condition done =
-            lock.newCondition();
-    final int timeout = 1;
+    final Lock lock = new ReentrantLock();
+    final Condition done = lock.newCondition();
+    final int timeout = 2;
+    //保存所有GuardedObject
+    final static Map<Object, GuardedObject> gos = new ConcurrentHashMap<>();
 
+    //静态方法创建GuardedObject
+    public static <K> GuardedObject create(K key) {
+        GuardedObject go = new GuardedObject();
+        gos.put(key, go);
+        return go;
+    }
+
+    public static <K, T> void fireEvent(K key, T obj) {
+        GuardedObject go = gos.remove(key);
+        if (go != null) {
+            go.onChanged(obj);
+        }
+    }
     //获取受保护对象
-    T get(Predicate<T> p) {
+    public T get(Predicate<T> p) {
         lock.lock();
         try {
             //MESA管程推荐写法
