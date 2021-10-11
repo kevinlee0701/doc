@@ -1,8 +1,10 @@
 package com.kevinlee.demo.Thread;
 
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 @Slf4j
@@ -26,10 +28,6 @@ public class ThreadLocalTest {
         countDownLatch.await();
     }
 
-    @Test
-    public void Test2(){
-
-    }
     private static class InnerClass {
 
         public void add(String newStr) {
@@ -57,13 +55,33 @@ public class ThreadLocalTest {
 
     private static class Counter {
 
-        private static ThreadLocal<StringBuilder> counter = new ThreadLocal<StringBuilder>() {
-            @Override
-            protected StringBuilder initialValue() {
+        private static ThreadLocal<StringBuilder> counter = ThreadLocal.withInitial(() -> new StringBuilder());
 
-                return new StringBuilder();
-            }
-        };
+    }
 
+    /**
+     * https://www.woshinlper.com/java/Multithread/ThreadLocal/
+     */
+    @Test
+    public void Test2(){
+        ThreadLocalTest.add("一枝花算不算浪漫");
+        System.out.println(holder.get().messages);
+        ThreadLocalTest.clear();
+    }
+
+    private List<String> messages = Lists.newArrayList();
+
+    public static final ThreadLocal<ThreadLocalTest> holder = ThreadLocal.withInitial(ThreadLocalTest::new);
+
+    public static void add(String message) {
+        holder.get().messages.add(message);
+    }
+
+    public static List<String> clear() {
+        List<String> messages = holder.get().messages;
+        holder.remove();
+
+        System.out.println("size: " + holder.get().messages.size());
+        return messages;
     }
 }
