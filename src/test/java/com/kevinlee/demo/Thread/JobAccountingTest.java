@@ -14,9 +14,9 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * @author huangjie
+ * @author lifeng
  */
-@Service("jobAccountingQuartzService")
+@Service("JobAccountingTest")
 @Slf4j
 public class JobAccountingTest {
 

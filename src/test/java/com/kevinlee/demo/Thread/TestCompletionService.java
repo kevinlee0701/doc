@@ -7,6 +7,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 
+/**
+ * CompletionService是JDK8中引入的的接口，目的是解决Future的缺点，因为在获取提交给定义ExecutorService线程池的批量任务结果时的返回值Future的get()方法是阻塞的，
+ * 一旦前一个任务执行比较耗时，后续的任务调用get()方法就需要阻塞，从而形成排队等待的情况。而CompletionService是对定义ExecutorService进行了包装，把任务提交到一个队列中，
+ * 先完成的任务结果，先保存到一个阻塞队列中，通过CompletionService的take()方法可以获取最先完成的任务结果。
+ */
 @Slf4j
 public class TestCompletionService {
 
@@ -18,6 +23,10 @@ public class TestCompletionService {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 方法poll的作用是获取并移除表示下一个已完成任务的Future，如果不存在这样的任务，则返回null，方法poll是无阻塞的。
+     */
     @Test
     void testPoll() {
         //定义ExecutorService
@@ -63,6 +72,9 @@ public class TestCompletionService {
         }
     }
 
+    /**
+     * take()方法取得最先完成任务的Future对象，谁执行时间最短谁最先返回
+     */
     @Test
     void testTake() {
         //定义ExecutorService
