@@ -3,9 +3,14 @@ package com.kevinlee.demo.Thread;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -57,7 +62,7 @@ public class RateLimiterTest {
         //线程池
         ExecutorService exec = Executors.newCachedThreadPool();
         //速率是每秒只有3个许可
-        final RateLimiter rateLimiter = RateLimiter.create(3.0); //速率是每秒只有3个许可
+        final RateLimiter rateLimiter = RateLimiter.create(1.0); //速率是每秒只有3个许可
 
         for (int i = 0; i < 10; i++) {
             final int no = i;
@@ -78,9 +83,30 @@ public class RateLimiterTest {
             //执行线程
             exec.execute(runnable);
         }
-        Thread.sleep(10000);
+        Thread.sleep(30000);
         //退出线程池
         exec.shutdown();
+    }
+
+    public static void main(String[] args) {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        for (int i = 0; i < 7; i++) {
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        latch.await();
+                        Thread.sleep(1000);
+                        System.out.println("请求是否被执行: "+System.currentTimeMillis());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
+        }
+
+        latch.countDown();
     }
 
 
