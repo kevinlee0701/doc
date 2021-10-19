@@ -1,9 +1,12 @@
 package com.kevinlee.demo.Thread;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -116,4 +119,81 @@ public class TestCompletionService {
 
     }
 
+    @Test
+    void testThread() throws InterruptedException {
+        ThreadFactory childThreadFactory = new ThreadFactoryBuilder().setNameFormat("lifeng-%d").build();
+        ExecutorService executorService = Executors.newFixedThreadPool(3,childThreadFactory);
+        for(int i =0 ; i<100 ;i++){
+            int finalI = i;
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("i="+ finalI+",Thread"+Thread.currentThread());
+                }
+            });
+        }
+        Thread.sleep(100000);
+        executorService.shutdown();
+
+    }
+
+
+
+    @Test
+    void testThread2() throws InterruptedException, ExecutionException {
+        Long start = System.currentTimeMillis();
+        //开启3个线程
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        try {
+            int taskCount = 10;
+            // 结果集
+            List<Integer> list = new ArrayList<Integer>();
+
+
+            // 1.定义CompletionService
+            CompletionService<Integer> completionService = new ExecutorCompletionService<Integer>(executorService);
+
+            // 2.添加任务
+            for(int i=0;i<taskCount;i++){
+               completionService.submit(new Task(i+1));
+            }
+
+            // 3.获取结果
+            for(int i=0;i<taskCount;i++){
+                Integer result = completionService.take().get();
+                System.out.println("任务i=="+result+"完成!"+System.currentTimeMillis()/1000);
+                list.add(result);
+            }
+
+            System.out.println("list="+list);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            //关闭线程池
+            executorService.shutdown();
+        }
+    }
+    static class Task implements Callable<Integer>{
+        Integer i;
+
+        public Task(Integer i) {
+            super();
+            this.i=i;
+        }
+
+        @Override
+        public Integer call() throws Exception {
+            Thread.sleep(5000);
+            System.out.println("线程："+Thread.currentThread().getName()+"任务i="+i+",执行完成！");
+            return i;
+        }
+
+    }
 }
+
+
