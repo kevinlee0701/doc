@@ -178,7 +178,7 @@ public class TestCompletionService {
             executorService.shutdown();
         }
     }
-    static class Task implements Callable<Integer>{
+    class Task implements Callable<Integer>{
         Integer i;
 
         public Task(Integer i) {
