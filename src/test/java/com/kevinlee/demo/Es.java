@@ -11,17 +11,21 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.UpdateByQueryRequest;
 import org.elasticsearch.script.Script;
+import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -212,6 +216,63 @@ public class Es {
         return updateByQueryRequest;
     }
 
+    /**
+     * 滚动查询
+     * https://zhuanlan.zhihu.com/p/374904023
+     */
+    @Test
+    public void scrollDemo() {
+
+        //构造查询条件
+        SearchRequest searchRequest = new SearchRequest(index);
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        //设置查询超时时间
+        Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
+
+        BoolQueryBuilder must = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("id").gte(1000).lte(2000)).must(QueryBuilders.matchQuery("id", 101423));
+
+        builder.query(must);
+        //设置最多一次能够取出10000笔数据，从第10001笔数据开始，将开启滚动查询  PS:滚动查询也属于这一次查询，只不过因为一次查不完，分多次查
+        builder.size(1000);
+        searchRequest.source(builder);
+        //将滚动放入
+        searchRequest.scroll(scroll);
+        SearchResponse searchResponse = null;
+        try {
+            searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            log.error("查询索引库失败", e.getMessage(), e);
+        }
+        SearchHits hits = searchResponse.getHits();
+        //记录要滚动的ID
+        String scrollId = searchResponse.getScrollId();
+
+        //TODO 对结果集的处理
+
+        //滚动查询部分，将从第10001笔数据开始取
+        SearchHit[] hitsScroll = hits.getHits();
+        int i=1;
+        log.info("i={},scrollId={},获取查询结果：{}",i,scrollId,hitsScroll.length);
+
+        while (hitsScroll != null && hitsScroll.length > 0) {
+            i++;
+            //构造滚动查询条件
+            SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
+            searchScrollRequest.scroll(scroll);
+            try {
+                //响应必须是上面的响应对象，需要对上一层进行覆盖
+                searchResponse = restHighLevelClient.scroll(searchScrollRequest, RequestOptions.DEFAULT);
+            } catch (IOException e) {
+                log.error("滚动查询失败", e.getMessage(), e);
+            }
+            scrollId = searchResponse.getScrollId();
+            hits = searchResponse.getHits();
+            hitsScroll = hits.getHits();
+            log.info("i={},scrollId={},获取查询结果：{}",i,scrollId,hitsScroll.length);
+            //TODO 同上面完全一致的结果集处理
+
+        }
+    }
 
 
     @Data
