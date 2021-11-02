@@ -68,8 +68,8 @@ public class Es {
     public void insertOrUpdateOne() {
         IndexRequest request = new IndexRequest("movies");
         Movie movie = new Movie();
-        movie.setId("49273");
-        movie.setTitle("kevin test");
+        movie.setId("49274");
+        movie.setTitle("Matrix");
         movie.setYear(2018);
         request.id(movie.getId());
         request.source(JSONObject.toJSONString(movie), XContentType.JSON);
@@ -229,7 +229,7 @@ public class Es {
         //设置查询超时时间
         Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
 
-        BoolQueryBuilder must = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("id").gte(1000).lte(2000)).must(QueryBuilders.matchQuery("id", 101423));
+        BoolQueryBuilder must = QueryBuilders.boolQuery().filter(QueryBuilders.rangeQuery("id").gte(1000).lte(2000)).must(QueryBuilders.matchQuery("id", 101423));
 
         builder.query(must);
         //设置最多一次能够取出10000笔数据，从第10001笔数据开始，将开启滚动查询  PS:滚动查询也属于这一次查询，只不过因为一次查不完，分多次查
