@@ -1,0 +1,948 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!-- saved from url=(0245)http://118.25.23.115/redis/%E5%8A%A0%E9%A4%90%EF%BC%88%E5%9B%9B%EF%BC%89-Redis%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%A6%82%E4%BD%95%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E4%BA%A4%E6%8D%A2%E5%91%BD%E4%BB%A4%E5%92%8C%E6%95%B0%E6%8D%AE%EF%BC%9F.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!--<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>-->
+    <title>加餐（四）-Redis客户端如何与服务器端交换命令和数据？</title>
+    
+        <style>
+        html {
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-rendering: optimizelegibility;
+            font-family: Helvetica Neue, PingFang SC, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif
+        }
+
+        html.borderbox *,
+        html.borderbox :after,
+        html.borderbox :before {
+            box-sizing: border-box
+        }
+
+        article,
+        aside,
+        blockquote,
+        body,
+        button,
+        code,
+        dd,
+        details,
+        dl,
+        dt,
+        fieldset,
+        figcaption,
+        figure,
+        footer,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        header,
+        hr,
+        input,
+        legend,
+        li,
+        menu,
+        nav,
+        ol,
+        p,
+        pre,
+        section,
+        td,
+        textarea,
+        th,
+        ul {
+            margin: 0;
+            padding: 0
+        }
+
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        menu,
+        nav,
+        section {
+            display: block
+        }
+
+        audio,
+        canvas,
+        video {
+            display: inline-block
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, Helvetica, sans-serif
+        }
+
+        button::-moz-focus-inner,
+        input::-moz-focus-inner {
+            padding: 0;
+            border: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        fieldset,
+        img {
+            border: 0
+        }
+
+        blockquote {
+            position: relative;
+            color: #999;
+            font-weight: 400;
+            border-left: 1px solid #1abc9c;
+            padding-left: 1em;
+            margin: 1em 3em 1em 2em
+        }
+
+        @media only screen and (max-width: 640px) {
+            blockquote {
+                margin: 1em 0
+            }
+        }
+
+        abbr,
+        acronym {
+            border-bottom: 1px dotted;
+            font-variant: normal
+        }
+
+        abbr {
+            cursor: help
+        }
+
+        del {
+            text-decoration: line-through
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 400
+        }
+
+        ol,
+        ul {
+            list-style: none
+        }
+
+        caption,
+        th {
+            text-align: left
+        }
+
+        q:after,
+        q:before {
+            content: ""
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        :root sub,
+        :root sup {
+            vertical-align: baseline
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        a {
+            color: #1abc9c
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .typo a {
+            border-bottom: 1px solid #1abc9c
+        }
+
+        .typo a:hover {
+            border-bottom-color: #555;
+            color: #555
+        }
+
+        .typo a:hover,
+        a,
+        ins {
+            text-decoration: none
+        }
+
+        .typo-u,
+        u {
+            text-decoration: underline
+        }
+
+        mark {
+            background: #fffdd1;
+            border-bottom: 1px solid #ffedce;
+            padding: 2px;
+            margin: 0 5px
+        }
+
+        code,
+        pre,
+        pre tt {
+            font-family: Courier, Courier New, monospace
+        }
+
+        pre {
+            background: hsla(0, 0%, 97%, .7);
+            border: 1px solid #ddd;
+            padding: 1em 1.5em;
+            display: block;
+            -webkit-overflow-scrolling: touch
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid #cfcfcf;
+            margin-bottom: .8em;
+            height: 10px
+        }
+
+        .typo-small,
+        figcaption,
+        small {
+            font-size: .9em;
+            color: #888
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #000
+        }
+
+        [draggable] {
+            cursor: move
+        }
+
+        .clearfix:after,
+        .clearfix:before {
+            content: "";
+            display: table
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .clearfix {
+            zoom: 1
+        }
+
+        .textwrap,
+        .textwrap td,
+        .textwrap th {
+            word-wrap: break-word;
+            word-break: break-all
+        }
+
+        .textwrap-table {
+            table-layout: fixed
+        }
+
+        .serif {
+            font-family: Palatino, Optima, Georgia, serif
+        }
+
+        .typo-dl,
+        .typo-form,
+        .typo-hr,
+        .typo-ol,
+        .typo-p,
+        .typo-pre,
+        .typo-table,
+        .typo-ul,
+        .typo dl,
+        .typo form,
+        .typo hr,
+        .typo ol,
+        .typo p,
+        .typo pre,
+        .typo table,
+        .typo ul,
+        blockquote {
+            margin-bottom: 1rem
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: PingFang SC, Helvetica Neue, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+            color: #000;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo-h2,
+        .typo-h3,
+        .typo-h4,
+        .typo-h5,
+        .typo-h6,
+        .typo h1,
+        .typo h2,
+        .typo h3,
+        .typo h4,
+        .typo h5,
+        .typo h6 {
+            margin-top: 1.2em;
+            margin-bottom: .6em;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo h1 {
+            font-size: 2em
+        }
+
+        .typo-h2,
+        .typo h2 {
+            font-size: 1.8em
+        }
+
+        .typo-h3,
+        .typo h3 {
+            font-size: 1.6em
+        }
+
+        .typo-h4,
+        .typo h4 {
+            font-size: 1.4em
+        }
+
+        .typo-h5,
+        .typo-h6,
+        .typo h5,
+        .typo h6 {
+            font-size: 1.2em
+        }
+
+        .typo-ul,
+        .typo ul {
+            margin-left: 1.3em;
+            list-style: disc
+        }
+
+        .typo-ol,
+        .typo ol {
+            list-style: decimal;
+            margin-left: 1.9em
+        }
+
+        .typo-ol ol,
+        .typo-ol ul,
+        .typo-ul ol,
+        .typo-ul ul,
+        .typo li ol,
+        .typo li ul {
+            margin-bottom: .8em;
+            margin-left: 2em
+        }
+
+        .typo-ol ul,
+        .typo-ul ul,
+        .typo li ul {
+            list-style: circle
+        }
+
+        .typo-table td,
+        .typo-table th,
+        .typo table caption,
+        .typo table td,
+        .typo table th {
+            border: 1px solid #ddd;
+            padding: .5em 1em;
+            color: #666
+        }
+
+        .typo-table th,
+        .typo table th {
+            background: #fbfbfb
+        }
+
+        .typo-table thead th,
+        .typo table thead th {
+            background: hsla(0, 0%, 95%, .7)
+        }
+
+        .typo table caption {
+            border-bottom: none
+        }
+
+        .typo-input,
+        .typo-textarea {
+            -webkit-appearance: none;
+            border-radius: 0
+        }
+
+        .typo-em,
+        .typo em,
+        caption,
+        legend {
+            color: #000;
+            font-weight: inherit
+        }
+
+        .typo-em {
+            position: relative
+        }
+
+        .typo-em:after {
+            position: absolute;
+            top: .65em;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            content: "\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB"
+        }
+
+        .typo img {
+            max-width: 100%
+        }
+
+        .common-content {
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.75rem;
+            white-space: normal;
+            word-break: normal;
+            font-size: 1rem
+        }
+
+        .common-content img {
+            display: block;
+            max-width: 100%;
+            background-color: #eee
+        }
+
+        .common-content audio,
+        .common-content video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        .common-content center,
+        .common-content font {
+            margin-top: 1rem;
+            display: inline-block
+        }
+
+        .common-content center {
+            width: 100%
+        }
+
+        .common-content pre {
+            margin-top: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+            position: relative;
+            overflow: hidden
+        }
+
+        .common-content pre code {
+            font-size: .8rem;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            overflow-x: auto
+        }
+
+        .common-content hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        .common-content b,
+        .common-content h1,
+        .common-content h2,
+        .common-content h3,
+        .common-content h4,
+        .common-content h5,
+        .common-content strong {
+            font-weight: 700
+        }
+
+        .common-content h1,
+        .common-content h2 {
+            font-size: 1.125rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content h3,
+        .common-content h4,
+        .common-content h5 {
+            font-size: 1rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: .15rem
+        }
+
+        .common-content .orange {
+            color: #ff5a05
+        }
+
+        .common-content .reference {
+            font-size: 1rem;
+            color: #888
+        }
+
+        .custom-rich-content h1 {
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 15.25px;
+            border-bottom: 1px solid #eee;
+            line-height: 2.8
+        }
+
+        .custom-rich-content li,
+        .custom-rich-content p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6
+        }
+
+        table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        table.hljs-ln,
+        table.hljs-ln tbody,
+        table.hljs-ln td,
+        table.hljs-ln tr {
+            box-sizing: border-box
+        }
+
+        table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.hljs-ln td.hljs-ln-code,
+        table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            font-size: 12px;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            color: #24292e;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+        video::-webkit-media-controls {
+            overflow: hidden !important
+        }
+
+        video::-webkit-media-controls-enclosure {
+            width: calc(100% + 32px);
+            margin-left: auto
+        }
+
+        ._29HP61GA_0 {
+            max-width:800px;
+            margin:0 auto;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.76;
+            white-space: normal;
+            word-break: normal;
+            font-size: 17px;
+            -webkit-transition: background-color .3s ease;
+            transition: background-color .3s ease
+        }
+
+        ._29HP61GA_0 .MathJax_Display {
+            overflow: auto
+        }
+
+        ._29HP61GA_0 .poster {
+            position: fixed;
+            left: -10000px;
+            top: -10000px;
+            overflow: hidden;
+            padding: 1rem;
+            background: #ececec
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy {
+            font-size: 13px;
+            color: #888;
+            position: absolute;
+            right: 1em;
+            top: .5em;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy .iconfont {
+            font-size: 12px;
+            margin-right: .2em
+        }
+
+        ._29HP61GA_0 a {
+            color: #fa8919;
+            border-bottom: 1px solid #fa8919
+        }
+
+        ._29HP61GA_0 img {
+            display: block;
+            max-width: 100%;
+            position: relative;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            background-color: #eee;
+            vertical-align: top;
+            border-radius: 0
+        }
+
+        ._29HP61GA_0 audio,
+        ._29HP61GA_0 video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        ._29HP61GA_0 pre {
+            margin-top: 16px;
+            padding: 34px 0 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 6px;
+            background: rgba(246, 247, 251, .749);
+            border: 0
+        }
+
+        ._29HP61GA_0 pre code {
+            font-size: 12px;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-left: 16px;
+            margin-right: 16px;
+            overflow-x: scroll
+        }
+
+        ._29HP61GA_0 pre code:after {
+            content: "";
+            height: 30px;
+            width: 100%;
+            display: block
+        }
+
+        ._29HP61GA_0 hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        ._29HP61GA_0 h1,
+        ._29HP61GA_0 h2,
+        ._29HP61GA_0 h3,
+        ._29HP61GA_0 h4,
+        ._29HP61GA_0 h5 {
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 b,
+        ._29HP61GA_0 strong {
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 h1 {
+            font-size: 21px
+        }
+
+        ._29HP61GA_0 h2 {
+            font-size: 20px
+        }
+
+        ._29HP61GA_0 h3 {
+            font-size: 19px
+        }
+
+        ._29HP61GA_0 h4 {
+            font-size: 18px
+        }
+
+        ._29HP61GA_0 h5 {
+            font-size: 17px
+        }
+
+        ._29HP61GA_0 center,
+        ._29HP61GA_0 p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: 0;
+            margin-bottom: 30px;
+            word-break: break-word
+        }
+
+        ._29HP61GA_0 center {
+            text-align: center
+        }
+
+        ._29HP61GA_0 blockquote {
+            margin-top: 0;
+            margin-bottom: 34px;
+            border-left: 3px solid #e8e8e8;
+            padding-left: 17px;
+            color: #353535
+        }
+
+        ._29HP61GA_0 blockquote p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol,
+        ._29HP61GA_0 ul {
+            margin-bottom: 30px
+        }
+
+        ._29HP61GA_0 ol p,
+        ._29HP61GA_0 ul p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol {
+            list-style: decimal;
+            margin-left: 20px
+        }
+
+        ._29HP61GA_0 ul li {
+            padding-left: 17px;
+            position: relative;
+            margin-bottom: 10px
+        }
+
+        ._29HP61GA_0 ul li:after {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: #353535;
+            position: absolute;
+            top: 10px;
+            left: 0
+        }
+
+        ._29HP61GA_0 .orange {
+            color: #fa8919
+        }
+
+        ._29HP61GA_0 .reference {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-right {
+            text-align: right
+        }
+
+        ._29HP61GA_0 .m-center {
+            text-align: center;
+            display: block
+        }
+
+        ._29HP61GA_0 .m-gray {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-small {
+            font-size: 15px
+        }
+
+        ._29HP61GA_0 table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        ._29HP61GA_0 table.hljs-ln,
+        ._29HP61GA_0 table.hljs-ln tbody,
+        ._29HP61GA_0 table.hljs-ln td,
+        ._29HP61GA_0 table.hljs-ln tr {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        ._29HP61GA_0 table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            font-size: 12px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code,
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            font-size: 13px;
+            color: #666;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+    </style>
+</head>
+<body>
+<div class="_29HP61GA_0">
+<h1>加餐（四）-Redis客户端如何与服务器端交换命令和数据？</h1>
+<p>你好，我是蒋德钧。</p><p>在前面的课程中，我们主要学习了Redis服务器端的机制和关键技术，很少涉及到客户端的问题。但是，Redis采用的是典型的client-server（服务器端-客户端）架构，客户端会发送请求给服务器端，服务器端会返回响应给客户端。</p><p>如果要对Redis客户端进行二次开发（比如增加新的命令），我们就需要了解请求和响应涉及的命令、数据在客户端和服务器之间传输时，是如何编码的。否则，我们在客户端新增的命令就无法被服务器端识别和处理。</p><p>Redis使用RESP（REdis Serialization Protocol）协议定义了客户端和服务器端交互的命令、数据的编码格式。在Redis 2.0版本中，RESP协议正式成为客户端和服务器端的标准通信协议。从Redis 2.0 到Redis 5.0，RESP协议都称为RESP 2协议，从Redis 6.0开始，Redis就采用RESP 3协议了。不过，6.0版本是在今年5月刚推出的，所以，目前我们广泛使用的还是RESP 2协议。</p><p>这节课，我就向你重点介绍下RESP 2协议的规范要求，以及RESP 3相对RESP 2的改进之处。</p><p>首先，我们先来看下客户端和服务器端交互的内容包括哪些，毕竟，交互内容不同，编码形式也不一样。</p><!-- [[[read_end]]] --><h2>客户端和服务器端交互的内容有哪些？</h2><p>为了方便你更加清晰地理解，RESP 2协议是如何对命令和数据进行格式编码的，我们可以把交互内容，分成客户端请求和服务器端响应两类：</p><ul>
+<li>在客户端请求中，客户端会给Redis发送命令，以及要写入的键和值；</li>
+<li>而在服务器端响应中，Redis实例会返回读取的值、OK标识、成功写入的元素个数、错误信息，以及命令（例如Redis Cluster中的MOVE命令）。</li>
+</ul><p>其实，这些交互内容还可以再进一步细分成七类，我们再来了解下它们。</p><ol>
+<li><strong>命令</strong>：这就是针对不同数据类型的操作命令。例如对String类型的SET、GET操作，对Hash类型的HSET、HGET等，这些命令就是代表操作语义的字符串。</li>
+<li><strong>键</strong>：键值对中的键，可以直接用字符串表示。</li>
+<li><strong>单个值</strong>：对应String类型的数据，数据本身可以是字符串、数值（整数或浮点数），布尔值（True或是False）等。</li>
+<li><strong>集合值</strong>：对应List、Hash、Set、Sorted Set类型的数据，不仅包含多个值，而且每个值也可以是字符串、数值或布尔值等。</li>
+<li><strong>OK回复</strong>：对应命令操作成功的结果，就是一个字符串的“OK”。</li>
+<li><strong>整数回复</strong>：这里有两种情况。一种是，命令操作返回的结果是整数，例如LLEN命令返回列表的长度；另一种是，集合命令成功操作时，实际操作的元素个数，例如SADD命令返回成功添加的元素个数。</li>
+<li><strong>错误信息</strong>：命令操作出错时的返回结果，包括“error”标识，以及具体的错误信息。</li>
+</ol><p>了解了这7类内容都是什么，下面我再结合三个具体的例子，帮助你进一步地掌握这些交互内容。</p><p>先看第一个例子，来看看下面的命令：</p><pre><code>#成功写入String类型数据，返回OK
+127.0.0.1:6379&gt; SET testkey testvalue
+OK
+</code></pre><p>这里的交互内容就包括了<strong>命令</strong>（SET命令）、<strong>键（<strong>String类型的键testkey）和</strong>单个值</strong>（String类型的值testvalue），而服务器端则直接返回一个<strong>OK回复</strong>。</p><p>第二个例子是执行HSET命令：</p><pre><code>#成功写入Hash类型数据，返回实际写入的集合元素个数
+127.0.0.1:6379&gt;HSET testhash a 1 b 2 c 3
+(integer) 3
+</code></pre><p>这里的交互内容包括三个key-value的Hash<strong>集合值</strong>（a 1 b 2 c 3），而服务器端返回<strong>整数回复</strong>（3），表示操作成功写入的元素个数。</p><p>最后一个例子是执行PUT命令，如下所示：</p><pre><code>#发送的命令不对，报错，并返回错误信息
+127.0.0.1:6379&gt;PUT testkey2 testvalue
+(error) ERR unknown command 'PUT', with args beginning with: 'testkey', 'testvalue'
+</code></pre><p>可以看到，这里的交互内容包括<strong>错误信息，</strong>这是因为，Redis实例本身不支持PUT命令，所以服务器端报错“error”，并返回具体的错误信息，也就是未知的命令“put”。</p><p>好了，到这里，你了解了，Redis客户端和服务器端交互的内容。接下来，我们就来看下，RESP 2是按照什么样的格式规范来对这些内容进行编码的。</p><h2>RESP 2的编码格式规范</h2><p>RESP 2协议的设计目标是，希望Redis开发人员实现客户端时简单方便，这样就可以减少客户端开发时出现的Bug。而且，当客户端和服务器端交互出现问题时，希望开发人员可以通过查看协议交互过程，能快速定位问题，方便调试。为了实现这一目标，RESP 2协议采用了可读性很好的文本形式进行编码，也就是通过一系列的字符串，来表示各种命令和数据。</p><p>不过，交互内容有多种，而且，实际传输的命令或数据也会有很多个。针对这两种情况，RESP 2协议在编码时设计了两个基本规范。</p><ol>
+<li>为了对不同类型的交互内容进行编码，RESP 2协议实现了5种编码格式类型。同时，为了区分这5种编码类型，RESP 2使用一个专门的字符，作为每种编码类型的开头字符。这样一来，客户端或服务器端在对编码后的数据进行解析时，就可以直接通过开头字符知道当前解析的编码类型。</li>
+<li>RESP 2进行编码时，会按照单个命令或单个数据的粒度进行编码，并在每个编码结果后面增加一个换行符“\r\n”（有时也表示成CRLF），表示一次编码结束。</li>
+</ol><p>接下来，我就来分别介绍下这5种编码类型。</p><p><strong>1.简单字符串类型（RESP Simple Strings）</strong></p><p>这种类型就是用一个字符串来进行编码，比如，请求操作在服务器端成功执行后的OK标识回复，就是用这种类型进行编码的。</p><p>当服务器端成功执行一个操作后，返回的OK标识就可以编码如下：</p><pre><code>+OK\r\n
+</code></pre><p><strong>2.长字符串类型（RESP Bulk String）</strong></p><p>这种类型是用一个二进制安全的字符串来进行编码。这里的二进制安全，其实是相对于C语言中对字符串的处理方式来说的。我来具体解释一下。</p><p>Redis在解析字符串时，不会像C语言那样，使用“<code>\0</code>”判定一个字符串的结尾，Redis会把 “<code>\0</code>”解析成正常的0字符，并使用额外的属性值表示字符串的长度。</p><p>举个例子，对于“Redis\0Cluster\0”这个字符串来说，C语言会解析为“Redis”，而Redis会解析为“Redis Cluster”，并用len属性表示字符串的真实长度是14字节，如下图所示：</p><p><img src="./加餐（四）-Redis客户端如何与服务器端交换命令和数据？_files/b4e98e2ecf00b42098a790cec363fc7a.jpg" alt=""></p><p>这样一来，字符串中即使存储了“<code>\0</code>”字符，也不会导致Redis解析到“<code>\0</code>”时，就认为字符串结束了从而停止解析，这就保证了数据的安全性。和长字符串类型相比，简单字符串就是非二进制安全的。</p><p>长字符串类型最大可以达到512MB，所以可以对很大的数据量进行编码，正好可以满足键值对本身的数据量需求，所以，RESP 2就用这种类型对交互内容中的键或值进行编码，并且使用“<code>$</code>”字符作为开头字符，<code>$</code>字符后面会紧跟着一个数字，这个数字表示字符串的实际长度。</p><p>例如，我们使用GET命令读取一个键（假设键为testkey）的值（假设值为testvalue）时，服务端返回的String值编码结果如下，其中，<code>$</code>字符后的9，表示数据长度为9个字符。</p><pre><code>$9 testvalue\r\n
+</code></pre><p><strong>3.整数类型（RESP Integer）</strong></p><p>这种类型也还是一个字符串，但是表示的是一个有符号64位整数。为了和包含数字的简单字符串类型区分开，整数类型使用“<code>:</code>”字符作为开头字符，可以用于对服务器端返回的整数回复进行编码。</p><p>例如，在刚才介绍的例子中，我们使用HSET命令设置了testhash的三个元素，服务器端实际返回的编码结果如下：</p><pre><code>:3\r\n
+</code></pre><p><strong>4.错误类型（RESP Errors）</strong></p><p>它是一个字符串，包括了错误类型和具体的错误信息。Redis服务器端报错响应就是用这种类型进行编码的。RESP 2使用“<code>-</code>”字符作为它的开头字符。</p><p>例如，在刚才的例子中，我们在redis-cli执行PUT testkey2 testvalue命令报错，服务器端实际返回给客户端的报错编码结果如下：</p><pre><code>-ERR unknown command `PUT`, with args beginning with: `testkey`, `testvalue`
+</code></pre><p>其中，ERR就是报错类型，表示是一个通用错误，ERR后面的文字内容就是具体的报错信息。</p><p><strong>5.数组编码类型（RESP Arrays）</strong></p><p>这是一个包含多个元素的数组，其中，元素的类型可以是刚才介绍的这4种编码类型。</p><p>在客户端发送请求和服务器端返回结果时，数组编码类型都能用得上。客户端在发送请求操作时，一般会同时包括命令和要操作的数据。而数组类型包含了多个元素，所以，就适合用来对发送的命令和数据进行编码。为了和其他类型区分，RESP 2使用“<code>*</code>”字符作为开头字符。</p><p>例如，我们执行命令GET testkey，此时，客户端发送给服务器端的命令的编码结果就是使用数组类型编码的，如下所示：</p><pre><code>*2\r\n$3\r\nGET\r\n$7\r\ntestkey\r\n
+</code></pre><p>其中，<strong>第一个<code>*</code>字符标识当前是数组类型的编码结果</strong>，2表示该数组有2个元素，分别对应命令GET和键testkey。命令GET和键testkey，都是使用长字符串类型编码的，所以用<code>$</code>字符加字符串长度来表示。</p><p>类似地，当服务器端返回包含多个元素的集合类型数据时，也会用<code>*</code>字符和元素个数作为标识，并用长字符串类型对返回的集合元素进行编码。</p><p>好了，到这里，你了解了RESP 2协议的5种编码类型和相应的开头字符，我在下面的表格里做了小结，你可以看下。</p><p><img src="./加餐（四）-Redis客户端如何与服务器端交换命令和数据？_files/4658d36cdb64a846fe1732a29c45b3ce.jpg" alt=""></p><p>Redis 6.0中使用了RESP 3协议，对RESP 2.0做了改进，我们来学习下具体都有哪些改进。</p><h2>RESP 2的不足和RESP 3的改进</h2><p>虽然我们刚刚说RESP 2协议提供了5种编码类型，看起来很丰富，其实是不够的。毕竟，基本数据类型还包括很多种，例如浮点数、布尔值等。编码类型偏少，会带来两个问题。</p><p>一方面，在值的基本数据类型方面，RESP 2只能区分字符串和整数，对于其他的数据类型，客户端使用RESP 2协议时，就需要进行额外的转换操作。例如，当一个浮点数用字符串表示时，客户端需要将字符串中的值和实际数字值比较，判断是否为数字值，然后再将字符串转换成实际的浮点数。</p><p>另一方面，RESP 2用数组类别编码表示所有的集合类型，但是，Redis的集合类型包括了List、Hash、Set和Sorted Set。当客户端接收到数组类型编码的结果时，还需要根据调用的命令操作接口，来判断返回的数组究竟是哪一种集合类型。</p><p>我来举个例子。假设有一个Hash类型的键是testhash，集合元素分别为a:1、b:2、c:3。同时，有一个Sorted Set类型的键是testzset，集合元素分别是a、b、c，它们的分数分别是1、2、3。我们在redis-cli客户端中读取它们的结果时，返回的形式都是一个数组，如下所示：</p><pre><code>127.0.0.1:6379&gt;HGETALL testhash
+1) "a"
+2) "1"
+3) "b"
+4) "2"
+5) "c"
+6) "3"
+
+127.0.0.1:6379&gt;ZRANGE testzset 0 3 withscores
+1) "a"
+2) "1"
+3) "b"
+4) "2"
+5) "c"
+6) "3"
+</code></pre><p>为了在客户端按照Hash和Sorted Set两种类型处理代码中返回的数据，客户端还需要根据发送的命令操作HGETALL和ZRANGE，来把这两个编码的数组结果转换成相应的Hash集合和有序集合，增加了客户端额外的开销。</p><p>从Redis 6.0版本开始，RESP 3协议增加了对多种数据类型的支持，包括空值、浮点数、布尔值、有序的字典集合、无序的集合等。RESP 3也是通过不同的开头字符来区分不同的数据类型，例如，当开头第一个字符是“<code>,</code>”，就表示接下来的编码结果是浮点数。这样一来，客户端就不用再通过额外的字符串比对，来实现数据转换操作了，提升了客户端的效率。</p><h2>小结</h2><p>这节课，我们学习了RESP 2协议。这个协议定义了Redis客户端和服务器端进行命令和数据交互时的编码格式。RESP 2提供了5种类型的编码格式，包括简单字符串类型、长字符串类型、整数类型、错误类型和数组类型。为了区分这5种类型，RESP 2协议使用了5种不同的字符作为这5种类型编码结果的第一个字符，分别是<code>+</code>、 <code>$</code>、:、-和*。</p><p>RESP 2协议是文本形式的协议，实现简单，可以减少客户端开发出现的Bug，而且可读性强，便于开发调试。当你需要开发定制化的Redis客户端时，就需要了解和掌握RESP 2协议。</p><p>RESP 2协议的一个不足就是支持的类型偏少，所以，Redis 6.0版本使用了RESP 3协议。和RESP 2协议相比，RESP 3协议增加了对浮点数、布尔类型、有序字典集合、无序集合等多种类型数据的支持。不过，这里，有个地方需要你注意，Redis 6.0只支持RESP 3，对RESP 2协议不兼容，所以，如果你使用Redis 6.0版本，需要确认客户端已经支持了RESP 3协议，否则，将无法使用Redis 6.0。</p><p>最后，我也给你提供一个小工具。如果你想查看服务器端返回数据的RESP 2编码结果，就可以使用telnet命令和redis实例连接，执行如下命令就行：</p><pre><code>telnet 实例IP 实例端口
+</code></pre><p>接着，你可以给实例发送命令，这样就能看到用RESP 2协议编码后的返回结果了。当然，你也可以在telnet中，向Redis实例发送用RESP 2协议编写的命令操作，实例同样能处理，你可以课后试试看。</p><h2>每课一问</h2><p>按照惯例，我给你提个小问题，假设Redis实例中有一个List类型的数据，key为mylist，value是使用LPUSH命令写入List集合的5个元素，依次是1、2、3.3、4、hello，当执行LRANGE mylist 0 4命令时，实例返回给客户端的编码结果是怎样的？</p><p>欢迎在留言区写下你的思考和答案，我们一起交流讨论。如果你觉得今天的内容对你有所帮助，也欢迎你分享给你的朋友或同事。我们下节课见。</p><h2>精选留言：</h2>
+        <ul>
+        
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            Kaito  2020-10-23 00:22:41
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            key为mylist，使用LPUSH写入是1、2、3.3、4、hello，执行LRANGE mylist 0 4命令时，实例返回给客户端的编码结果是怎样的？<br><br>测试结果如下，写入命令：<br><br>127.0.0.1:6479&gt; LPUSH mylist 1 2 3.3 4 hello<br>(integer) 5<br>127.0.0.1:6479&gt; LRANGE mylist 0 4<br>1) "hello"<br>2) "4"<br>3) "3.3"<br>4) "2"<br>5) "1"<br><br>使用telnet发送命令，观察结果：<br><br>Trying 127.0.0.1...<br>Connected to localhost.<br>Escape character is '^]'.<br><br>LRANGE mylist 0 4<br>*5<br>$5<br>hello<br>$1<br>4<br>$3<br>3.3<br>$1<br>2<br>$1<br>1<br><br>Redis设计的RESP 2协议非常简单、易读，优点是对于客户端的开发和生态建设非常友好。但缺点是纯文本，其中还包含很多冗余的回车换行符，相比于二进制协议，这会造成流量的浪费。但作者依旧这么做的原因是Redis是内存数据库，操作逻辑都在内存中进行，速度非常快，性能瓶颈不在于网络流量上，所以设计放在了更加简单、易理解、易实现的层面上。<br><br>Redis 6.0重新设计RESP 3，比较重要的原因就是RESP 2的语义能力不足，例如LRANGE/SMEMBERS/HGETALL都返回一个数组，客户端需要根据发送的命令类型，解析响应再封装成合适的对象供业务使用。而RESP 3在响应中就可以明确标识出数组、集合、哈希表，无需再做转换。另外RESP 2没有布尔类型和浮点类型，例如EXISTS返回的是0或1，Sorted Set中返回的score是字符串，这些都需要客户端自己转换处理。而RESP 3增加了布尔、浮点类型，客户端直接可以拿到明确的类型。<br><br>另外，由于TCP协议是面向数据流的，在使用时如何对协议进行解析和拆分，也是分为不同方法的。常见的方式有4种：<br><br>1、固定长度拆分：发送方以固定长度进行发送，接收方按固定长度截取拆分。例如发送方每次发送数据都是5个字节的长度，接收方每次都按5个字节拆分截取数据内容。<br><br>2、特殊字符拆分：发送方在消息尾部设置一个特殊字符，接收方遇到这个特殊字符就做拆分处理。HTTP协议就是这么做的，以\r\n为分隔符解析协议。<br><br>3、长度+消息拆分：发送方在每个消息最前面加一个长度字段，接收方先读取到长度字段，再向后读取指定长度即是数据内容。Redis采用的就是这种。<br><br>4、消息本身包含格式：发送方在消息中就设置了开始和结束标识，接收方根据这个标识截取出中间的数据。例如&lt;start&gt;msg data&lt;end&gt;。<br><br>如果我们在设计一个通信协议时，可以作为参考，根据自己的场景进行选择。 [3赞]
+        </div>
+        
+    </div>
+</li>
+            </ul>
+</div>
+
+</body></html>

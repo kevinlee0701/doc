@@ -1,0 +1,946 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!-- saved from url=(0133)http://118.25.23.115/redis/%E7%BB%93%E6%9D%9F%E8%AF%AD-%E4%BB%8E%E5%AD%A6%E4%B9%A0Redis%E5%88%B0%E5%90%91Redis%E5%AD%A6%E4%B9%A0.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!--<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>-->
+    <title>结束语-从学习Redis到向Redis学习</title>
+    
+        <style>
+        html {
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-rendering: optimizelegibility;
+            font-family: Helvetica Neue, PingFang SC, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif
+        }
+
+        html.borderbox *,
+        html.borderbox :after,
+        html.borderbox :before {
+            box-sizing: border-box
+        }
+
+        article,
+        aside,
+        blockquote,
+        body,
+        button,
+        code,
+        dd,
+        details,
+        dl,
+        dt,
+        fieldset,
+        figcaption,
+        figure,
+        footer,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        header,
+        hr,
+        input,
+        legend,
+        li,
+        menu,
+        nav,
+        ol,
+        p,
+        pre,
+        section,
+        td,
+        textarea,
+        th,
+        ul {
+            margin: 0;
+            padding: 0
+        }
+
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        menu,
+        nav,
+        section {
+            display: block
+        }
+
+        audio,
+        canvas,
+        video {
+            display: inline-block
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, Helvetica, sans-serif
+        }
+
+        button::-moz-focus-inner,
+        input::-moz-focus-inner {
+            padding: 0;
+            border: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        fieldset,
+        img {
+            border: 0
+        }
+
+        blockquote {
+            position: relative;
+            color: #999;
+            font-weight: 400;
+            border-left: 1px solid #1abc9c;
+            padding-left: 1em;
+            margin: 1em 3em 1em 2em
+        }
+
+        @media only screen and (max-width: 640px) {
+            blockquote {
+                margin: 1em 0
+            }
+        }
+
+        abbr,
+        acronym {
+            border-bottom: 1px dotted;
+            font-variant: normal
+        }
+
+        abbr {
+            cursor: help
+        }
+
+        del {
+            text-decoration: line-through
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 400
+        }
+
+        ol,
+        ul {
+            list-style: none
+        }
+
+        caption,
+        th {
+            text-align: left
+        }
+
+        q:after,
+        q:before {
+            content: ""
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        :root sub,
+        :root sup {
+            vertical-align: baseline
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        a {
+            color: #1abc9c
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .typo a {
+            border-bottom: 1px solid #1abc9c
+        }
+
+        .typo a:hover {
+            border-bottom-color: #555;
+            color: #555
+        }
+
+        .typo a:hover,
+        a,
+        ins {
+            text-decoration: none
+        }
+
+        .typo-u,
+        u {
+            text-decoration: underline
+        }
+
+        mark {
+            background: #fffdd1;
+            border-bottom: 1px solid #ffedce;
+            padding: 2px;
+            margin: 0 5px
+        }
+
+        code,
+        pre,
+        pre tt {
+            font-family: Courier, Courier New, monospace
+        }
+
+        pre {
+            background: hsla(0, 0%, 97%, .7);
+            border: 1px solid #ddd;
+            padding: 1em 1.5em;
+            display: block;
+            -webkit-overflow-scrolling: touch
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid #cfcfcf;
+            margin-bottom: .8em;
+            height: 10px
+        }
+
+        .typo-small,
+        figcaption,
+        small {
+            font-size: .9em;
+            color: #888
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #000
+        }
+
+        [draggable] {
+            cursor: move
+        }
+
+        .clearfix:after,
+        .clearfix:before {
+            content: "";
+            display: table
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .clearfix {
+            zoom: 1
+        }
+
+        .textwrap,
+        .textwrap td,
+        .textwrap th {
+            word-wrap: break-word;
+            word-break: break-all
+        }
+
+        .textwrap-table {
+            table-layout: fixed
+        }
+
+        .serif {
+            font-family: Palatino, Optima, Georgia, serif
+        }
+
+        .typo-dl,
+        .typo-form,
+        .typo-hr,
+        .typo-ol,
+        .typo-p,
+        .typo-pre,
+        .typo-table,
+        .typo-ul,
+        .typo dl,
+        .typo form,
+        .typo hr,
+        .typo ol,
+        .typo p,
+        .typo pre,
+        .typo table,
+        .typo ul,
+        blockquote {
+            margin-bottom: 1rem
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: PingFang SC, Helvetica Neue, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+            color: #000;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo-h2,
+        .typo-h3,
+        .typo-h4,
+        .typo-h5,
+        .typo-h6,
+        .typo h1,
+        .typo h2,
+        .typo h3,
+        .typo h4,
+        .typo h5,
+        .typo h6 {
+            margin-top: 1.2em;
+            margin-bottom: .6em;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo h1 {
+            font-size: 2em
+        }
+
+        .typo-h2,
+        .typo h2 {
+            font-size: 1.8em
+        }
+
+        .typo-h3,
+        .typo h3 {
+            font-size: 1.6em
+        }
+
+        .typo-h4,
+        .typo h4 {
+            font-size: 1.4em
+        }
+
+        .typo-h5,
+        .typo-h6,
+        .typo h5,
+        .typo h6 {
+            font-size: 1.2em
+        }
+
+        .typo-ul,
+        .typo ul {
+            margin-left: 1.3em;
+            list-style: disc
+        }
+
+        .typo-ol,
+        .typo ol {
+            list-style: decimal;
+            margin-left: 1.9em
+        }
+
+        .typo-ol ol,
+        .typo-ol ul,
+        .typo-ul ol,
+        .typo-ul ul,
+        .typo li ol,
+        .typo li ul {
+            margin-bottom: .8em;
+            margin-left: 2em
+        }
+
+        .typo-ol ul,
+        .typo-ul ul,
+        .typo li ul {
+            list-style: circle
+        }
+
+        .typo-table td,
+        .typo-table th,
+        .typo table caption,
+        .typo table td,
+        .typo table th {
+            border: 1px solid #ddd;
+            padding: .5em 1em;
+            color: #666
+        }
+
+        .typo-table th,
+        .typo table th {
+            background: #fbfbfb
+        }
+
+        .typo-table thead th,
+        .typo table thead th {
+            background: hsla(0, 0%, 95%, .7)
+        }
+
+        .typo table caption {
+            border-bottom: none
+        }
+
+        .typo-input,
+        .typo-textarea {
+            -webkit-appearance: none;
+            border-radius: 0
+        }
+
+        .typo-em,
+        .typo em,
+        caption,
+        legend {
+            color: #000;
+            font-weight: inherit
+        }
+
+        .typo-em {
+            position: relative
+        }
+
+        .typo-em:after {
+            position: absolute;
+            top: .65em;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            content: "\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB"
+        }
+
+        .typo img {
+            max-width: 100%
+        }
+
+        .common-content {
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.75rem;
+            white-space: normal;
+            word-break: normal;
+            font-size: 1rem
+        }
+
+        .common-content img {
+            display: block;
+            max-width: 100%;
+            background-color: #eee
+        }
+
+        .common-content audio,
+        .common-content video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        .common-content center,
+        .common-content font {
+            margin-top: 1rem;
+            display: inline-block
+        }
+
+        .common-content center {
+            width: 100%
+        }
+
+        .common-content pre {
+            margin-top: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+            position: relative;
+            overflow: hidden
+        }
+
+        .common-content pre code {
+            font-size: .8rem;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            overflow-x: auto
+        }
+
+        .common-content hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        .common-content b,
+        .common-content h1,
+        .common-content h2,
+        .common-content h3,
+        .common-content h4,
+        .common-content h5,
+        .common-content strong {
+            font-weight: 700
+        }
+
+        .common-content h1,
+        .common-content h2 {
+            font-size: 1.125rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content h3,
+        .common-content h4,
+        .common-content h5 {
+            font-size: 1rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: .15rem
+        }
+
+        .common-content .orange {
+            color: #ff5a05
+        }
+
+        .common-content .reference {
+            font-size: 1rem;
+            color: #888
+        }
+
+        .custom-rich-content h1 {
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 15.25px;
+            border-bottom: 1px solid #eee;
+            line-height: 2.8
+        }
+
+        .custom-rich-content li,
+        .custom-rich-content p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6
+        }
+
+        table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        table.hljs-ln,
+        table.hljs-ln tbody,
+        table.hljs-ln td,
+        table.hljs-ln tr {
+            box-sizing: border-box
+        }
+
+        table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.hljs-ln td.hljs-ln-code,
+        table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            font-size: 12px;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            color: #24292e;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+        video::-webkit-media-controls {
+            overflow: hidden !important
+        }
+
+        video::-webkit-media-controls-enclosure {
+            width: calc(100% + 32px);
+            margin-left: auto
+        }
+
+        ._29HP61GA_0 {
+            max-width:800px;
+            margin:0 auto;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.76;
+            white-space: normal;
+            word-break: normal;
+            font-size: 17px;
+            -webkit-transition: background-color .3s ease;
+            transition: background-color .3s ease
+        }
+
+        ._29HP61GA_0 .MathJax_Display {
+            overflow: auto
+        }
+
+        ._29HP61GA_0 .poster {
+            position: fixed;
+            left: -10000px;
+            top: -10000px;
+            overflow: hidden;
+            padding: 1rem;
+            background: #ececec
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy {
+            font-size: 13px;
+            color: #888;
+            position: absolute;
+            right: 1em;
+            top: .5em;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy .iconfont {
+            font-size: 12px;
+            margin-right: .2em
+        }
+
+        ._29HP61GA_0 a {
+            color: #fa8919;
+            border-bottom: 1px solid #fa8919
+        }
+
+        ._29HP61GA_0 img {
+            display: block;
+            max-width: 100%;
+            position: relative;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            background-color: #eee;
+            vertical-align: top;
+            border-radius: 0
+        }
+
+        ._29HP61GA_0 audio,
+        ._29HP61GA_0 video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        ._29HP61GA_0 pre {
+            margin-top: 16px;
+            padding: 34px 0 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 6px;
+            background: rgba(246, 247, 251, .749);
+            border: 0
+        }
+
+        ._29HP61GA_0 pre code {
+            font-size: 12px;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-left: 16px;
+            margin-right: 16px;
+            overflow-x: scroll
+        }
+
+        ._29HP61GA_0 pre code:after {
+            content: "";
+            height: 30px;
+            width: 100%;
+            display: block
+        }
+
+        ._29HP61GA_0 hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        ._29HP61GA_0 h1,
+        ._29HP61GA_0 h2,
+        ._29HP61GA_0 h3,
+        ._29HP61GA_0 h4,
+        ._29HP61GA_0 h5 {
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 b,
+        ._29HP61GA_0 strong {
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 h1 {
+            font-size: 21px
+        }
+
+        ._29HP61GA_0 h2 {
+            font-size: 20px
+        }
+
+        ._29HP61GA_0 h3 {
+            font-size: 19px
+        }
+
+        ._29HP61GA_0 h4 {
+            font-size: 18px
+        }
+
+        ._29HP61GA_0 h5 {
+            font-size: 17px
+        }
+
+        ._29HP61GA_0 center,
+        ._29HP61GA_0 p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: 0;
+            margin-bottom: 30px;
+            word-break: break-word
+        }
+
+        ._29HP61GA_0 center {
+            text-align: center
+        }
+
+        ._29HP61GA_0 blockquote {
+            margin-top: 0;
+            margin-bottom: 34px;
+            border-left: 3px solid #e8e8e8;
+            padding-left: 17px;
+            color: #353535
+        }
+
+        ._29HP61GA_0 blockquote p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol,
+        ._29HP61GA_0 ul {
+            margin-bottom: 30px
+        }
+
+        ._29HP61GA_0 ol p,
+        ._29HP61GA_0 ul p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol {
+            list-style: decimal;
+            margin-left: 20px
+        }
+
+        ._29HP61GA_0 ul li {
+            padding-left: 17px;
+            position: relative;
+            margin-bottom: 10px
+        }
+
+        ._29HP61GA_0 ul li:after {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: #353535;
+            position: absolute;
+            top: 10px;
+            left: 0
+        }
+
+        ._29HP61GA_0 .orange {
+            color: #fa8919
+        }
+
+        ._29HP61GA_0 .reference {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-right {
+            text-align: right
+        }
+
+        ._29HP61GA_0 .m-center {
+            text-align: center;
+            display: block
+        }
+
+        ._29HP61GA_0 .m-gray {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-small {
+            font-size: 15px
+        }
+
+        ._29HP61GA_0 table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        ._29HP61GA_0 table.hljs-ln,
+        ._29HP61GA_0 table.hljs-ln tbody,
+        ._29HP61GA_0 table.hljs-ln td,
+        ._29HP61GA_0 table.hljs-ln tr {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        ._29HP61GA_0 table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            font-size: 12px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code,
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            font-size: 13px;
+            color: #666;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+    </style>
+</head>
+<body>
+<div class="_29HP61GA_0">
+<h1>结束语-从学习Redis到向Redis学习</h1>
+<p>你好，我是蒋德钧。</p><p>这么快就到课程的尾声了，到了和你说再见的时候了。</p><p>在过去的4个多月时间里，我们掌握了Redis的各种关键技术和核心知识。在课程的最后，我想带你切换一个视角：<strong>如果说我们之前一直在学习Redis本身，那么今天，我们来看看能向Redis学到什么。</strong></p><p>在聊这个“视角”之前，我想先问你一个问题：你有没有想过，学习技术究竟意味着什么呢？</p><p>大多数人人都会觉得，就是掌握具体的原理，进行实战，并且学习别人的经验，解决自己在实际工作中的问题。比如说，学习Redis时，我们会把它用在缓存、分布式锁、数据集群等业务场景中，这就需要我们掌握关键实践技巧、常见问题和应对方法，这也是我们课程的聚焦点。</p><p>但是，我认为，这只是学习技术的第一个层面。当我们对技术的认识和积累达到一定程度后，我们就应该“<strong>向技术致敬</strong>”。所谓的致敬，就是向技术学习，来解决我们在生活中遇到的问题。这是第二个层面。</p><p>这背后的道理其实非常朴素：每一项优秀技术都是一些精华思想的沉淀成果，<strong>向技术学习，其实就是向优秀的思想学习</strong>。</p><p><strong>我一直很崇尚一个理念：一个优秀的计算机系统设计本身就包含了不少人生哲学</strong>。所以，接下来，我们就再往前迈一步，从Redis设计中总结一些做事方法。</p><!-- [[[read_end]]] --><h2>向Redis单线程模式学习，专心致志做重要的事</h2><p>Redis的最大特点是快，这是Redis在设计之初就设立的目标。而能成为某项技术的高手、某个技术方向的大牛，通常是我们给自己设立的目标。Redis实现“快”这个目标的关键机制就是单线程架构。单线程架构就给我们提供了一个很好的做事方式：<strong>专心致志做一件事，把事情做到极致，是达到目标的核心要素。</strong></p><p>在Redis的设计中，主线程专门负责处理请求，而且会以最快的速度完成。对于其他会阻碍这个目标的事情（例如生成快照、删除、AOF重写等），就想办法用异步的方式，或者是用后台线程来完成。在给你介绍6.0版本时，我还提到，Redis特意把请求网络包读写和解析也从主线程中剥离出来了，这样主线程就可以更加“专注”地做请求处理了。</p><p>我认为，“单线程”思想是非常值得我们品味的。在确定目标以后，我们也可以采用“单线程模式”，把精力集中在核心目标上，竭尽全力做好这件事，同时合理安排自己的时间，主动避开干扰因素。</p><p>当我们沉浸在一件事上，并且做到极致时，距离成为大牛，也就不远了。</p><p>当然，我们说在一件事上做到极致，并不是说只盯着某一个知识点或某一项技术，而是指在一个技术方向上做到极致。</p><p>比如说，Redis属于键值数据库，我们就可以给自己定个目标：精通主要的键值数据库。因此，我们不仅要扎实地掌握现有技术，还要持续关注最新的技术发展。这就要提到我们可以向Redis学习的第二点了：具备可扩展能力。</p><h2>向Redis集群学习可扩展能力</h2><p>在应用Redis时，我们会遇到数据量增长、负载压力增大的情况，但Redis都能轻松应对，这就是得益于它的可扩展集群机制：当数据容量增加时，Redis会增加实例实现扩容；当读压力增加时，Redis会增加从库，来分担压力。</p><p>Redis的新特性在持续推出，新的存储硬件也在快速地发展，这些最新技术的发展，很可能就会改变Redis的关键机制和使用方法。<strong>所以，想要应对复杂的场景变化，我们也要像Redis集群一样，具备可扩展能力。</strong>毕竟，技术的迭代速度如此之快，各种需求也越来越复杂。如果只是专注于学习现有的技术知识，或者是基于目前的场景去苦心钻研，很可能会被时代快速地抛弃。</p><p>只有紧跟技术发展的步伐，具备解决各种突发问题的能力，才能成为真正的技术大牛。</p><p>怎么培养可扩展能力呢？很简单，随时随地记录新鲜的东西。这里的“新鲜”未必是指最新的内容，而是指你不了解的内容。当你的认知范围越来越大，你的可扩展能力自然就会越来越强。</p><p>说到这儿，我想跟你分享一个我的小习惯。我有一个小笔记本，会随身携带着，在看文章、参加技术会议，或是和别人聊天时，只要学到了新东西，我就会赶紧记下来，之后再专门找时间去搜索相关的资料，时不时地拿出来回顾一下。这个习惯，让我能够及时地掌握最新的技术，轻松地应对各种变化。</p><p>我们做技术的同学，通常习惯于脚踏实地地把事情做好，但是，也千万别忘了，脚踏实地的同时，也是需要“仰望星空”的。要把学习变成一种习惯，从为了应对问题的被动学习，到为了增强自己的可扩展性而主动学习，这个转变绝对可以让你的技术能力远超过其他人。</p><p>当然，Redis的优秀设计思想还有很多，你还可以自己提炼总结下。我还想再跟你探讨的话题是，我们该怎么把向Redis学到的思想真正落地到实践中呢？</p><p>其实，道理也很简单：<strong>从做成一件事开始</strong>。在竭尽全力做成事情的过程当中，磨炼自己的专注力，锻炼自己的可扩展能力。</p><h2>从做成一件事开始</h2><p>我们常说“不积跬步，无以至千里”，这句话中的“跬步”，我把它解释为做成一件事。我们总是会做很多事，但是，很多时候，能够让我们真正得到提升的是把事做成。</p><p>对我来说，创作这门课完全是一次全新的尝试。在写作时，无论是思考内容的结构，确认具体的细节，还是连夜赶稿以保证按时更新，我都感受到了不少压力。但是，现在我回过头来看过去的半年，感到很欣慰，因为这事儿我做成了，而且有很多额外的收获。</p><p>其实，做成一件事的目标不分大小。它可以很小，比如学完两节课，也可以很大，比如花3个月时间把Redis源码读完。</p><p>最重要的是，一旦定好目标，我们就要尽全力把这件事做成。我们不可避免地会遇到各种困难，比如临时有其他的工作安排，抽不出时间，或者是遇到了不理解的内容，很难再学进去。但是，这就像爬山，爬到半山腰的时候，往往也是我们最累的时候。</p><p>我再跟你分享一下我自己的小故事。</p><p>在看Redis数据结构的源码时，我觉得非常困难。Redis的数据类型非常多，每种数据类型还有不同的底层结构实现，而有的数据结构本身就设计得很复杂。</p><p>当时我差一点就决定放弃了，但是，我后来憋着一口气，说我一定要把事情做成。冷静下来之后，我进一步细分目标，每周搞定一个结构，先从原理上理解结构的设计，自己在白纸上推演一遍。然后，把每个结构的代码看一遍，同时自己也把关键部分编写一遍。毕竟，我们在看代码的时候，很容易想当然地跳过一些地方，只有自己一行行地去编写时，才会思考得更细致，理解得也更透彻。</p><p>攻克了“数据结构”这个难关之后，我发现，后面的就简单多了。甚至在遇到其他困难时，我也不再害怕了。</p><p>因为每一次把一件事做成，都会增强我们的自信心，提升我们的能力。随着我们做成的事越来越多，我们也就越来越接近山顶了，这时，你会真正地体会到“会当凌绝顶，一览众山小”的感觉。</p><p>好了，到这里，真的要和你说再见了。“此地一为别，孤蓬万里征”，这是李白送别友人时说的，比较忧伤。古代的通讯和交通没有那么便利，分别之后，好友只能是自己独自奋斗了。</p><p>但咱们不是。虽然课程结束了，但是这些内容会持续存在，你可以时不时地复习一下。如果你遇见了什么问题，也欢迎继续给我留言。</p><p>最后，我给你准备了一份结课问卷，希望你花1分钟时间填写一下，聊一聊你对这门课的看法和反馈，就有机会获得“Redis 快捷口令超大鼠标垫”和价值99元的极客时间课程阅码。期待你的畅所欲言。</p><p><a href="https://jinshuju.net/f/deBEiK"><img src="./结束语-从学习Redis到向Redis学习_files/7f21e7e0fabb48347d59c1e0e1dddcde.jpg" alt=""></a></p><h2>精选留言：</h2>
+        <ul>
+        
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            Kaito  2020-12-04 01:15:16
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            历时 4 个月，这个专栏全程跟了下来，除了答疑篇之外的所有文章，每篇都在第一时间认真写留言、解答课后问题，坚持做了 4 个月，也算是把这件“小事”做到了极致，有始有终。<br><br>在写这最后一篇留言时，我也梳理了一下在这个专栏下留下的文字，所有留言 + 2篇加餐文章，输出共计近 6 万字！<br><br>写下这些文字的时间和地点各有不同，有早晚高峰的地铁上，有 996 回家的出租车上，有凌晨两三点的台灯下，有在医院守夜的病床旁...<br><br>也感谢极客时间这个平台，在这个专栏，除了学到了很多之前没接触到的内容之外，还被邀请写了加餐文章，同时还做了专栏内容的审稿和勘误工作...一路下来，学到很多，成长很多。<br><br>虽然专栏要结束了，但对于我来说是一个新的开始，在专栏更新期间，我建了一个 Redis 交流群，方便大家在学习过程中，遇到问题时可以帮大家答疑。现在这个群已经 200 多人了，每天都在讨论技术问题，讨论的内容质量也很高，没有沦落为水群，也算是小有成效。<br><br>这个群目前计划会一直维护下去，方便有需求的人继续学习专栏内容。想入群的同学可以加我微信（black-rye），也欢迎对技术有热情的同学，和我探讨技术问题~<br><br>最后，也算是在这里立一个 Flag 吧，我打算把这个专栏下的每篇留言，再梳理一遍，整理成文章发出来，把 Redis 常见的问题和不易理解的细节点，用简单易懂的方式讲出来，方便后面遇到类似问题的人学习，也欢迎大家监督我 :) [19赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            梦想歌  2020-12-04 00:21:24
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            谢谢老师，专栏完全跟上了，一路很顺畅，对工作非常有帮助，也很感谢评论区的大牛解答，江湖再见~ [2赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            谢小路  2020-12-04 00:26:18
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            课程非常好，得益于作者高校背景，比一般的作者写的文章更严谨，更合理，推荐。系统的跟了这个课，整体上有更深刻的把握，4个月周期比较长，还需要巩固下。 [1赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            zhou  2020-12-04 08:48:29
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            极客时间上第一个全程跟完的课程，受益匪浅。当闭着眼睛回想这段时间学到了什么，想到了高性能、高可用、易扩展，然后各种数据结构、单线程、主从同步、哨兵、集群，再继续细化脑海中有点模糊了，虽然课程结束了，但还会继续重温。 
+        </div>
+        
+    </div>
+</li>
+            </ul>
+</div>
+
+</body></html>

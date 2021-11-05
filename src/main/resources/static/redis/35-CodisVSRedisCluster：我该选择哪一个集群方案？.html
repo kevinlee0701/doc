@@ -1,0 +1,1003 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!-- saved from url=(0171)http://118.25.23.115/redis/35-CodisVSRedisCluster%EF%BC%9A%E6%88%91%E8%AF%A5%E9%80%89%E6%8B%A9%E5%93%AA%E4%B8%80%E4%B8%AA%E9%9B%86%E7%BE%A4%E6%96%B9%E6%A1%88%EF%BC%9F.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!--<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>-->
+    <title>35-CodisVSRedisCluster：我该选择哪一个集群方案？</title>
+    
+        <style>
+        html {
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-rendering: optimizelegibility;
+            font-family: Helvetica Neue, PingFang SC, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif
+        }
+
+        html.borderbox *,
+        html.borderbox :after,
+        html.borderbox :before {
+            box-sizing: border-box
+        }
+
+        article,
+        aside,
+        blockquote,
+        body,
+        button,
+        code,
+        dd,
+        details,
+        dl,
+        dt,
+        fieldset,
+        figcaption,
+        figure,
+        footer,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        header,
+        hr,
+        input,
+        legend,
+        li,
+        menu,
+        nav,
+        ol,
+        p,
+        pre,
+        section,
+        td,
+        textarea,
+        th,
+        ul {
+            margin: 0;
+            padding: 0
+        }
+
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        menu,
+        nav,
+        section {
+            display: block
+        }
+
+        audio,
+        canvas,
+        video {
+            display: inline-block
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, Helvetica, sans-serif
+        }
+
+        button::-moz-focus-inner,
+        input::-moz-focus-inner {
+            padding: 0;
+            border: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        fieldset,
+        img {
+            border: 0
+        }
+
+        blockquote {
+            position: relative;
+            color: #999;
+            font-weight: 400;
+            border-left: 1px solid #1abc9c;
+            padding-left: 1em;
+            margin: 1em 3em 1em 2em
+        }
+
+        @media only screen and (max-width: 640px) {
+            blockquote {
+                margin: 1em 0
+            }
+        }
+
+        abbr,
+        acronym {
+            border-bottom: 1px dotted;
+            font-variant: normal
+        }
+
+        abbr {
+            cursor: help
+        }
+
+        del {
+            text-decoration: line-through
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 400
+        }
+
+        ol,
+        ul {
+            list-style: none
+        }
+
+        caption,
+        th {
+            text-align: left
+        }
+
+        q:after,
+        q:before {
+            content: ""
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        :root sub,
+        :root sup {
+            vertical-align: baseline
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        a {
+            color: #1abc9c
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .typo a {
+            border-bottom: 1px solid #1abc9c
+        }
+
+        .typo a:hover {
+            border-bottom-color: #555;
+            color: #555
+        }
+
+        .typo a:hover,
+        a,
+        ins {
+            text-decoration: none
+        }
+
+        .typo-u,
+        u {
+            text-decoration: underline
+        }
+
+        mark {
+            background: #fffdd1;
+            border-bottom: 1px solid #ffedce;
+            padding: 2px;
+            margin: 0 5px
+        }
+
+        code,
+        pre,
+        pre tt {
+            font-family: Courier, Courier New, monospace
+        }
+
+        pre {
+            background: hsla(0, 0%, 97%, .7);
+            border: 1px solid #ddd;
+            padding: 1em 1.5em;
+            display: block;
+            -webkit-overflow-scrolling: touch
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid #cfcfcf;
+            margin-bottom: .8em;
+            height: 10px
+        }
+
+        .typo-small,
+        figcaption,
+        small {
+            font-size: .9em;
+            color: #888
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #000
+        }
+
+        [draggable] {
+            cursor: move
+        }
+
+        .clearfix:after,
+        .clearfix:before {
+            content: "";
+            display: table
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .clearfix {
+            zoom: 1
+        }
+
+        .textwrap,
+        .textwrap td,
+        .textwrap th {
+            word-wrap: break-word;
+            word-break: break-all
+        }
+
+        .textwrap-table {
+            table-layout: fixed
+        }
+
+        .serif {
+            font-family: Palatino, Optima, Georgia, serif
+        }
+
+        .typo-dl,
+        .typo-form,
+        .typo-hr,
+        .typo-ol,
+        .typo-p,
+        .typo-pre,
+        .typo-table,
+        .typo-ul,
+        .typo dl,
+        .typo form,
+        .typo hr,
+        .typo ol,
+        .typo p,
+        .typo pre,
+        .typo table,
+        .typo ul,
+        blockquote {
+            margin-bottom: 1rem
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: PingFang SC, Helvetica Neue, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+            color: #000;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo-h2,
+        .typo-h3,
+        .typo-h4,
+        .typo-h5,
+        .typo-h6,
+        .typo h1,
+        .typo h2,
+        .typo h3,
+        .typo h4,
+        .typo h5,
+        .typo h6 {
+            margin-top: 1.2em;
+            margin-bottom: .6em;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo h1 {
+            font-size: 2em
+        }
+
+        .typo-h2,
+        .typo h2 {
+            font-size: 1.8em
+        }
+
+        .typo-h3,
+        .typo h3 {
+            font-size: 1.6em
+        }
+
+        .typo-h4,
+        .typo h4 {
+            font-size: 1.4em
+        }
+
+        .typo-h5,
+        .typo-h6,
+        .typo h5,
+        .typo h6 {
+            font-size: 1.2em
+        }
+
+        .typo-ul,
+        .typo ul {
+            margin-left: 1.3em;
+            list-style: disc
+        }
+
+        .typo-ol,
+        .typo ol {
+            list-style: decimal;
+            margin-left: 1.9em
+        }
+
+        .typo-ol ol,
+        .typo-ol ul,
+        .typo-ul ol,
+        .typo-ul ul,
+        .typo li ol,
+        .typo li ul {
+            margin-bottom: .8em;
+            margin-left: 2em
+        }
+
+        .typo-ol ul,
+        .typo-ul ul,
+        .typo li ul {
+            list-style: circle
+        }
+
+        .typo-table td,
+        .typo-table th,
+        .typo table caption,
+        .typo table td,
+        .typo table th {
+            border: 1px solid #ddd;
+            padding: .5em 1em;
+            color: #666
+        }
+
+        .typo-table th,
+        .typo table th {
+            background: #fbfbfb
+        }
+
+        .typo-table thead th,
+        .typo table thead th {
+            background: hsla(0, 0%, 95%, .7)
+        }
+
+        .typo table caption {
+            border-bottom: none
+        }
+
+        .typo-input,
+        .typo-textarea {
+            -webkit-appearance: none;
+            border-radius: 0
+        }
+
+        .typo-em,
+        .typo em,
+        caption,
+        legend {
+            color: #000;
+            font-weight: inherit
+        }
+
+        .typo-em {
+            position: relative
+        }
+
+        .typo-em:after {
+            position: absolute;
+            top: .65em;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            content: "\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB"
+        }
+
+        .typo img {
+            max-width: 100%
+        }
+
+        .common-content {
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.75rem;
+            white-space: normal;
+            word-break: normal;
+            font-size: 1rem
+        }
+
+        .common-content img {
+            display: block;
+            max-width: 100%;
+            background-color: #eee
+        }
+
+        .common-content audio,
+        .common-content video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        .common-content center,
+        .common-content font {
+            margin-top: 1rem;
+            display: inline-block
+        }
+
+        .common-content center {
+            width: 100%
+        }
+
+        .common-content pre {
+            margin-top: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+            position: relative;
+            overflow: hidden
+        }
+
+        .common-content pre code {
+            font-size: .8rem;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            overflow-x: auto
+        }
+
+        .common-content hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        .common-content b,
+        .common-content h1,
+        .common-content h2,
+        .common-content h3,
+        .common-content h4,
+        .common-content h5,
+        .common-content strong {
+            font-weight: 700
+        }
+
+        .common-content h1,
+        .common-content h2 {
+            font-size: 1.125rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content h3,
+        .common-content h4,
+        .common-content h5 {
+            font-size: 1rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: .15rem
+        }
+
+        .common-content .orange {
+            color: #ff5a05
+        }
+
+        .common-content .reference {
+            font-size: 1rem;
+            color: #888
+        }
+
+        .custom-rich-content h1 {
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 15.25px;
+            border-bottom: 1px solid #eee;
+            line-height: 2.8
+        }
+
+        .custom-rich-content li,
+        .custom-rich-content p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6
+        }
+
+        table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        table.hljs-ln,
+        table.hljs-ln tbody,
+        table.hljs-ln td,
+        table.hljs-ln tr {
+            box-sizing: border-box
+        }
+
+        table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.hljs-ln td.hljs-ln-code,
+        table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            font-size: 12px;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            color: #24292e;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+        video::-webkit-media-controls {
+            overflow: hidden !important
+        }
+
+        video::-webkit-media-controls-enclosure {
+            width: calc(100% + 32px);
+            margin-left: auto
+        }
+
+        ._29HP61GA_0 {
+            max-width:800px;
+            margin:0 auto;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.76;
+            white-space: normal;
+            word-break: normal;
+            font-size: 17px;
+            -webkit-transition: background-color .3s ease;
+            transition: background-color .3s ease
+        }
+
+        ._29HP61GA_0 .MathJax_Display {
+            overflow: auto
+        }
+
+        ._29HP61GA_0 .poster {
+            position: fixed;
+            left: -10000px;
+            top: -10000px;
+            overflow: hidden;
+            padding: 1rem;
+            background: #ececec
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy {
+            font-size: 13px;
+            color: #888;
+            position: absolute;
+            right: 1em;
+            top: .5em;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy .iconfont {
+            font-size: 12px;
+            margin-right: .2em
+        }
+
+        ._29HP61GA_0 a {
+            color: #fa8919;
+            border-bottom: 1px solid #fa8919
+        }
+
+        ._29HP61GA_0 img {
+            display: block;
+            max-width: 100%;
+            position: relative;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            background-color: #eee;
+            vertical-align: top;
+            border-radius: 0
+        }
+
+        ._29HP61GA_0 audio,
+        ._29HP61GA_0 video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        ._29HP61GA_0 pre {
+            margin-top: 16px;
+            padding: 34px 0 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 6px;
+            background: rgba(246, 247, 251, .749);
+            border: 0
+        }
+
+        ._29HP61GA_0 pre code {
+            font-size: 12px;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-left: 16px;
+            margin-right: 16px;
+            overflow-x: scroll
+        }
+
+        ._29HP61GA_0 pre code:after {
+            content: "";
+            height: 30px;
+            width: 100%;
+            display: block
+        }
+
+        ._29HP61GA_0 hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        ._29HP61GA_0 h1,
+        ._29HP61GA_0 h2,
+        ._29HP61GA_0 h3,
+        ._29HP61GA_0 h4,
+        ._29HP61GA_0 h5 {
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 b,
+        ._29HP61GA_0 strong {
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 h1 {
+            font-size: 21px
+        }
+
+        ._29HP61GA_0 h2 {
+            font-size: 20px
+        }
+
+        ._29HP61GA_0 h3 {
+            font-size: 19px
+        }
+
+        ._29HP61GA_0 h4 {
+            font-size: 18px
+        }
+
+        ._29HP61GA_0 h5 {
+            font-size: 17px
+        }
+
+        ._29HP61GA_0 center,
+        ._29HP61GA_0 p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: 0;
+            margin-bottom: 30px;
+            word-break: break-word
+        }
+
+        ._29HP61GA_0 center {
+            text-align: center
+        }
+
+        ._29HP61GA_0 blockquote {
+            margin-top: 0;
+            margin-bottom: 34px;
+            border-left: 3px solid #e8e8e8;
+            padding-left: 17px;
+            color: #353535
+        }
+
+        ._29HP61GA_0 blockquote p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol,
+        ._29HP61GA_0 ul {
+            margin-bottom: 30px
+        }
+
+        ._29HP61GA_0 ol p,
+        ._29HP61GA_0 ul p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol {
+            list-style: decimal;
+            margin-left: 20px
+        }
+
+        ._29HP61GA_0 ul li {
+            padding-left: 17px;
+            position: relative;
+            margin-bottom: 10px
+        }
+
+        ._29HP61GA_0 ul li:after {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: #353535;
+            position: absolute;
+            top: 10px;
+            left: 0
+        }
+
+        ._29HP61GA_0 .orange {
+            color: #fa8919
+        }
+
+        ._29HP61GA_0 .reference {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-right {
+            text-align: right
+        }
+
+        ._29HP61GA_0 .m-center {
+            text-align: center;
+            display: block
+        }
+
+        ._29HP61GA_0 .m-gray {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-small {
+            font-size: 15px
+        }
+
+        ._29HP61GA_0 table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        ._29HP61GA_0 table.hljs-ln,
+        ._29HP61GA_0 table.hljs-ln tbody,
+        ._29HP61GA_0 table.hljs-ln td,
+        ._29HP61GA_0 table.hljs-ln tr {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        ._29HP61GA_0 table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            font-size: 12px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code,
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            font-size: 13px;
+            color: #666;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+    </style>
+</head>
+<body>
+<div class="_29HP61GA_0">
+<h1>35-CodisVSRedisCluster：我该选择哪一个集群方案？</h1>
+<p>你好，我是蒋德钧。</p><p>Redis的切片集群使用多个实例保存数据，能够很好地应对大数据量的场景。在<a href="https://time.geekbang.org/column/article/275337">第8讲</a>中，我们学习了Redis官方提供的切片集群方案Redis Cluster，这为你掌握切片集群打下了基础。今天，我再来带你进阶一下，我们来学习下Redis Cluster方案正式发布前，业界已经广泛使用的Codis。</p><p>我会具体讲解Codis的关键技术实现原理，同时将Codis和Redis Cluster进行对比，帮你选出最佳的集群方案。</p><p>好了，话不多说，我们先来学习下Codis的整体架构和流程。</p><h2>Codis的整体架构和基本流程</h2><p>Codis集群中包含了4类关键组件。</p><ul>
+<li>codis server：这是进行了二次开发的Redis实例，其中增加了额外的数据结构，支持数据迁移操作，主要负责处理具体的数据读写请求。</li>
+<li>codis proxy：接收客户端请求，并把请求转发给codis server。</li>
+<li>Zookeeper集群：保存集群元数据，例如数据位置信息和codis proxy信息。</li>
+<li>codis dashboard和codis fe：共同组成了集群管理工具。其中，codis dashboard负责执行集群管理工作，包括增删codis server、codis proxy和进行数据迁移。而codis fe负责提供dashboard的Web操作界面，便于我们直接在Web界面上进行集群管理。</li>
+</ul><!-- [[[read_end]]] --><p>我用一张图来展示下Codis集群的架构和关键组件。</p><p><img src="./35-CodisVSRedisCluster：我该选择哪一个集群方案？_files/c726e3c5477558fa1dba13c6ae8a77a5.jpg" alt=""></p><p>我来给你具体解释一下Codis是如何处理请求的。</p><p>首先，为了让集群能接收并处理请求，我们要先使用codis dashboard 设置codis server和codis proxy的访问地址，完成设置后，codis server和codis proxy才会开始接收连接。</p><p>然后，当客户端要读写数据时，客户端直接和codis proxy建立连接。你可能会担心，既然客户端连接的是proxy，是不是需要修改客户端，才能访问proxy？其实，你不用担心，codis proxy本身支持Redis的RESP交互协议，所以，客户端访问codis  proxy时，和访问原生的Redis实例没有什么区别，这样一来，原本连接单实例的客户端就可以轻松地和Codis集群建立起连接了。</p><p>最后，codis proxy接收到请求，就会查询请求数据和codis server的映射关系，并把请求转发给相应的codis server进行处理。当codis server处理完请求后，会把结果返回给codis proxy，proxy再把数据返回给客户端。</p><p>我来用一张图展示这个处理流程：</p><p><img src="./35-CodisVSRedisCluster：我该选择哪一个集群方案？_files/f76df33a4eba1ebddfd5450745yy83e5.jpg" alt=""></p><p>好了，了解了Codis集群架构和基本流程后，接下来，我就围绕影响切片集群使用效果的4方面技术因素：数据分布、集群扩容和数据迁移、客户端兼容性、可靠性保证，来和你聊聊它们的具体设计选择和原理，帮你掌握Codis的具体用法。</p><h2>Codis的关键技术原理</h2><p>一旦我们使用了切片集群，面临的第一个问题就是，<strong>数据是怎么在多个实例上分布的</strong>。</p><h3>数据如何在集群里分布？</h3><p>在Codis集群中，一个数据应该保存在哪个codis server上，这是通过逻辑槽（Slot）映射来完成的，具体来说，总共分成两步。</p><p>第一步，Codis集群一共有1024个Slot，编号依次是0到1023。我们可以把这些Slot手动分配给codis server，每个server上包含一部分Slot。当然，我们也可以让codis dashboard进行自动分配，例如，dashboard把1024个Slot在所有server上均分。</p><p>第二步，当客户端要读写数据时，会使用CRC32算法计算数据key的哈希值，并把这个哈希值对1024取模。而取模后的值，则对应Slot的编号。此时，根据第一步分配的Slot和server对应关系，我们就可以知道数据保存在哪个server上了。</p><p>我来举个例子。下图显示的就是数据、Slot和codis server的映射保存关系。其中，Slot 0和1被分配到了server1，Slot 2分配到server2，Slot 1022和1023被分配到server8。当客户端访问key 1和key 2时，这两个数据的CRC32值对1024取模后，分别是1和1022。因此，它们会被保存在Slot  1和Slot  1022上，而Slot  1和Slot  1022已经被分配到codis server 1和8上了。这样一来，key 1和key 2的保存位置就很清楚了。</p><p><img src="./35-CodisVSRedisCluster：我该选择哪一个集群方案？_files/77cb1b860cfa5aac9f0a0f7b780fbeyy.jpg" alt=""></p><p>数据key和Slot的映射关系是客户端在读写数据前直接通过CRC32计算得到的，而Slot和codis server的映射关系是通过分配完成的，所以就需要用一个存储系统保存下来，否则，如果集群有故障了，映射关系就会丢失。</p><p>我们把Slot和codis server的映射关系称为数据路由表（简称路由表）。我们在codis dashboard上分配好路由表后，dashboard会把路由表发送给codis proxy，同时，dashboard也会把路由表保存在Zookeeper中。codis-proxy会把路由表缓存在本地，当它接收到客户端请求后，直接查询本地的路由表，就可以完成正确的请求转发了。</p><p>你可以看下这张图，它显示了路由表的分配和使用过程。</p><p><img src="./35-CodisVSRedisCluster：我该选择哪一个集群方案？_files/d1a53f8b23d410f320ef145fd47c97b1.jpg" alt=""></p><p>在数据分布的实现方法上，Codis和Redis Cluster很相似，都采用了key映射到Slot、Slot再分配到实例上的机制。</p><p>但是，这里有一个明显的区别，我来解释一下。</p><p>Codis中的路由表是我们通过codis dashboard分配和修改的，并被保存在Zookeeper集群中。一旦数据位置发生变化（例如有实例增减），路由表被修改了，codis dashbaord就会把修改后的路由表发送给codis proxy，proxy就可以根据最新的路由信息转发请求了。</p><p>在Redis Cluster中，数据路由表是通过每个实例相互间的通信传递的，最后会在每个实例上保存一份。当数据路由信息发生变化时，就需要在所有实例间通过网络消息进行传递。所以，如果实例数量较多的话，就会消耗较多的集群网络资源。</p><p>数据分布解决了新数据写入时该保存在哪个server的问题，但是，当业务数据增加后，如果集群中的现有实例不足以保存所有数据，我们就需要对集群进行扩容。接下来，我们再来学习下Codis针对集群扩容的关键技术设计。</p><h3>集群扩容和数据迁移如何进行?</h3><p>Codis集群扩容包括了两方面：增加codis server和增加codis proxy。</p><p>我们先来看增加codis server，这个过程主要涉及到两步操作：</p><ol>
+<li>启动新的codis server，将它加入集群；</li>
+<li>把部分数据迁移到新的server。</li>
+</ol><p>需要注意的是，这里的数据迁移是一个重要的机制，接下来我来重点介绍下。</p><p>Codis集群按照Slot的粒度进行数据迁移，我们来看下迁移的基本流程。</p><ol>
+<li>在源server上，Codis从要迁移的Slot中随机选择一个数据，发送给目的server。</li>
+<li>目的server确认收到数据后，会给源server返回确认消息。这时，源server会在本地将刚才迁移的数据删除。</li>
+<li>第一步和第二步就是单个数据的迁移过程。Codis会不断重复这个迁移过程，直到要迁移的Slot中的数据全部迁移完成。</li>
+</ol><p>我画了下面这张图，显示了数据迁移的流程，你可以看下加深理解。</p><p><img src="./35-CodisVSRedisCluster：我该选择哪一个集群方案？_files/e01c7806b51b196097c393a079436d6b.jpg" alt=""></p><p>针对刚才介绍的单个数据的迁移过程，Codis实现了两种迁移模式，分别是同步迁移和异步迁移，我们来具体看下。</p><p>同步迁移是指，在数据从源server发送给目的server的过程中，源server是阻塞的，无法处理新的请求操作。这种模式很容易实现，但是迁移过程中会涉及多个操作（包括数据在源server序列化、网络传输、在目的server反序列化，以及在源server删除），如果迁移的数据是一个bigkey，源server就会阻塞较长时间，无法及时处理用户请求。</p><p>为了避免数据迁移阻塞源server，Codis实现的第二种迁移模式就是异步迁移。异步迁移的关键特点有两个。</p><p>第一个特点是，当源server把数据发送给目的server后，就可以处理其他请求操作了，不用等到目的server的命令执行完。而目的server会在收到数据并反序列化保存到本地后，给源server发送一个ACK消息，表明迁移完成。此时，源server在本地把刚才迁移的数据删除。</p><p>在这个过程中，迁移的数据会被设置为只读，所以，源server上的数据步会被修改，自然也就不会出现“和目的server上的数据不一致”问题了。</p><p>第二个特点是，对于bigkey，异步迁移采用了拆分指令的方式进行迁移。具体来说就是，对bigkey中每个元素，用一条指令进行迁移，而不是把整个bigkey进行序列化后再整体传输。这种化整为零的方式，就避免了bigkey迁移时，因为要序列化大量数据而阻塞源server的问题。</p><p>此外，当bigkey迁移了一部分数据后，如果Codis发生故障，就会导致bigkey的一部分元素在源server，而另一部分元素在目的server，这就破坏了迁移的原子性。</p><p>所以，Codis会在目标server上，给bigkey的元素设置一个临时过期时间。如果迁移过程中发生故障，那么，目标server上的key会在过期后被删除，不会影响迁移的原子性。当正常完成迁移后，bigkey元素的临时过期时间会被删除。</p><p>我给你举个例子，假如我们要迁移一个有1万个元素的List类型数据，当使用异步迁移时，源server就会给目的server传输1万条RPUSH命令，每条命令对应了List中一个元素的插入。在目的server上，这1万条命令再被依次执行，就可以完成数据迁移。</p><p>这里，有个地方需要你注意下，为了提升迁移的效率，Codis在异步迁移Slot时，允许每次迁移多个key。<strong>你可以通过异步迁移命令SLOTSMGRTTAGSLOT-ASYNC的参数numkeys设置每次迁移的key数量</strong>。</p><p>刚刚我们学习的是codis server的扩容和数据迁移机制，其实，在Codis集群中，除了增加codis server，有时还需要增加codis proxy。</p><p>因为在Codis集群中，客户端是和codis proxy直接连接的，所以，当客户端增加时，一个proxy无法支撑大量的请求操作，此时，我们就需要增加proxy。</p><p>增加proxy比较容易，我们直接启动proxy，再通过codis dashboard把proxy加入集群就行。</p><p>此时，codis proxy的访问连接信息都会保存在Zookeeper上。所以，当新增了proxy后，Zookeeper上会有最新的访问列表，客户端也就可以从Zookeeper上读取proxy访问列表，把请求发送给新增的proxy。这样一来，客户端的访问压力就可以在多个proxy上分担处理了，如下图所示：</p><p><img src="./35-CodisVSRedisCluster：我该选择哪一个集群方案？_files/707767936a6fb2d7686c84d81c048423.jpg" alt=""></p><p>好了，到这里，我们就了解了Codis集群中的数据分布、集群扩容和数据迁移的方法，这都是切片集群中的关键机制。</p><p>不过，因为集群提供的功能和单实例提供的功能不同，所以，我们在应用集群时，不仅要关注切片集群中的关键机制，还需要关注客户端的使用。这里就有一个问题了：业务应用采用的客户端能否直接和集群交互呢？接下来，我们就来聊下这个问题。</p><h3>集群客户端需要重新开发吗?</h3><p>使用Redis单实例时，客户端只要符合RESP协议，就可以和实例进行交互和读写数据。但是，在使用切片集群时，有些功能是和单实例不一样的，比如集群中的数据迁移操作，在单实例上是没有的，而且迁移过程中，数据访问请求可能要被重定向（例如Redis Cluster中的MOVE命令）。</p><p>所以，客户端需要增加和集群功能相关的命令操作的支持。如果原来使用单实例客户端，想要扩容使用集群，就需要使用新客户端，这对于业务应用的兼容性来说，并不是特别友好。</p><p>Codis集群在设计时，就充分考虑了对现有单实例客户端的兼容性。</p><p>Codis使用codis  proxy直接和客户端连接，codis proxy是和单实例客户端兼容的。而和集群相关的管理工作（例如请求转发、数据迁移等），都由codis proxy、codis dashboard这些组件来完成，不需要客户端参与。</p><p>这样一来，业务应用使用Codis集群时，就不用修改客户端了，可以复用和单实例连接的客户端，既能利用集群读写大容量数据，又避免了修改客户端增加复杂的操作逻辑，保证了业务代码的稳定性和兼容性。</p><p>最后，我们再来看下集群可靠性的问题。可靠性是实际业务应用的一个核心要求。<strong>对于一个分布式系统来说，它的可靠性和系统中的组件个数有关：组件越多，潜在的风险点也就越多</strong>。和Redis Cluster只包含Redis实例不一样，Codis集群包含的组件有4类。那你就会问了，这么多组件会降低Codis集群的可靠性吗？</p><h3>怎么保证集群可靠性？</h3><p>我们来分别看下Codis不同组件的可靠性保证方法。</p><p>首先是codis server。</p><p>codis server其实就是Redis实例，只不过增加了和集群操作相关的命令。Redis的主从复制机制和哨兵机制在codis server上都是可以使用的，所以，Codis就使用主从集群来保证codis server的可靠性。简单来说就是，Codis给每个server配置从库，并使用哨兵机制进行监控，当发生故障时，主从库可以进行切换，从而保证了server的可靠性。</p><p>在这种配置情况下，每个server就成为了一个server group，每个group中是一主多从的server。数据分布使用的Slot，也是按照group的粒度进行分配的。同时，codis proxy在转发请求时，也是按照数据所在的Slot和group的对应关系，把写请求发到相应group的主库，读请求发到group中的主库或从库上。</p><p>下图展示的是配置了server group的Codis集群架构。在Codis集群中，我们通过部署server group和哨兵集群，实现codis server的主从切换，提升集群可靠性。</p><p><img src="./35-CodisVSRedisCluster：我该选择哪一个集群方案？_files/0282beb10f5c42c1f12c89afbe03af4a.jpg" alt=""></p><p>因为codis proxy和Zookeeper这两个组件是搭配在一起使用的，所以，接下来，我们再来看下这两个组件的可靠性。</p><p>在Codis集群设计时，proxy上的信息源头都是来自Zookeeper（例如路由表）。而Zookeeper集群使用多个实例来保存数据，只要有超过半数的Zookeeper实例可以正常工作， Zookeeper集群就可以提供服务，也可以保证这些数据的可靠性。</p><p>所以，codis proxy使用Zookeeper集群保存路由表，可以充分利用Zookeeper的高可靠性保证来确保codis proxy的可靠性，不用再做额外的工作了。当codis proxy发生故障后，直接重启proxy就行。重启后的proxy，可以通过codis dashboard从Zookeeper集群上获取路由表，然后，就可以接收客户端请求进行转发了。这样的设计，也降低了Codis集群本身的开发复杂度。</p><p>对于codis dashboard和codis fe来说，它们主要提供配置管理和管理员手工操作，负载压力不大，所以，它们的可靠性可以不用额外进行保证了。</p><h2>切片集群方案选择建议</h2><p>到这里，Codis和Redis Cluster这两种切片集群方案我们就学完了，我把它们的区别总结在了一张表里，你可以对比看下。</p><p><img src="./35-CodisVSRedisCluster：我该选择哪一个集群方案？_files/8fec8c2f76e32647d055ae6ed8cfbab8.jpg" alt=""></p><p>最后，在实际应用的时候，对于这两种方案，我们该怎么选择呢？我再给你提4条建议。</p><ol>
+<li>
+<p>从稳定性和成熟度来看，Codis应用得比较早，在业界已经有了成熟的生产部署。虽然Codis引入了proxy和Zookeeper，增加了集群复杂度，但是，proxy的无状态设计和Zookeeper自身的稳定性，也给Codis的稳定使用提供了保证。而Redis Cluster的推出时间晚于Codis，相对来说，成熟度要弱于Codis，如果你想选择一个成熟稳定的方案，Codis更加合适些。</p>
+</li>
+<li>
+<p>从业务应用客户端兼容性来看，连接单实例的客户端可以直接连接codis proxy，而原本连接单实例的客户端要想连接Redis Cluster的话，就需要开发新功能。所以，如果你的业务应用中大量使用了单实例的客户端，而现在想应用切片集群的话，建议你选择Codis，这样可以避免修改业务应用中的客户端。</p>
+</li>
+<li>
+<p>从使用Redis新命令和新特性来看，Codis server是基于开源的Redis 3.2.8开发的，所以，Codis并不支持Redis后续的开源版本中的新增命令和数据类型。另外，Codis并没有实现开源Redis版本的所有命令，比如BITOP、BLPOP、BRPOP，以及和与事务相关的MUTLI、EXEC等命令。<a href="https://github.com/CodisLabs/codis/blob/release3.2/doc/unsupported_cmds.md">Codis官网</a>上列出了不被支持的命令列表，你在使用时记得去核查一下。所以，如果你想使用开源Redis 版本的新特性，Redis Cluster是一个合适的选择。</p>
+</li>
+<li>
+<p>从数据迁移性能维度来看，Codis能支持异步迁移，异步迁移对集群处理正常请求的性能影响要比使用同步迁移的小。所以，如果你在应用集群时，数据迁移比较频繁的话，Codis是个更合适的选择。</p>
+</li>
+</ol><h2>小结</h2><p>这节课，我们学习了Redis切片集群的Codis方案。Codis集群包含codis server、codis proxy、Zookeeper、codis dashboard和codis fe这四大类组件。我们再来回顾下它们的主要功能。</p><ul>
+<li>codis proxy和codis server负责处理数据读写请求，其中，codis proxy和客户端连接，接收请求，并转发请求给codis server，而codis server负责具体处理请求。</li>
+<li>codis dashboard和codis fe负责集群管理，其中，codis dashboard执行管理操作，而codis fe提供Web管理界面。</li>
+<li>Zookeeper集群负责保存集群的所有元数据信息，包括路由表、proxy实例信息等。这里，有个地方需要你注意，除了使用Zookeeper，Codis还可以使用etcd或本地文件系统保存元数据信息。</li>
+</ul><p>关于Codis和Redis Cluster的选型考虑，我从稳定性成熟度、客户端兼容性、Redis新特性使用以及数据迁移性能四个方面给你提供了建议，希望能帮助到你。</p><p>最后，我再给你提供一个Codis使用上的小建议：当你有多条业务线要使用Codis时，可以启动多个codis dashboard，每个dashboard管理一部分codis server，同时，再用一个dashboard对应负责一个业务线的集群管理，这样，就可以做到用一个Codis集群实现多条业务线的隔离管理了。</p><h2>每课一问</h2><p>按照惯例，我会给你提个小问题。假设Codis集群中保存的80%的键值对都是Hash类型，每个Hash集合的元素数量在10万～20万个，每个集合元素的大小是2KB。你觉得，迁移一个这样的Hash集合数据，会对Codis的性能造成影响吗？</p><p>欢迎在留言区写下你的思考和答案，我们一起交流讨论。如果你觉得今天的内容对你有所帮助，也欢迎你分享给你的朋友或同事。我们下节课见。</p><h2>精选留言：</h2>
+        <ul>
+        
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            Kaito  2020-11-11 00:21:09
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            å�‡è®¾ Codis é›†ç¾¤ä¸­ä¿�å­˜çš„ 80% çš„é”®å€¼å¯¹éƒ½æ˜¯ Hash ç±»å�‹ï¼Œæ¯�ä¸ª Hash é›†å�ˆçš„å…ƒç´&nbsp;æ•°é‡�åœ¨ 10 ä¸‡ ï½� 20 ä¸‡ä¸ªï¼Œæ¯�ä¸ªé›†å�ˆå…ƒç´&nbsp;çš„å¤§å°�æ˜¯ 2KBã€‚è¿�ç§»ä¸€ä¸ªè¿™æ&nbsp;·çš„ Hash é›†å�ˆæ•°æ�®ï¼Œæ˜¯å�¦ä¼šå¯¹ Codis çš„æ€§èƒ½é€&nbsp;æˆ�å½±å“�ï¼Ÿ<br><br>ä¸�ä¼šæœ‰æ€§èƒ½å½±å“�ã€‚<br><br>Codis åœ¨è¿�ç§»æ•°æ�®æ—¶ï¼Œè®¾è®¡çš„æ–¹æ¡ˆå�¯ä»¥ä¿�è¯�è¿�ç§»æ€§èƒ½ä¸�å�—å½±å“�ã€‚<br><br>1ã€�å¼‚æ­¥è¿�ç§»ï¼šæº�èŠ‚ç‚¹æŠŠè¿�ç§»çš„æ•°æ�®å�‘é€�ç»™ç›®æ&nbsp;‡èŠ‚ç‚¹å��å°±è¿”å›�ï¼Œä¹‹å��æ�¥ç�€å¤„ç�†å®¢æˆ·ç«¯è¯·æ±‚ï¼Œè¿™ä¸ªé˜¶æ®µä¸�ä¼šé•¿æ—¶é—´é˜»å¡�æº�èŠ‚ç‚¹ã€‚ç›®æ&nbsp;‡èŠ‚ç‚¹åŠ&nbsp;è½½è¿�ç§»çš„æ•°æ�®æˆ�åŠŸå��ï¼Œå�‘æº�èŠ‚ç‚¹å�‘é€� ACK å‘½ä»¤ï¼Œå‘ŠçŸ¥å…¶è¿�ç§»æˆ�åŠŸã€‚<br><br>2ã€�æº�èŠ‚ç‚¹å¼‚æ­¥é‡Šæ”¾ keyï¼šæº�èŠ‚ç‚¹æ”¶åˆ°ç›®æ&nbsp;‡èŠ‚ç‚¹ ACK å��ï¼Œåœ¨æº�å®�ä¾‹åˆ&nbsp;é™¤è¿™ä¸ª keyï¼Œé‡Šæ”¾ key å†…å­˜çš„æ“�ä½œï¼Œä¼šæ”¾åˆ°å��å�°çº¿ç¨‹ä¸­æ‰§è¡Œï¼Œä¸�ä¼šé˜»å¡�æº�å®�ä¾‹ã€‚ï¼ˆæ²¡é”™ï¼ŒCodis æ¯” Redis æ›´æ—©åœ°æ”¯æŒ�äº† lazy-freeï¼Œå�ªä¸�è¿‡å�ªç”¨åœ¨äº†æ•°æ�®è¿�ç§»ä¸­ï¼‰ã€‚<br><br>3ã€�å°�å¯¹è±¡åº�åˆ—åŒ–ä¼&nbsp;è¾“ï¼šå°�å¯¹è±¡ä¾�æ—§é‡‡ç”¨åº�åˆ—åŒ–æ–¹å¼�è¿�ç§»ï¼ŒèŠ‚çœ�ç½‘ç»œæµ�é‡�ã€‚<br><br>4ã€�bigkey åˆ†æ‰¹è¿�ç§»ï¼šbigkey æ‹†åˆ†æˆ�ä¸€æ�¡æ�¡å‘½ä»¤ï¼Œæ‰“åŒ…åˆ†æ‰¹è¿�ç§»ï¼ˆåˆ©ç”¨äº† Pipeline çš„ä¼˜åŠ¿ï¼‰ï¼Œæ��å�‡è¿�ç§»é€Ÿåº¦ã€‚<br><br>5ã€�ä¸€æ¬¡è¿�ç§»å¤šä¸ª keyï¼šä¸€æ¬¡å�‘é€�å¤šä¸ª key è¿›è¡Œè¿�ç§»ï¼Œæ��å�‡è¿�ç§»æ•ˆç�‡ã€‚<br><br>6ã€�è¿�ç§»æµ�é‡�æ�§åˆ¶ï¼šè¿�ç§»æ—¶ä¼šæ�§åˆ¶ç¼“å†²åŒºå¤§å°�ï¼Œé�¿å…�å�&nbsp;æ»¡ç½‘ç»œå¸¦å®½ã€‚<br><br>7ã€�bigkey è¿�ç§»å�Ÿå­�æ€§ä¿�è¯�ï¼ˆå…¼å®¹è¿�ç§»å¤±è´¥æƒ…å†µï¼‰ï¼šè¿�ç§»å‰�å…ˆå�‘ä¸€ä¸ª DEL å‘½ä»¤åˆ°ç›®æ&nbsp;‡èŠ‚ç‚¹ï¼ˆé‡�è¯•å�¯ä¿�è¯�å¹‚ç­‰æ€§ï¼‰ï¼Œç„¶å��æŠŠ bigkey æ‹†åˆ†æˆ�ä¸€æ�¡æ�¡å‘½ä»¤ï¼Œå¹¶è®¾ç½®ä¸€ä¸ªä¸´æ—¶è¿‡æœŸæ—¶é—´ï¼ˆé˜²æ­¢è¿�ç§»å¤±è´¥åœ¨ç›®æ&nbsp;‡èŠ‚ç‚¹é�—ç•™å�ƒåœ¾æ•°æ�®ï¼‰ï¼Œè¿�ç§»æˆ�åŠŸå��åœ¨ç›®æ&nbsp;‡èŠ‚ç‚¹è®¾ç½®çœŸå®�çš„è¿‡æœŸæ—¶é—´ã€‚<br><br>Codis åœ¨æ•°æ�®è¿�ç§»æ–¹é�¢è¦�æ¯” Redis Cluster å�šå¾—æ›´ä¼˜ç§€ï¼Œè€Œä¸” Codis è¿˜å¸¦äº†ä¸€ä¸ªé��å¸¸å�‹å¥½çš„è¿�ç»´ç•Œé�¢ï¼Œæ–¹ä¾¿ DBA æ‰§è¡Œå¢�åˆ&nbsp;èŠ‚ç‚¹ã€�ä¸»ä»�åˆ‡æ�¢ã€�æ•°æ�®è¿�ç§»ç­‰æ“�ä½œã€‚<br><br>æˆ‘å½“æ—¶åœ¨å¯¹ Codis å¼€å�‘æ–°çš„ç»„ä»¶æ—¶ï¼Œè¢« Codis çš„ä¼˜ç§€è®¾è®¡æ·±æ·±æŠ˜æœ�ã€‚å½“ç„¶ï¼Œå®ƒçš„ç¼ºç‚¹ä¹Ÿå¾ˆæ˜�æ˜¾ï¼Œç»„ä»¶æ¯”è¾ƒå¤šï¼Œéƒ¨ç½²ç•¥å¤�æ�‚ã€‚å�¦å¤–ï¼Œå›&nbsp;ä¸ºæ˜¯åŸºäº� Redis 3.2.8 å�šçš„äºŒæ¬¡å¼€å�‘ï¼Œæ‰€ä»¥å�‡çº§ Redis Server æ¯”è¾ƒå›°éš¾ï¼Œæ–°ç‰¹æ€§ä¹Ÿå°±è‡ªç„¶æ—&nbsp;æ³•ä½¿ç”¨ã€‚<br><br>ç�°åœ¨ Codis å·²ç»�ä¸�å†�ç»´æŠ¤ï¼Œä½†æ˜¯ä½œä¸ºå›½äººå¼€å�‘çš„ Redis é›†ç¾¤è§£å†³æ–¹æ¡ˆï¼Œå…¶è®¾è®¡æ€�æƒ³è¿˜æ˜¯é��å¸¸å€¼å¾—å­¦ä¹&nbsp;çš„ã€‚ä¹Ÿæ�¨è�� Go å¼€å�‘è€…ï¼Œè¯»ä¸€è¯» Codis æº�ç&nbsp;�ï¼Œè´¨é‡�é��å¸¸é«˜ï¼Œå¯¹äº� Go è¯­è¨€çš„è¿›é˜¶ä¹Ÿä¼šæœ‰å¾ˆå¤§æ”¶è�·ï¼� [18赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            æ�¨é€¸æ�—  2020-11-11 23:24:18
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            æˆ‘ç®€å�•ç”¨ Google æ�œäº†ä¸‹ï¼Œä¸»æµ�çš„ Redis é›†ç¾¤æ–¹æ¡ˆå¤§æ¦‚åˆ†ä¸ºä¸‰ç§�ï¼š<br>1. Redis Cluster<br>2. å¤§å�‚/å°�é¡¹ç›®ç»„ å¼€æº�çš„è§£å†³æ–¹æ¡ˆâ€”â€” Twitter å¼€æº�çš„ Twemproxyã€�Codis<br>3. ä¹°ä¸“æœ‰çš„ Redis æœ�åŠ¡å™¨â€”â€” Aliyun AparaCacheï¼ˆè¿™ä¸ªå¼€æº�çš„æ²¡æœ‰ slot çš„å®�ç�°ï¼‰ã€�AWS ElasticCache<br><br>ç¬¬äºŒç§�çš„è¯�ï¼Œæˆ‘çœ‹äº†ä¸‹ä»–ä»¬çš„ Github å¯¹åº”çš„ Repositoryï¼Œä¸Šä¸€æ¬¡æ›´æ–°æ˜¯ä¸¤å¹´å‰�ã€‚ç�°åœ¨è¦�å¥½ç”¨ï¼ˆèƒ½ç”¨ Redis çš„æ–°ç‰¹æ€§ï¼Œå¹¶ä¸”èƒ½è½»æ�¾æ‰©å®¹ï¼‰çš„é›†ç¾¤æ–¹æ¡ˆï¼Œå�ªèƒ½è‡ªç&nbsp;”æˆ–è€…ä¹°äº‘å�‚å•†çš„å�—ï¼Ÿ<br><br>ä¸»è¦�å�‚è€ƒäº†è¿™ä¸‰ä¸ª<br>https://cloud.tencent.com/developer/article/1701574<br>https://www.cnblogs.com/me115/p/9043420.html<br>https://www.zhihu.com/question/21419897<br><br>ç¬¬ä¸€ä¸ªé¡µé�¢æ˜¯è½¬è½½è‡ª Kaito çš„ä¸ªäººå�šå®¢ç½‘ç«™ï¼Œæˆ‘æ˜¯æƒ³ä¸�åˆ°çš„ï¼Œå¯¹åº”çš„é¡µé�¢ä¸Šæœ‰äººè¯´æ–¹æ¡ˆå¤ªè€�äº†ã€‚<br>é¡ºä¾¿æ��ä¸€ä¸‹ï¼Œæˆ‘çš„ä¹Ÿæ˜¯ç”¨çš„ Hexoï¼Œä¹Ÿæ˜¯åŸºäº� Next ä¸»é¢˜æ”¹çš„í&nbsp;½í¸�ã€‚ [4赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            å€ªå¤§äºº  2020-11-12 17:44:05
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            â€œç¬¬äºŒä¸ªç‰¹ç‚¹æ˜¯ï¼Œå¯¹äº� bigkeyï¼Œå¼‚æ­¥è¿�ç§»é‡‡ç”¨äº†æ‹†åˆ†æŒ‡ä»¤çš„æ–¹å¼�è¿›è¡Œè¿�ç§»ã€‚å…·ä½“æ�¥è¯´å°±æ˜¯ï¼Œå¯¹ bigkey ä¸­æ¯�ä¸ªå…ƒç´&nbsp;ï¼Œç”¨ä¸€æ�¡æŒ‡ä»¤è¿›è¡Œè¿�ç§»ï¼Œè€Œä¸�æ˜¯æŠŠæ•´ä¸ª bigkey è¿›è¡Œåº�åˆ—åŒ–å��å†�æ•´ä½“ä¼&nbsp;è¾“ã€‚â€�<br><br>æ±‚é—®è€�å¸ˆï¼Œæ‹†åˆ†è¿�ç§»bigKeyçš„æ—¶å€™ï¼Œæº�serverä¸Šçš„è¿™ä¸ªkeyæ˜¯ä¸�æ˜¯ä¹Ÿæ˜¯å�ªè¯»ï¼Œä¸�å…�è®¸ä¿®æ”¹ï¼Ÿ<br>å¦‚æ�œæ˜¯çš„è¯�ï¼Œé‚£è¿�ç§»çš„è¿‡ç¨‹ä¸­è¿™ä¸ªkeyçš„ä¿®æ”¹è¯·æ±‚ä¼šè¢«é˜»å¡�ï¼Œæ€§èƒ½ä¼šå�—åˆ°å½±å“�ï¼Ÿ<br>å¦‚æ�œä¸�æ˜¯çš„è¯�ï¼Œæ€�ä¹ˆä¿�è¯�æ•°æ�®ä¸€è‡´æ€§å‘¢ï¼Ÿ 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            snailshen  2020-11-11 14:22:39
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            è€�å¸ˆï¼Œcodisçš„keyå’Œslotçš„æ˜&nbsp;å°„æ˜¯crc16,å¹¶ä¸”zookeeperä¿�å­˜çš„å…ƒæ•°æ�®ä¿¡æ�¯ï¼Œå�ªæ˜¯proxyçš„ä¿¡æ�¯ï¼Œå¹¶ä¸�å­˜å‚¨slotä¿¡æ�¯å�§ 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            æ¯�å¤©æ™’ç™½ç‰™  2020-11-11 13:30:43
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            é€šè¿‡å­¦å®Œè¿™ç¯‡æ–‡ç«&nbsp;ï¼Œä¸ªäººæ„Ÿè§‰é›†ç¾¤æ›´å€¾å�‘äº� Codis 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            å‚²  2020-11-11 10:14:02
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            è€�å¸ˆå¥½~ ç›®å‰�å…¬å�¸åœ¨ç”¨twemproxyç»´æŠ¤Redisé›†ç¾¤ï¼Œèƒ½ç®€å�•å¯¹æ¯”ä¸‹codiså’Œtwemproxyçš„ä¼˜åŠ£å�—ï¼Ÿ 
+        </div>
+        
+    </div>
+</li>
+            </ul>
+</div>
+
+</body></html>

@@ -1,0 +1,1103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!-- saved from url=(0202)http://118.25.23.115/redis/05-%E5%86%85%E5%AD%98%E5%BF%AB%E7%85%A7%EF%BC%9A%E5%AE%95%E6%9C%BA%E5%90%8E%EF%BC%8CRedis%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%BF%AB%E9%80%9F%E6%81%A2%E5%A4%8D%EF%BC%9F.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>05-内存快照：宕机后，Redis如何实现快速恢复？</title>
+    
+        <style>
+        html {
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-rendering: optimizelegibility;
+            font-family: Helvetica Neue, PingFang SC, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif
+        }
+
+        html.borderbox *,
+        html.borderbox :after,
+        html.borderbox :before {
+            box-sizing: border-box
+        }
+
+        article,
+        aside,
+        blockquote,
+        body,
+        button,
+        code,
+        dd,
+        details,
+        dl,
+        dt,
+        fieldset,
+        figcaption,
+        figure,
+        footer,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        header,
+        hr,
+        input,
+        legend,
+        li,
+        menu,
+        nav,
+        ol,
+        p,
+        pre,
+        section,
+        td,
+        textarea,
+        th,
+        ul {
+            margin: 0;
+            padding: 0
+        }
+
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        menu,
+        nav,
+        section {
+            display: block
+        }
+
+        audio,
+        canvas,
+        video {
+            display: inline-block
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, Helvetica, sans-serif
+        }
+
+        button::-moz-focus-inner,
+        input::-moz-focus-inner {
+            padding: 0;
+            border: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        fieldset,
+        img {
+            border: 0
+        }
+
+        blockquote {
+            position: relative;
+            color: #999;
+            font-weight: 400;
+            border-left: 1px solid #1abc9c;
+            padding-left: 1em;
+            margin: 1em 3em 1em 2em
+        }
+
+        @media only screen and (max-width: 640px) {
+            blockquote {
+                margin: 1em 0
+            }
+        }
+
+        abbr,
+        acronym {
+            border-bottom: 1px dotted;
+            font-variant: normal
+        }
+
+        abbr {
+            cursor: help
+        }
+
+        del {
+            text-decoration: line-through
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 400
+        }
+
+        ol,
+        ul {
+            list-style: none
+        }
+
+        caption,
+        th {
+            text-align: left
+        }
+
+        q:after,
+        q:before {
+            content: ""
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        :root sub,
+        :root sup {
+            vertical-align: baseline
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        a {
+            color: #1abc9c
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .typo a {
+            border-bottom: 1px solid #1abc9c
+        }
+
+        .typo a:hover {
+            border-bottom-color: #555;
+            color: #555
+        }
+
+        .typo a:hover,
+        a,
+        ins {
+            text-decoration: none
+        }
+
+        .typo-u,
+        u {
+            text-decoration: underline
+        }
+
+        mark {
+            background: #fffdd1;
+            border-bottom: 1px solid #ffedce;
+            padding: 2px;
+            margin: 0 5px
+        }
+
+        code,
+        pre,
+        pre tt {
+            font-family: Courier, Courier New, monospace
+        }
+
+        pre {
+            background: hsla(0, 0%, 97%, .7);
+            border: 1px solid #ddd;
+            padding: 1em 1.5em;
+            display: block;
+            -webkit-overflow-scrolling: touch
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid #cfcfcf;
+            margin-bottom: .8em;
+            height: 10px
+        }
+
+        .typo-small,
+        figcaption,
+        small {
+            font-size: .9em;
+            color: #888
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #000
+        }
+
+        [draggable] {
+            cursor: move
+        }
+
+        .clearfix:after,
+        .clearfix:before {
+            content: "";
+            display: table
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .clearfix {
+            zoom: 1
+        }
+
+        .textwrap,
+        .textwrap td,
+        .textwrap th {
+            word-wrap: break-word;
+            word-break: break-all
+        }
+
+        .textwrap-table {
+            table-layout: fixed
+        }
+
+        .serif {
+            font-family: Palatino, Optima, Georgia, serif
+        }
+
+        .typo-dl,
+        .typo-form,
+        .typo-hr,
+        .typo-ol,
+        .typo-p,
+        .typo-pre,
+        .typo-table,
+        .typo-ul,
+        .typo dl,
+        .typo form,
+        .typo hr,
+        .typo ol,
+        .typo p,
+        .typo pre,
+        .typo table,
+        .typo ul,
+        blockquote {
+            margin-bottom: 1rem
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: PingFang SC, Helvetica Neue, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+            color: #000;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo-h2,
+        .typo-h3,
+        .typo-h4,
+        .typo-h5,
+        .typo-h6,
+        .typo h1,
+        .typo h2,
+        .typo h3,
+        .typo h4,
+        .typo h5,
+        .typo h6 {
+            margin-top: 1.2em;
+            margin-bottom: .6em;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo h1 {
+            font-size: 2em
+        }
+
+        .typo-h2,
+        .typo h2 {
+            font-size: 1.8em
+        }
+
+        .typo-h3,
+        .typo h3 {
+            font-size: 1.6em
+        }
+
+        .typo-h4,
+        .typo h4 {
+            font-size: 1.4em
+        }
+
+        .typo-h5,
+        .typo-h6,
+        .typo h5,
+        .typo h6 {
+            font-size: 1.2em
+        }
+
+        .typo-ul,
+        .typo ul {
+            margin-left: 1.3em;
+            list-style: disc
+        }
+
+        .typo-ol,
+        .typo ol {
+            list-style: decimal;
+            margin-left: 1.9em
+        }
+
+        .typo-ol ol,
+        .typo-ol ul,
+        .typo-ul ol,
+        .typo-ul ul,
+        .typo li ol,
+        .typo li ul {
+            margin-bottom: .8em;
+            margin-left: 2em
+        }
+
+        .typo-ol ul,
+        .typo-ul ul,
+        .typo li ul {
+            list-style: circle
+        }
+
+        .typo-table td,
+        .typo-table th,
+        .typo table caption,
+        .typo table td,
+        .typo table th {
+            border: 1px solid #ddd;
+            padding: .5em 1em;
+            color: #666
+        }
+
+        .typo-table th,
+        .typo table th {
+            background: #fbfbfb
+        }
+
+        .typo-table thead th,
+        .typo table thead th {
+            background: hsla(0, 0%, 95%, .7)
+        }
+
+        .typo table caption {
+            border-bottom: none
+        }
+
+        .typo-input,
+        .typo-textarea {
+            -webkit-appearance: none;
+            border-radius: 0
+        }
+
+        .typo-em,
+        .typo em,
+        caption,
+        legend {
+            color: #000;
+            font-weight: inherit
+        }
+
+        .typo-em {
+            position: relative
+        }
+
+        .typo-em:after {
+            position: absolute;
+            top: .65em;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            content: "\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB"
+        }
+
+        .typo img {
+            max-width: 100%
+        }
+
+        .common-content {
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.75rem;
+            white-space: normal;
+            word-break: normal;
+            font-size: 1rem
+        }
+
+        .common-content img {
+            display: block;
+            max-width: 100%;
+            background-color: #eee
+        }
+
+        .common-content audio,
+        .common-content video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        .common-content center,
+        .common-content font {
+            margin-top: 1rem;
+            display: inline-block
+        }
+
+        .common-content center {
+            width: 100%
+        }
+
+        .common-content pre {
+            margin-top: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+            position: relative;
+            overflow: hidden
+        }
+
+        .common-content pre code {
+            font-size: .8rem;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            overflow-x: auto
+        }
+
+        .common-content hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        .common-content b,
+        .common-content h1,
+        .common-content h2,
+        .common-content h3,
+        .common-content h4,
+        .common-content h5,
+        .common-content strong {
+            font-weight: 700
+        }
+
+        .common-content h1,
+        .common-content h2 {
+            font-size: 1.125rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content h3,
+        .common-content h4,
+        .common-content h5 {
+            font-size: 1rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: .15rem
+        }
+
+        .common-content .orange {
+            color: #ff5a05
+        }
+
+        .common-content .reference {
+            font-size: 1rem;
+            color: #888
+        }
+
+        .custom-rich-content h1 {
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 15.25px;
+            border-bottom: 1px solid #eee;
+            line-height: 2.8
+        }
+
+        .custom-rich-content li,
+        .custom-rich-content p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6
+        }
+
+        table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        table.hljs-ln,
+        table.hljs-ln tbody,
+        table.hljs-ln td,
+        table.hljs-ln tr {
+            box-sizing: border-box
+        }
+
+        table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.hljs-ln td.hljs-ln-code,
+        table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            font-size: 12px;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            color: #24292e;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+        video::-webkit-media-controls {
+            overflow: hidden !important
+        }
+
+        video::-webkit-media-controls-enclosure {
+            width: calc(100% + 32px);
+            margin-left: auto
+        }
+
+        ._29HP61GA_0 {
+            max-width:800px;
+            margin:0 auto;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.76;
+            white-space: normal;
+            word-break: normal;
+            font-size: 17px;
+            -webkit-transition: background-color .3s ease;
+            transition: background-color .3s ease
+        }
+
+        ._29HP61GA_0 .MathJax_Display {
+            overflow: auto
+        }
+
+        ._29HP61GA_0 .poster {
+            position: fixed;
+            left: -10000px;
+            top: -10000px;
+            overflow: hidden;
+            padding: 1rem;
+            background: #ececec
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy {
+            font-size: 13px;
+            color: #888;
+            position: absolute;
+            right: 1em;
+            top: .5em;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy .iconfont {
+            font-size: 12px;
+            margin-right: .2em
+        }
+
+        ._29HP61GA_0 a {
+            color: #fa8919;
+            border-bottom: 1px solid #fa8919
+        }
+
+        ._29HP61GA_0 img {
+            display: block;
+            max-width: 100%;
+            position: relative;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            background-color: #eee;
+            vertical-align: top;
+            border-radius: 0
+        }
+
+        ._29HP61GA_0 audio,
+        ._29HP61GA_0 video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        ._29HP61GA_0 pre {
+            margin-top: 16px;
+            padding: 34px 0 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 6px;
+            background: rgba(246, 247, 251, .749);
+            border: 0
+        }
+
+        ._29HP61GA_0 pre code {
+            font-size: 12px;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-left: 16px;
+            margin-right: 16px;
+            overflow-x: scroll
+        }
+
+        ._29HP61GA_0 pre code:after {
+            content: "";
+            height: 30px;
+            width: 100%;
+            display: block
+        }
+
+        ._29HP61GA_0 hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        ._29HP61GA_0 h1,
+        ._29HP61GA_0 h2,
+        ._29HP61GA_0 h3,
+        ._29HP61GA_0 h4,
+        ._29HP61GA_0 h5 {
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 b,
+        ._29HP61GA_0 strong {
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 h1 {
+            font-size: 21px
+        }
+
+        ._29HP61GA_0 h2 {
+            font-size: 20px
+        }
+
+        ._29HP61GA_0 h3 {
+            font-size: 19px
+        }
+
+        ._29HP61GA_0 h4 {
+            font-size: 18px
+        }
+
+        ._29HP61GA_0 h5 {
+            font-size: 17px
+        }
+
+        ._29HP61GA_0 center,
+        ._29HP61GA_0 p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: 0;
+            margin-bottom: 30px;
+            word-break: break-word
+        }
+
+        ._29HP61GA_0 center {
+            text-align: center
+        }
+
+        ._29HP61GA_0 blockquote {
+            margin-top: 0;
+            margin-bottom: 34px;
+            border-left: 3px solid #e8e8e8;
+            padding-left: 17px;
+            color: #353535
+        }
+
+        ._29HP61GA_0 blockquote p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol,
+        ._29HP61GA_0 ul {
+            margin-bottom: 30px
+        }
+
+        ._29HP61GA_0 ol p,
+        ._29HP61GA_0 ul p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol {
+            list-style: decimal;
+            margin-left: 20px
+        }
+
+        ._29HP61GA_0 ul li {
+            padding-left: 17px;
+            position: relative;
+            margin-bottom: 10px
+        }
+
+        ._29HP61GA_0 ul li:after {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: #353535;
+            position: absolute;
+            top: 10px;
+            left: 0
+        }
+
+        ._29HP61GA_0 .orange {
+            color: #fa8919
+        }
+
+        ._29HP61GA_0 .reference {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-right {
+            text-align: right
+        }
+
+        ._29HP61GA_0 .m-center {
+            text-align: center;
+            display: block
+        }
+
+        ._29HP61GA_0 .m-gray {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-small {
+            font-size: 15px
+        }
+
+        ._29HP61GA_0 table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        ._29HP61GA_0 table.hljs-ln,
+        ._29HP61GA_0 table.hljs-ln tbody,
+        ._29HP61GA_0 table.hljs-ln td,
+        ._29HP61GA_0 table.hljs-ln tr {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        ._29HP61GA_0 table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            font-size: 12px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code,
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            font-size: 13px;
+            color: #666;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+    </style>
+</head>
+<body>
+<div class="_29HP61GA_0">
+<h1>05-内存快照：宕机后，Redis如何实现快速恢复？</h1>
+<p>你好，我是蒋德钧。</p><p>上节课，我们学习了Redis避免数据丢失的AOF方法。这个方法的好处，是每次执行只需要记录操作命令，需要持久化的数据量不大。一般而言，只要你采用的不是always的持久化策略，就不会对性能造成太大影响。</p><p>但是，也正因为记录的是操作命令，而不是实际的数据，所以，用AOF方法进行故障恢复的时候，需要逐一把操作日志都执行一遍。如果操作日志非常多，Redis就会恢复得很缓慢，影响到正常使用。这当然不是理想的结果。那么，还有没有既可以保证可靠性，还能在宕机时实现快速恢复的其他方法呢？</p><p>当然有了，这就是我们今天要一起学习的另一种持久化方法：<strong>内存快照</strong>。所谓内存快照，就是指内存中的数据在某一个时刻的状态记录。这就类似于照片，当你给朋友拍照时，一张照片就能把朋友一瞬间的形象完全记下来。</p><p>对Redis来说，它实现类似照片记录效果的方式，就是把某一时刻的状态以文件的形式写到磁盘上，也就是快照。这样一来，即使宕机，快照文件也不会丢失，数据的可靠性也就得到了保证。这个快照文件就称为RDB文件，其中，RDB就是Redis DataBase的缩写。</p><p>和AOF相比，RDB记录的是某一时刻的数据，并不是操作，所以，在做数据恢复时，我们可以直接把RDB文件读入内存，很快地完成恢复。听起来好像很不错，但内存快照也并不是最优选项。为什么这么说呢？</p><!-- [[[read_end]]] --><p>我们还要考虑两个关键问题：</p><ul>
+<li>对哪些数据做快照？这关系到快照的执行效率问题；</li>
+<li>做快照时，数据还能被增删改吗？这关系到Redis是否被阻塞，能否同时正常处理请求。</li>
+</ul><p>这么说可能你还不太好理解，我还是拿拍照片来举例子。我们在拍照时，通常要关注两个问题：</p><ul>
+<li>如何取景？也就是说，我们打算把哪些人、哪些物拍到照片中；</li>
+<li>在按快门前，要记着提醒朋友不要乱动，否则拍出来的照片就模糊了。</li>
+</ul><p>你看，这两个问题是不是非常重要呢？那么，接下来，我们就来具体地聊一聊。先说“取景”问题，也就是我们对哪些数据做快照。</p><h2>给哪些内存数据做快照？</h2><p>Redis的数据都在内存中，为了提供所有数据的可靠性保证，它执行的是<strong>全量快照</strong>，也就是说，把内存中的所有数据都记录到磁盘中，这就类似于给100个人拍合影，把每一个人都拍进照片里。这样做的好处是，一次性记录了所有数据，一个都不少。</p><p>当你给一个人拍照时，只用协调一个人就够了，但是，拍100人的大合影，却需要协调100个人的位置、状态，等等，这当然会更费时费力。同样，给内存的全量数据做快照，把它们全部写入磁盘也会花费很多时间。而且，全量数据越多，RDB文件就越大，往磁盘上写数据的时间开销就越大。</p><p>对于Redis而言，它的单线程模型就决定了，我们要尽量避免所有会阻塞主线程的操作，所以，针对任何操作，我们都会提一个灵魂之问：“它会阻塞主线程吗?”RDB文件的生成是否会阻塞主线程，这就关系到是否会降低Redis的性能。</p><p>Redis提供了两个命令来生成RDB文件，分别是save和bgsave。</p><ul>
+<li>save：在主线程中执行，会导致阻塞；</li>
+<li>bgsave：创建一个子进程，专门用于写入RDB文件，避免了主线程的阻塞，这也是Redis RDB文件生成的默认配置。</li>
+</ul><p>好了，这个时候，我们就可以通过bgsave命令来执行全量快照，这既提供了数据的可靠性保证，也避免了对Redis的性能影响。</p><p>接下来，我们要关注的问题就是，在对内存数据做快照时，这些数据还能“动”吗? 也就是说，这些数据还能被修改吗？ 这个问题非常重要，这是因为，如果数据能被修改，那就意味着Redis还能正常处理写操作。否则，所有写操作都得等到快照完了才能执行，性能一下子就降低了。</p><h2>快照时数据能修改吗?</h2><p>在给别人拍照时，一旦对方动了，那么这张照片就拍糊了，我们就需要重拍，所以我们当然希望对方保持不动。对于内存快照而言，我们也不希望数据“动”。</p><p>举个例子。我们在时刻t给内存做快照，假设内存数据量是4GB，磁盘的写入带宽是0.2GB/s，简单来说，至少需要20s（4/0.2 = 20）才能做完。如果在时刻t+5s时，一个还没有被写入磁盘的内存数据A，被修改成了A’，那么就会破坏快照的完整性，因为A’不是时刻t时的状态。因此，和拍照类似，我们在做快照时也不希望数据“动”，也就是不能被修改。</p><p>但是，如果快照执行期间数据不能被修改，是会有潜在问题的。对于刚刚的例子来说，在做快照的20s时间里，如果这4GB的数据都不能被修改，Redis就不能处理对这些数据的写操作，那无疑就会给业务服务造成巨大的影响。</p><p>你可能会想到，可以用bgsave避免阻塞啊。这里我就要说到一个常见的误区了，<strong>避免阻塞和正常处理写操作并不是一回事</strong>。此时，主线程的确没有阻塞，可以正常接收请求，但是，为了保证快照完整性，它只能处理读操作，因为不能修改正在执行快照的数据。</p><p>为了快照而暂停写操作，肯定是不能接受的。所以这个时候，Redis就会借助操作系统提供的写时复制技术（Copy-On-Write, COW），在执行快照的同时，正常处理写操作。</p><p>简单来说，bgsave子进程是由主线程fork生成的，可以共享主线程的所有内存数据。bgsave子进程运行后，开始读取主线程的内存数据，并把它们写入RDB文件。</p><p>此时，如果主线程对这些数据也都是读操作（例如图中的键值对A），那么，主线程和bgsave子进程相互不影响。但是，如果主线程要修改一块数据（例如图中的键值对C），那么，这块数据就会被复制一份，生成该数据的副本。然后，bgsave子进程会把这个副本数据写入RDB文件，而在这个过程中，主线程仍然可以直接修改原来的数据。</p><p><img src="./05-内存快照：宕机后，Redis如何实现快速恢复？_files/4dc5fb99a1c94f70957cce1ffef419cc.jpg" alt="" title="写时复制机制保证快照期间数据可修改"></p><p>这既保证了快照的完整性，也允许主线程同时对数据进行修改，避免了对正常业务的影响。</p><p>到这里，我们就解决了对“哪些数据做快照”以及“做快照时数据能否修改”这两大问题：Redis会使用bgsave对当前内存中的所有数据做快照，这个操作是子进程在后台完成的，这就允许主线程同时可以修改数据。</p><p>现在，我们再来看另一个问题：多久做一次快照？我们在拍照的时候，还有项技术叫“连拍”，可以记录人或物连续多个瞬间的状态。那么，快照也适合“连拍”吗？</p><h2>可以每秒做一次快照吗？</h2><p>对于快照来说，所谓“连拍”就是指连续地做快照。这样一来，快照的间隔时间变得很短，即使某一时刻发生宕机了，因为上一时刻快照刚执行，丢失的数据也不会太多。但是，这其中的快照间隔时间就很关键了。</p><p>如下图所示，我们先在T0时刻做了一次快照，然后又在T0+t时刻做了一次快照，在这期间，数据块5和9被修改了。如果在t这段时间内，机器宕机了，那么，只能按照T0时刻的快照进行恢复。此时，数据块5和9的修改值因为没有快照记录，就无法恢复了。</p><p><img src="./05-内存快照：宕机后，Redis如何实现快速恢复？_files/711c873a61bafde79b25c110735289ab.jpg" alt="" title="快照机制下的数据丢失"></p><p>所以，要想尽可能恢复数据，t值就要尽可能小，t越小，就越像“连拍”。那么，t值可以小到什么程度呢，比如说是不是可以每秒做一次快照？毕竟，每次快照都是由bgsave子进程在后台执行，也不会阻塞主线程。</p><p>这种想法其实是错误的。虽然bgsave执行时不阻塞主线程，但是，<strong>如果频繁地执行全量快照，也会带来两方面的开销</strong>。</p><p>一方面，频繁将全量数据写入磁盘，会给磁盘带来很大压力，多个快照竞争有限的磁盘带宽，前一个快照还没有做完，后一个又开始做了，容易造成恶性循环。</p><p>另一方面，bgsave子进程需要通过fork操作从主线程创建出来。虽然，子进程在创建后不会再阻塞主线程，但是，fork这个创建过程本身会阻塞主线程，而且主线程的内存越大，阻塞时间越长。如果频繁fork出bgsave子进程，这就会频繁阻塞主线程了。那么，有什么其他好方法吗？</p><p>此时，我们可以做增量快照，所谓增量快照，就是指，做了一次全量快照后，后续的快照只对修改的数据进行快照记录，这样可以避免每次全量快照的开销。</p><p>在第一次做完全量快照后，T1和T2时刻如果再做快照，我们只需要将被修改的数据写入快照文件就行。但是，这么做的前提是，<strong>我们需要记住哪些数据被修改了</strong>。你可不要小瞧这个“记住”功能，它需要我们使用额外的元数据信息去记录哪些数据被修改了，这会带来额外的空间开销问题。如下图所示：</p><p><img src="./05-内存快照：宕机后，Redis如何实现快速恢复？_files/8a1d515269cd23595ee1813e8dff28a5.jpg" alt="" title="增量快照示意图"></p><p>如果我们对每一个键值对的修改，都做个记录，那么，如果有1万个被修改的键值对，我们就需要有1万条额外的记录。而且，有的时候，键值对非常小，比如只有32字节，而记录它被修改的元数据信息，可能就需要8字节，这样的画，为了“记住”修改，引入的额外空间开销比较大。这对于内存资源宝贵的Redis来说，有些得不偿失。</p><p>到这里，你可以发现，虽然跟AOF相比，快照的恢复速度快，但是，快照的频率不好把握，如果频率太低，两次快照间一旦宕机，就可能有比较多的数据丢失。如果频率太高，又会产生额外开销，那么，还有什么方法既能利用RDB的快速恢复，又能以较小的开销做到尽量少丢数据呢？</p><p>Redis 4.0中提出了一个<strong>混合使用AOF日志和内存快照</strong>的方法。简单来说，内存快照以一定的频率执行，在两次快照之间，使用AOF日志记录这期间的所有命令操作。</p><p>这样一来，快照不用很频繁地执行，这就避免了频繁fork对主线程的影响。而且，AOF日志也只用记录两次快照间的操作，也就是说，不需要记录所有操作了，因此，就不会出现文件过大的情况了，也可以避免重写开销。</p><p>如下图所示，T1和T2时刻的修改，用AOF日志记录，等到第二次做全量快照时，就可以清空AOF日志，因为此时的修改都已经记录到快照中了，恢复时就不再用日志了。</p><p><img src="./05-内存快照：宕机后，Redis如何实现快速恢复？_files/e4c5846616c19fe03dbf528437beb320.jpg" alt="" title="内存快照和AOF混合使用"></p><p>这个方法既能享受到RDB文件快速恢复的好处，又能享受到AOF只记录操作命令的简单优势，颇有点“鱼和熊掌可以兼得”的感觉，建议你在实践中用起来。</p><h2>小结</h2><p>这节课，我们学习了Redis用于避免数据丢失的内存快照方法。这个方法的优势在于，可以快速恢复数据库，也就是只需要把RDB文件直接读入内存，这就避免了AOF需要顺序、逐一重新执行操作命令带来的低效性能问题。</p><p>不过，内存快照也有它的局限性。它拍的是一张内存的“大合影”，不可避免地会耗时耗力。虽然，Redis设计了bgsave和写时复制方式，尽可能减少了内存快照对正常读写的影响，但是，频繁快照仍然是不太能接受的。而混合使用RDB和AOF，正好可以取两者之长，避两者之短，以较小的性能开销保证数据可靠性和性能。</p><p>最后，关于AOF和RDB的选择问题，我想再给你提三点建议：</p><ul>
+<li>数据不能丢失时，内存快照和AOF的混合使用是一个很好的选择；</li>
+<li>如果允许分钟级别的数据丢失，可以只使用RDB；</li>
+<li>如果只用AOF，优先使用everysec的配置选项，因为它在可靠性和性能之间取了一个平衡。</li>
+</ul><h2>每课一问</h2><p>我曾碰到过这么一个场景：我们使用一个2核CPU、4GB内存、500GB磁盘的云主机运行Redis，Redis数据库的数据量大小差不多是2GB，我们使用了RDB做持久化保证。当时Redis的运行负载以修改操作为主，写读比例差不多在8:2左右，也就是说，如果有100个请求，80个请求执行的是修改操作。你觉得，在这个场景下，用RDB做持久化有什么风险吗？你能帮着一起分析分析吗？</p><p>到这里，关于持久化我们就讲完了，这块儿内容是熟练掌握Redis的基础，建议你一定好好学习下这两节课。如果你觉得有收获，希望你能帮我分享给更多的人，帮助更多人解决持久化的问题。</p><h2>精选留言：</h2>
+        <ul>
+        
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            Kaito  2020-08-14 01:23:00
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            2æ&nbsp;¸CPUã€�4GBå†…å­˜ã€�500Gç£�ç›˜ï¼ŒRediså®�ä¾‹å�&nbsp;ç”¨2GBï¼Œå†™è¯»æ¯”ä¾‹ä¸º8:2ï¼Œæ­¤æ—¶å�šRDBæŒ�ä¹…åŒ–ï¼Œäº§ç”Ÿçš„é£�é™©ä¸»è¦�åœ¨äº� CPUèµ„æº� å’Œ å†…å­˜èµ„æº� è¿™2æ–¹é�¢ï¼š<br><br>	aã€�å†…å­˜èµ„æº�é£�é™©ï¼šRedis forkå­�è¿›ç¨‹å�šRDBæŒ�ä¹…åŒ–ï¼Œç”±äº�å†™çš„æ¯”ä¾‹ä¸º80%ï¼Œé‚£ä¹ˆåœ¨æŒ�ä¹…åŒ–è¿‡ç¨‹ä¸­ï¼Œâ€œå†™å®�å¤�åˆ¶â€�ä¼šé‡�æ–°åˆ†é…�æ•´ä¸ªå®�ä¾‹80%çš„å†…å­˜å‰¯æœ¬ï¼Œå¤§çº¦éœ€è¦�é‡�æ–°åˆ†é…�1.6GBå†…å­˜ç©ºé—´ï¼Œè¿™æ&nbsp;·æ•´ä¸ªç³»ç»Ÿçš„å†…å­˜ä½¿ç”¨æ�¥è¿‘é¥±å’Œï¼Œå¦‚æ�œæ­¤æ—¶çˆ¶è¿›ç¨‹å�ˆæœ‰å¤§é‡�æ–°keyå†™å…¥ï¼Œå¾ˆå¿«æœºå™¨å†…å­˜å°±ä¼šè¢«å�ƒå…‰ï¼Œå¦‚æ�œæœºå™¨å¼€å�¯äº†Swapæœºåˆ¶ï¼Œé‚£ä¹ˆRedisä¼šæœ‰ä¸€éƒ¨åˆ†æ•°æ�®è¢«æ�¢åˆ°ç£�ç›˜ä¸Šï¼Œå½“Redisè®¿é—®è¿™éƒ¨åˆ†åœ¨ç£�ç›˜ä¸Šçš„æ•°æ�®æ—¶ï¼Œæ€§èƒ½ä¼šæ€¥å‰§ä¸‹é™�ï¼Œå·²ç»�è¾¾ä¸�åˆ°é«˜æ€§èƒ½çš„æ&nbsp;‡å‡†ï¼ˆå�¯ä»¥ç�†è§£ä¸ºæ­¦åŠŸè¢«åºŸï¼‰ã€‚å¦‚æ�œæœºå™¨æ²¡æœ‰å¼€å�¯Swapï¼Œä¼šç›´æ�¥è§¦å�‘OOMï¼Œçˆ¶å­�è¿›ç¨‹ä¼šé�¢ä¸´è¢«ç³»ç»Ÿkillæ�‰çš„é£�é™©ã€‚<br><br>	bã€�CPUèµ„æº�é£�é™©ï¼šè™½ç„¶å­�è¿›ç¨‹åœ¨å�šRDBæŒ�ä¹…åŒ–ï¼Œä½†ç”Ÿæˆ�RDBå¿«ç…§è¿‡ç¨‹ä¼šæ¶ˆè€—å¤§é‡�çš„CPUèµ„æº�ï¼Œè™½ç„¶Rediså¤„ç�†å¤„ç�†è¯·æ±‚æ˜¯å�•çº¿ç¨‹çš„ï¼Œä½†Redis Serverè¿˜æœ‰å…¶ä»–çº¿ç¨‹åœ¨å��å�°å·¥ä½œï¼Œä¾‹å¦‚AOFæ¯�ç§’åˆ·ç›˜ã€�å¼‚æ­¥å…³é—­æ–‡ä»¶æ��è¿°ç¬¦è¿™äº›æ“�ä½œã€‚ç”±äº�æœºå™¨å�ªæœ‰2æ&nbsp;¸CPUï¼Œè¿™ä¹Ÿå°±æ„�å‘³ç�€çˆ¶è¿›ç¨‹å�&nbsp;ç”¨äº†è¶…è¿‡ä¸€å�Šçš„CPUèµ„æº�ï¼Œæ­¤æ—¶å­�è¿›ç¨‹å�šRDBæŒ�ä¹…åŒ–ï¼Œå�¯èƒ½ä¼šäº§ç”ŸCPUç«�äº‰ï¼Œå¯¼è‡´çš„ç»“æ�œå°±æ˜¯çˆ¶è¿›ç¨‹å¤„ç�†è¯·æ±‚å»¶è¿Ÿå¢�å¤§ï¼Œå­�è¿›ç¨‹ç”Ÿæˆ�RDBå¿«ç…§çš„æ—¶é—´ä¹Ÿä¼šå�˜é•¿ï¼Œæ•´ä¸ªRedis Serveræ€§èƒ½ä¸‹é™�ã€‚<br><br>	cã€�å�¦å¤–ï¼Œå�¯ä»¥å†�å»¶ä¼¸ä¸€ä¸‹ï¼Œè€�å¸ˆçš„é—®é¢˜æ²¡æœ‰æ��åˆ°Redisè¿›ç¨‹æ˜¯å�¦ç»‘å®šäº†CPUï¼Œå¦‚æ�œç»‘å®šäº†CPUï¼Œé‚£ä¹ˆå­�è¿›ç¨‹ä¼šç»§æ‰¿çˆ¶è¿›ç¨‹çš„CPUäº²å’Œæ€§å±�æ€§ï¼Œå­�è¿›ç¨‹å¿…ç„¶ä¼šä¸�çˆ¶è¿›ç¨‹äº‰å¤ºå�Œä¸€ä¸ªCPUèµ„æº�ï¼Œæ•´ä¸ªRedis Serverçš„æ€§èƒ½å¿…ç„¶ä¼šå�—åˆ°å½±å“�ï¼�æ‰€ä»¥å¦‚æ�œRediséœ€è¦�å¼€å�¯å®šæ—¶RDBå’ŒAOFé‡�å†™ï¼Œè¿›ç¨‹ä¸€å®šä¸�è¦�ç»‘å®šCPUã€‚ [48赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            Darren  2020-08-14 09:26:10
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            Kaitoçš„å›�ç­”ä¸ºå•¥è€�è®©æˆ‘è§‰å¾—è‡ªå·±é‚£ä¹ˆè�œå‘¢í&nbsp;½í¸‚<br><br>æˆ‘ç¨�å¾®è¡¥å……ä¸‹è€�å¸ˆå¯¹äº� â€�æ··å�ˆä½¿ç”¨ AOF æ—¥å¿—å’Œå†…å­˜å¿«ç…§â€œè¿™å�—çš„ä¸œè¥¿ï¼š<br>åœ¨redis4.0ä»¥å‰�ï¼Œredis AOFçš„é‡�å†™æœºåˆ¶æ˜¯æŒ‡ä»¤æ•´å�ˆï¼ˆè€�å¸ˆä¸Šä¸€èŠ‚è¯¾å·²ç»�è¯´è¿‡ï¼‰ï¼Œä½†æ˜¯åœ¨redis4.0ä»¥å��ï¼Œredisçš„ AOF é‡�å†™çš„æ—¶å€™å°±ç›´æ�¥æŠŠ RDB çš„å†…å®¹å†™åˆ° AOF æ–‡ä»¶å¼€å¤´ï¼Œå°†å¢�é‡�çš„ä»¥æŒ‡ä»¤çš„æ–¹å¼�Appendåˆ°AOFï¼Œè¿™æ&nbsp;·å�šçš„å¥½å¤„æ˜¯å�¯ä»¥ç»“å�ˆ RDB å’Œ AOF çš„ä¼˜ç‚¹, å¿«é€ŸåŠ&nbsp;è½½å�Œæ—¶é�¿å…�ä¸¢å¤±è¿‡å¤šçš„æ•°æ�®ã€‚å½“ç„¶ç¼ºç‚¹ä¹Ÿæ˜¯æœ‰çš„ï¼Œ AOF é‡Œé�¢çš„ RDB éƒ¨åˆ†å°±æ˜¯å�‹ç¼©æ&nbsp;¼å¼�ä¸�å†�æ˜¯ AOF æ&nbsp;¼å¼�ï¼Œå�¯è¯»æ€§è¾ƒå·®ã€‚Redisæœ�åŠ¡åœ¨è¯»å�–AOFæ–‡ä»¶çš„æ€�ä¹ˆåˆ¤æ–­æ˜¯å�¦AOFæ–‡ä»¶ä¸­æ˜¯å�¦åŒ…å�«RDBï¼Œå®ƒä¼šæŸ¥çœ‹æ˜¯å�¦ä»¥ REDIS å¼€å¤´ï¼›äººä¸ºçš„çœ‹çš„è¯�ï¼Œä¹Ÿå�¯ä»¥çœ‹åˆ°ä»¥REDISå¼€å¤´ï¼ŒRDBçš„æ–‡ä»¶ä¹Ÿæ‰“å¼€ä¹Ÿæ˜¯ä¹±ç&nbsp;�ã€‚<br><br>å�¯ä»¥é€šè¿‡aof-use-rdb-preamble é…�ç½®å�»è®¾ç½®æ”¹åŠŸèƒ½ã€‚<br><br># When rewriting the AOF file, Redis is able to use an RDB preamble in the<br># AOF file for faster rewrites and recoveries. When this option is turned<br># on the rewritten AOF file is composed of two different stanzas:<br>#<br>#   [RDB file][AOF tail]<br>#<br># When loading Redis recognizes that the AOF file starts with the "REDIS"<br># string and loads the prefixed RDB file, and continues loading the AOF<br># tail.<br>aof-use-rdb-preamble yes<br> [5赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            test  2020-08-14 10:20:55
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            1.å†™å¤ªå¤šï¼ŒCOWéœ€è¦�å¤�åˆ¶çš„ä¸œè¥¿å¤ªå¤šï¼Œå†…å­˜å�&nbsp;ç”¨é—®é¢˜ï¼›<br>2.CPUå¤ªå°‘ï¼Œrediså��å�°è¿˜æœ‰å¾ˆå¤šçº¿ç¨‹åœ¨å��å�°å·¥ä½œï¼Œä¼šäº§ç”ŸCPUç«�äº‰ã€‚ [1赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            æ‰©æ•£æ€§ç™¾ä¸‡å’¸é�¢åŒ…  2020-08-14 16:43:14
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            å¾ˆå¥‡æ€ªï¼Œå¯¹äº�RDBå’ŒAOFæ··å�ˆæ�­é…�çš„ç­–ç•¥ï¼Œä¸ºä»€ä¹ˆä¸�æŠŠAOFåº”ç”¨äº�RDBç”Ÿæˆ�å¢�é‡�å¿«ç…§å‘¢ï¼Ÿè€Œé��è¦�å†�æ¬¡ç”Ÿæˆ�å…¨é‡�å¿«ç…§ï¼Ÿ 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            Geek_cc6b96  2020-08-14 14:43:43
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            RDBå’ŒAOF ä¸�å°±æ˜¯æµ�åª’ä½“ç¼–ç&nbsp;�ä¸­çš„ Iå¸§ã€�På¸§ æ¦‚å¿µå˜› 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            Spring4J  2020-08-14 11:13:12
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            ç”±äº�ä¿®æ”¹æ“�ä½œå�&nbsp;å¤§éƒ¨åˆ†æ¯”ä¾‹ï¼Œä¸ºäº†å°½å�¯èƒ½ä¿�è¯�å®•æœºæ—¶æ•°æ�®çš„å®Œæ•´æ€§ï¼Œå¿«ç…§çš„é—´éš”å°±ä¸�èƒ½å¤ªé•¿ï¼Œè€Œé—´éš”å¤ªçŸ­å�ˆä¼šå¸¦æ�¥å¾ˆå¤šçš„æ€§èƒ½å¼€é”€ï¼Œæ‰€ä»¥å¯¹äº�è¿™ç§�ç‰¹ç‚¹çš„æ•°æ�®ï¼Œä¸�é€‚å�ˆä½¿ç”¨RDBçš„æŒ�ä¹…åŒ–æ–¹å¼� 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            ç­‰é£�æ�¥ğŸ�§  2020-08-14 10:38:06
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            è€�å¸ˆæœ‰ä¸ªç–‘é—®å¸Œæœ›æ‚¨èƒ½è§£ç­”ä¸€ä¸‹ã€‚<br>â€�å¦‚æ�œä¸»çº¿ç¨‹è¦�ä¿®æ”¹ä¸€å�—æ•°æ�®ï¼ˆä¾‹å¦‚å›¾ä¸­çš„é”®å€¼å¯¹ Cï¼‰ï¼Œé‚£ä¹ˆï¼Œè¿™å�—æ•°æ�®å°±ä¼šè¢«å¤�åˆ¶ä¸€ä»½ï¼Œç”Ÿæˆ�è¯¥æ•°æ�®çš„å‰¯æœ¬ã€‚ç„¶å��ï¼Œbgsave å­�è¿›ç¨‹ä¼šæŠŠè¿™ä¸ªå‰¯æœ¬æ•°æ�®å†™å…¥ RDB æ–‡ä»¶ï¼Œè€Œåœ¨è¿™ä¸ªè¿‡ç¨‹ä¸­ï¼Œä¸»çº¿ç¨‹ä»�ç„¶å�¯ä»¥ç›´æ�¥ä¿®æ”¹å�Ÿæ�¥çš„æ•°æ�®â€�<br>è¿™é‡Œé”®å€¼å¯¹Cè¢«å¤�åˆ¶ï¼Œæ˜¯ä¸»çº¿ç¨‹æ�¥å�šå�—ï¼Ÿ<br>å¦‚æ�œæ˜¯ä¸»çº¿ç¨‹æ�¥å�šï¼Œå®ƒæ˜¯æ€�ä¹ˆæ„ŸçŸ¥åˆ°é”®å€¼å¯¹Cä»€ä¹ˆæ—¶å€™éœ€è¦�å¤�åˆ¶çš„ï¼Ÿredisæº�ç&nbsp;�å±‚é�¢å�šäº†åˆ¤æ–­å�—ï¼Ÿæœ‰å­�è¿›ç¨‹çš„æ—¶å€™ï¼Œå¦‚æ�œæ˜¯å†™æ“�ä½œå°±å¤�åˆ¶<br>å­�è¿›ç¨‹å�ˆæ˜¯æ€�ä¹ˆçŸ¥é�“ä»�å“ªé‡ŒçŸ¥é�“é”®å€¼å¯¹Cçš„å‰¯æœ¬çš„åœ°å�€çš„ 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            é‚£æ—¶åˆ»  2020-08-14 09:34:20
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            è¯·é—®è€�å¸ˆï¼Œåœ¨æ··å�ˆä½¿ç”¨aofå’Œå†…å­˜å¿«ç…§çš„æ–¹æ³•æ—¶å€™ã€�æ��åˆ°åœ¨å�šå…¨é‡�å¿«ç…§çš„æ—¶å€™ï¼Œæ¸…ç©ºAOFæ—¥å¿—ã€‚æ˜¯åœ¨å…¨é‡�å¿«ç…§å‰�æ¸…ç©ºAOFæ—¥å¿—è¿˜æ˜¯å…¨é‡�å¿«ç…§å��æ¸…ç©ºAOFæ—¥å¿—å‘¢ï¼Ÿ<br>ç²—ç•¥çš„æƒ³ï¼Œåœ¨å�šå…¨é‡�å¿«ç…§æ—¶å€™äº§ç”Ÿæ–°çš„AOFæ—¥å¿—ï¼Œå¦‚æ�œæ¸…ç©ºAOFæ—¥å¿—çš„è¯�ï¼Œä¼šæŠŠæ–°çš„æ—¥å¿—æ¸…æ�‰.... 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            è„±ç¼°çš„é‡�é©¬__  2020-08-14 09:17:36
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            è€�å¸ˆï¼Œä½&nbsp;è¯´çš„ä¸»çº¿ç¨‹forkå­�çº¿ç¨‹ä¹Ÿä¼šé˜»å¡�ï¼Œè€Œä¸”ä¸»çº¿ç¨‹å†…å­˜è¶Šå¤§é˜»å¡�è¶Šä¹…ã€‚è€�å¸ˆå�¯ä»¥å†�æ·±å…¥è®²è§£ä¸€ä¸‹forkå­�çº¿ç¨‹çš„è¿‡ç¨‹å˜›ï¼Ÿ 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            ç§‹æ¢µ  2020-08-14 08:50:28
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            è€�å¸ˆæˆ‘æœ‰å‡&nbsp;ä¸ªé—®é¢˜æƒ³é—®ï¼š<br>1ã€�åœ¨å�šå¿«ç…§æ—¶ï¼Œç¬¬ä¸€æ¬¡ä½¿ç”¨çš„æ˜¯å…¨é‡�å¿«ç…§ï¼Œä¹‹å��ä½¿ç”¨çš„éƒ½æ˜¯å¢�é‡�å¿«ç…§ï¼Œé‚£ä¹ˆè¿™ä¸ªæ˜¯Rediså�šå¿«ç…§æ—¶é»˜è®¤çš„æœºåˆ¶è¿˜æ˜¯éœ€è¦�æˆ‘ä»¬ä¸»åŠ¨é…�ç½®ï¼Ÿ<br>2ã€�æ—¢ç„¶saveå‘½ä»¤ä¼šä»¤ä¸»çº¿ç¨‹é˜»å¡�ï¼Œé‚£ä¸ºä»€ä¹ˆRedisè¿˜è¦�è®¾ç½®è¿™ä¸€ä¸ªé€‰é¡¹ï¼Ÿè¿™ä¸ªè®¾ç½®æ˜¯æœ‰ä»€ä¹ˆå…¶ä»–çš„ä¼˜ç‚¹å’Œä½¿ç”¨åœºæ™¯å�—ï¼Ÿ<br>3ã€�åœ¨å�šæŒ�ä¹…åŒ–æ—¶è‹¥å�Œæ—¶å¼€å�¯äº†AOFå’ŒRDBï¼ˆä¸�æ˜¯æ··å�ˆæ¨¡å¼�ï¼‰ï¼Œè¿™æ&nbsp;·å�šçš„è¯�æ˜¯å�ˆé€‚çš„æŒ�ä¹…åŒ–é€‰æ‹©å�—ï¼Ÿä¼šå¯¹Redisè¿›ç¨‹äº§ç”Ÿä»€ä¹ˆå½±å“�ï¼Ÿ 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            æ—&nbsp;å��å��ä¸‰  2020-08-14 08:07:10
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            ç®€å�•æ�¥è¯´ï¼Œbgsave å­�è¿›ç¨‹æ˜¯ç”±ä¸»çº¿ç¨‹ fork ç”Ÿæˆ�çš„ï¼Œå�¯ä»¥å…±äº«ä¸»çº¿ç¨‹çš„æ‰€æœ‰å†…å­˜æ•°æ�®ã€‚bgsave å­�è¿›ç¨‹è¿�è¡Œå��ï¼Œå¼€å§‹è¯»å�–ä¸»çº¿ç¨‹çš„å†…å­˜æ•°æ�®ï¼Œå¹¶æŠŠå®ƒä»¬å†™å…¥ RDB æ–‡ä»¶ã€‚<br><br><br>è€�å¸ˆï¼Œè¿™é‡Œæ˜¯ä¸»çº¿ç¨‹è¿˜æ˜¯ä¸»è¿›ç¨‹ï¼Ÿ 
+        </div>
+        <br>
+<div>
+    <div style="color:#888;font-size:15.25px;font-weight:400;        line-height:1.2">ä½œè€…å›�å¤�2020-08-14 08:43:37</div>
+    <div style="color:#353535;font-weight:400;white-space:normal;        word-break:break-all;line-height:1.6">å›&nbsp;ä¸ºRedisæ˜¯å�•çº¿ç¨‹æ¨¡å�‹ï¼Œæ‰€ä»¥Redisä¸»è¿›ç¨‹ä¹Ÿå°±æ˜¯ä¸€ä¸ªçº¿ç¨‹ï¼Œæˆ‘ä¸€èˆ¬ä¹Ÿç§°ä¸ºä¸»çº¿ç¨‹äº†ã€‚</div>
+</div>
+            
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            æ¼«æ­¥oo0äº‘ç«¯  2020-08-14 07:06:06
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            æˆ‘æƒ³æ��ä¸€ä¸ªå‚»é—®é¢˜ï¼Œæˆ‘ä½œä¸ºåˆ�å­¦è€…æƒ³é—®ï¼Œå¦‚æ�œredisæœ�åŠ¡æŒ‚äº†ï¼Œå¤‡ä»½æœ‰ä»€ä¹ˆç”¨ï¼Ÿèƒ½æ�¢å¤�çš„å‰�æ��ä¸�æ˜¯æœ�åŠ¡è¿˜å­˜æ´»å�—ï¼Ÿéš¾é�“æœ�åŠ¡æŒ‚äº†ä¼šè‡ªåŠ¨æ‹‰èµ·æœ�åŠ¡ï¼Ÿè‡ªåŠ¨è¿˜å�Ÿå�—ï¼Ÿ 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            learn more  2020-08-14 03:51:23
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            å›&nbsp;ä¸ºredisæ˜¯å�•çº¿ç¨‹çš„ï¼Œæ‰€ä»¥å�Œæ&nbsp;¸å¤Ÿç”¨ï¼Œä¸€ä¸ªæ‰§è¡Œå‘½ä»¤ï¼Œä¸€ä¸ªç”¨æ�¥bgsaveï¼Œä¸�ä¼šé˜»å¡�ä¸»çº¿ç¨‹ï¼›å†…å­˜4gï¼Œå®�é™…å�&nbsp;ç”¨2gå·¦å�³ï¼Œå›&nbsp;æ­¤å†…å­˜æ˜¯ä¸€ä¸ªä¸´ç•Œç‚¹ï¼Œæ¯”å¦‚ fork å­�è¿›åŸ�çš„æ—¶å€™å¾ˆæœ‰å�¯èƒ½è€—å°½æ‰€æœ‰çš„å†…å­˜ï¼ŒåŠ&nbsp;ä¸Šè¯»å†™æ¯”ä¾‹æ˜¯å†™å¤šè¯»å°‘ï¼Œé‚£ä¹ˆæ&nbsp;¹æ�® save çš„é…�ç½®å¾ˆæœ‰å�¯èƒ½å‡ºç�°é¢‘ç¹�çš„ bgsaveï¼Œæ­¤æ—¶å†…å­˜å°†æˆ�ä¸ºç“¶é¢ˆï¼›ç£�ç›˜ç©ºé—´è¶³å¤Ÿï¼Œæ‰€ä»¥ä¸�ä¼šå½±å“�ã€‚<br>ä¸�çŸ¥é�“æœ‰æ²¡æœ‰åˆ†æ��æ­£ç¡®ğŸ˜‚ 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            å°�å®‡å­�2B  2020-08-14 00:28:53
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            å�šRDBæœŸé—´æ˜¯å†™æ—¶å¤�åˆ¶çš„ 2GBçš„æ•°æ�® 80%éƒ½æ˜¯å†™è¯·æ±‚ ä¹Ÿå°±æ˜¯å¤§æ¦‚è¦�å¤�åˆ¶å‡ºæ�¥1.6GBæ•°æ�®ï¼ŒåŠ&nbsp;ä¸Šæœ¬èº«æ•°æ�®2GB ï¼Œå·²ç»�è¾¾åˆ°3.6GBï¼Œå�»æ�‰æ“�ä½œç³»ç»Ÿæœ¬èº«çš„å†…å­˜å�&nbsp;ç”¨ æœºå™¨æ‰€å‰©å†…å­˜å·²ç»�ä¸�å¤šäº† å®¹æ˜“å�‘ç”ŸOOM 
+        </div>
+        
+    </div>
+</li>
+            </ul>
+</div>
+
+</body></html>

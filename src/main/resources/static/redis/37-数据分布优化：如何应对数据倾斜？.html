@@ -1,0 +1,1000 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!-- saved from url=(0179)http://118.25.23.115/redis/37-%E6%95%B0%E6%8D%AE%E5%88%86%E5%B8%83%E4%BC%98%E5%8C%96%EF%BC%9A%E5%A6%82%E4%BD%95%E5%BA%94%E5%AF%B9%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C%EF%BC%9F.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!--<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>-->
+    <title>37-数据分布优化：如何应对数据倾斜？</title>
+    
+        <style>
+        html {
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-rendering: optimizelegibility;
+            font-family: Helvetica Neue, PingFang SC, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif
+        }
+
+        html.borderbox *,
+        html.borderbox :after,
+        html.borderbox :before {
+            box-sizing: border-box
+        }
+
+        article,
+        aside,
+        blockquote,
+        body,
+        button,
+        code,
+        dd,
+        details,
+        dl,
+        dt,
+        fieldset,
+        figcaption,
+        figure,
+        footer,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        header,
+        hr,
+        input,
+        legend,
+        li,
+        menu,
+        nav,
+        ol,
+        p,
+        pre,
+        section,
+        td,
+        textarea,
+        th,
+        ul {
+            margin: 0;
+            padding: 0
+        }
+
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        menu,
+        nav,
+        section {
+            display: block
+        }
+
+        audio,
+        canvas,
+        video {
+            display: inline-block
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, Helvetica, sans-serif
+        }
+
+        button::-moz-focus-inner,
+        input::-moz-focus-inner {
+            padding: 0;
+            border: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        fieldset,
+        img {
+            border: 0
+        }
+
+        blockquote {
+            position: relative;
+            color: #999;
+            font-weight: 400;
+            border-left: 1px solid #1abc9c;
+            padding-left: 1em;
+            margin: 1em 3em 1em 2em
+        }
+
+        @media only screen and (max-width: 640px) {
+            blockquote {
+                margin: 1em 0
+            }
+        }
+
+        abbr,
+        acronym {
+            border-bottom: 1px dotted;
+            font-variant: normal
+        }
+
+        abbr {
+            cursor: help
+        }
+
+        del {
+            text-decoration: line-through
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 400
+        }
+
+        ol,
+        ul {
+            list-style: none
+        }
+
+        caption,
+        th {
+            text-align: left
+        }
+
+        q:after,
+        q:before {
+            content: ""
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        :root sub,
+        :root sup {
+            vertical-align: baseline
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        a {
+            color: #1abc9c
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .typo a {
+            border-bottom: 1px solid #1abc9c
+        }
+
+        .typo a:hover {
+            border-bottom-color: #555;
+            color: #555
+        }
+
+        .typo a:hover,
+        a,
+        ins {
+            text-decoration: none
+        }
+
+        .typo-u,
+        u {
+            text-decoration: underline
+        }
+
+        mark {
+            background: #fffdd1;
+            border-bottom: 1px solid #ffedce;
+            padding: 2px;
+            margin: 0 5px
+        }
+
+        code,
+        pre,
+        pre tt {
+            font-family: Courier, Courier New, monospace
+        }
+
+        pre {
+            background: hsla(0, 0%, 97%, .7);
+            border: 1px solid #ddd;
+            padding: 1em 1.5em;
+            display: block;
+            -webkit-overflow-scrolling: touch
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid #cfcfcf;
+            margin-bottom: .8em;
+            height: 10px
+        }
+
+        .typo-small,
+        figcaption,
+        small {
+            font-size: .9em;
+            color: #888
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #000
+        }
+
+        [draggable] {
+            cursor: move
+        }
+
+        .clearfix:after,
+        .clearfix:before {
+            content: "";
+            display: table
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .clearfix {
+            zoom: 1
+        }
+
+        .textwrap,
+        .textwrap td,
+        .textwrap th {
+            word-wrap: break-word;
+            word-break: break-all
+        }
+
+        .textwrap-table {
+            table-layout: fixed
+        }
+
+        .serif {
+            font-family: Palatino, Optima, Georgia, serif
+        }
+
+        .typo-dl,
+        .typo-form,
+        .typo-hr,
+        .typo-ol,
+        .typo-p,
+        .typo-pre,
+        .typo-table,
+        .typo-ul,
+        .typo dl,
+        .typo form,
+        .typo hr,
+        .typo ol,
+        .typo p,
+        .typo pre,
+        .typo table,
+        .typo ul,
+        blockquote {
+            margin-bottom: 1rem
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: PingFang SC, Helvetica Neue, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+            color: #000;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo-h2,
+        .typo-h3,
+        .typo-h4,
+        .typo-h5,
+        .typo-h6,
+        .typo h1,
+        .typo h2,
+        .typo h3,
+        .typo h4,
+        .typo h5,
+        .typo h6 {
+            margin-top: 1.2em;
+            margin-bottom: .6em;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo h1 {
+            font-size: 2em
+        }
+
+        .typo-h2,
+        .typo h2 {
+            font-size: 1.8em
+        }
+
+        .typo-h3,
+        .typo h3 {
+            font-size: 1.6em
+        }
+
+        .typo-h4,
+        .typo h4 {
+            font-size: 1.4em
+        }
+
+        .typo-h5,
+        .typo-h6,
+        .typo h5,
+        .typo h6 {
+            font-size: 1.2em
+        }
+
+        .typo-ul,
+        .typo ul {
+            margin-left: 1.3em;
+            list-style: disc
+        }
+
+        .typo-ol,
+        .typo ol {
+            list-style: decimal;
+            margin-left: 1.9em
+        }
+
+        .typo-ol ol,
+        .typo-ol ul,
+        .typo-ul ol,
+        .typo-ul ul,
+        .typo li ol,
+        .typo li ul {
+            margin-bottom: .8em;
+            margin-left: 2em
+        }
+
+        .typo-ol ul,
+        .typo-ul ul,
+        .typo li ul {
+            list-style: circle
+        }
+
+        .typo-table td,
+        .typo-table th,
+        .typo table caption,
+        .typo table td,
+        .typo table th {
+            border: 1px solid #ddd;
+            padding: .5em 1em;
+            color: #666
+        }
+
+        .typo-table th,
+        .typo table th {
+            background: #fbfbfb
+        }
+
+        .typo-table thead th,
+        .typo table thead th {
+            background: hsla(0, 0%, 95%, .7)
+        }
+
+        .typo table caption {
+            border-bottom: none
+        }
+
+        .typo-input,
+        .typo-textarea {
+            -webkit-appearance: none;
+            border-radius: 0
+        }
+
+        .typo-em,
+        .typo em,
+        caption,
+        legend {
+            color: #000;
+            font-weight: inherit
+        }
+
+        .typo-em {
+            position: relative
+        }
+
+        .typo-em:after {
+            position: absolute;
+            top: .65em;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            content: "\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB"
+        }
+
+        .typo img {
+            max-width: 100%
+        }
+
+        .common-content {
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.75rem;
+            white-space: normal;
+            word-break: normal;
+            font-size: 1rem
+        }
+
+        .common-content img {
+            display: block;
+            max-width: 100%;
+            background-color: #eee
+        }
+
+        .common-content audio,
+        .common-content video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        .common-content center,
+        .common-content font {
+            margin-top: 1rem;
+            display: inline-block
+        }
+
+        .common-content center {
+            width: 100%
+        }
+
+        .common-content pre {
+            margin-top: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+            position: relative;
+            overflow: hidden
+        }
+
+        .common-content pre code {
+            font-size: .8rem;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            overflow-x: auto
+        }
+
+        .common-content hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        .common-content b,
+        .common-content h1,
+        .common-content h2,
+        .common-content h3,
+        .common-content h4,
+        .common-content h5,
+        .common-content strong {
+            font-weight: 700
+        }
+
+        .common-content h1,
+        .common-content h2 {
+            font-size: 1.125rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content h3,
+        .common-content h4,
+        .common-content h5 {
+            font-size: 1rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: .15rem
+        }
+
+        .common-content .orange {
+            color: #ff5a05
+        }
+
+        .common-content .reference {
+            font-size: 1rem;
+            color: #888
+        }
+
+        .custom-rich-content h1 {
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 15.25px;
+            border-bottom: 1px solid #eee;
+            line-height: 2.8
+        }
+
+        .custom-rich-content li,
+        .custom-rich-content p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6
+        }
+
+        table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        table.hljs-ln,
+        table.hljs-ln tbody,
+        table.hljs-ln td,
+        table.hljs-ln tr {
+            box-sizing: border-box
+        }
+
+        table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.hljs-ln td.hljs-ln-code,
+        table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            font-size: 12px;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            color: #24292e;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+        video::-webkit-media-controls {
+            overflow: hidden !important
+        }
+
+        video::-webkit-media-controls-enclosure {
+            width: calc(100% + 32px);
+            margin-left: auto
+        }
+
+        ._29HP61GA_0 {
+            max-width:800px;
+            margin:0 auto;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.76;
+            white-space: normal;
+            word-break: normal;
+            font-size: 17px;
+            -webkit-transition: background-color .3s ease;
+            transition: background-color .3s ease
+        }
+
+        ._29HP61GA_0 .MathJax_Display {
+            overflow: auto
+        }
+
+        ._29HP61GA_0 .poster {
+            position: fixed;
+            left: -10000px;
+            top: -10000px;
+            overflow: hidden;
+            padding: 1rem;
+            background: #ececec
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy {
+            font-size: 13px;
+            color: #888;
+            position: absolute;
+            right: 1em;
+            top: .5em;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy .iconfont {
+            font-size: 12px;
+            margin-right: .2em
+        }
+
+        ._29HP61GA_0 a {
+            color: #fa8919;
+            border-bottom: 1px solid #fa8919
+        }
+
+        ._29HP61GA_0 img {
+            display: block;
+            max-width: 100%;
+            position: relative;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            background-color: #eee;
+            vertical-align: top;
+            border-radius: 0
+        }
+
+        ._29HP61GA_0 audio,
+        ._29HP61GA_0 video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        ._29HP61GA_0 pre {
+            margin-top: 16px;
+            padding: 34px 0 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 6px;
+            background: rgba(246, 247, 251, .749);
+            border: 0
+        }
+
+        ._29HP61GA_0 pre code {
+            font-size: 12px;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-left: 16px;
+            margin-right: 16px;
+            overflow-x: scroll
+        }
+
+        ._29HP61GA_0 pre code:after {
+            content: "";
+            height: 30px;
+            width: 100%;
+            display: block
+        }
+
+        ._29HP61GA_0 hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        ._29HP61GA_0 h1,
+        ._29HP61GA_0 h2,
+        ._29HP61GA_0 h3,
+        ._29HP61GA_0 h4,
+        ._29HP61GA_0 h5 {
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 b,
+        ._29HP61GA_0 strong {
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 h1 {
+            font-size: 21px
+        }
+
+        ._29HP61GA_0 h2 {
+            font-size: 20px
+        }
+
+        ._29HP61GA_0 h3 {
+            font-size: 19px
+        }
+
+        ._29HP61GA_0 h4 {
+            font-size: 18px
+        }
+
+        ._29HP61GA_0 h5 {
+            font-size: 17px
+        }
+
+        ._29HP61GA_0 center,
+        ._29HP61GA_0 p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: 0;
+            margin-bottom: 30px;
+            word-break: break-word
+        }
+
+        ._29HP61GA_0 center {
+            text-align: center
+        }
+
+        ._29HP61GA_0 blockquote {
+            margin-top: 0;
+            margin-bottom: 34px;
+            border-left: 3px solid #e8e8e8;
+            padding-left: 17px;
+            color: #353535
+        }
+
+        ._29HP61GA_0 blockquote p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol,
+        ._29HP61GA_0 ul {
+            margin-bottom: 30px
+        }
+
+        ._29HP61GA_0 ol p,
+        ._29HP61GA_0 ul p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol {
+            list-style: decimal;
+            margin-left: 20px
+        }
+
+        ._29HP61GA_0 ul li {
+            padding-left: 17px;
+            position: relative;
+            margin-bottom: 10px
+        }
+
+        ._29HP61GA_0 ul li:after {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: #353535;
+            position: absolute;
+            top: 10px;
+            left: 0
+        }
+
+        ._29HP61GA_0 .orange {
+            color: #fa8919
+        }
+
+        ._29HP61GA_0 .reference {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-right {
+            text-align: right
+        }
+
+        ._29HP61GA_0 .m-center {
+            text-align: center;
+            display: block
+        }
+
+        ._29HP61GA_0 .m-gray {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-small {
+            font-size: 15px
+        }
+
+        ._29HP61GA_0 table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        ._29HP61GA_0 table.hljs-ln,
+        ._29HP61GA_0 table.hljs-ln tbody,
+        ._29HP61GA_0 table.hljs-ln td,
+        ._29HP61GA_0 table.hljs-ln tr {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        ._29HP61GA_0 table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            font-size: 12px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code,
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            font-size: 13px;
+            color: #666;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+    </style>
+</head>
+<body>
+<div class="_29HP61GA_0">
+<h1>37-数据分布优化：如何应对数据倾斜？</h1>
+<p>你好，我是蒋德钧。</p><p>在切片集群中，数据会按照一定的分布规则分散到不同的实例上保存。比如，在使用Redis Cluster或Codis时，数据都会先按照CRC算法的计算值对Slot（逻辑槽）取模，同时，所有的Slot又会由运维管理员分配到不同的实例上。这样，数据就被保存到相应的实例上了。</p><p>虽然这种方法实现起来比较简单，但是很容易导致一个问题：数据倾斜。</p><p>数据倾斜有两类。</p><ul>
+<li><strong>数据量倾斜</strong>：在某些情况下，实例上的数据分布不均衡，某个实例上的数据特别多。</li>
+<li><strong>数据访问倾斜</strong>：虽然每个集群实例上的数据量相差不大，但是某个实例上的数据是热点数据，被访问得非常频繁。</li>
+</ul><p>如果发生了数据倾斜，那么保存了大量数据，或者是保存了热点数据的实例的处理压力就会增大，速度变慢，甚至还可能会引起这个实例的内存资源耗尽，从而崩溃。这是我们在应用切片集群时要避免的。</p><p>今天这节课，我就来和你聊聊，这两种数据倾斜是怎么发生的，我们又该怎么应对。</p><h2>数据量倾斜的成因和应对方法</h2><p>首先，我们来看数据量倾斜的成因和应对方案。</p><p>当数据量倾斜发生时，数据在切片集群的多个实例上分布不均衡，大量数据集中到了一个或几个实例上，如下图所示：</p><p><img src="./37-数据分布优化：如何应对数据倾斜？_files/2cb89b2d1b319fb43a5d1b94d7929685.jpg" alt=""></p><p>那么，数据量倾斜是怎么产生的呢？这主要有三个原因，分别是某个实例上保存了bigkey、Slot分配不均衡以及Hash Tag。接下来，我们就一个一个来分析，同时我还会给你讲解相应的解决方案。</p><!-- [[[read_end]]] --><h4>bigkey导致倾斜</h4><p>第一个原因是，某个实例上正好保存了bigkey。bigkey的value值很大（String类型），或者是bigkey保存了大量集合元素（集合类型），会导致这个实例的数据量增加，内存资源消耗也相应增加。</p><p>而且，bigkey的操作一般都会造成实例IO线程阻塞，如果bigkey的访问量比较大，就会影响到这个实例上的其它请求被处理的速度。</p><p>其实，bigkey已经是我们课程中反复提到的一个关键点了。为了避免bigkey造成的数据倾斜，一个根本的应对方法是，<strong>我们在业务层生成数据时，要尽量避免把过多的数据保存在同一个键值对中</strong>。</p><p>此外，<strong>如果bigkey正好是集合类型，我们还有一个方法，就是把bigkey拆分成很多个小的集合类型数据，分散保存在不同的实例上</strong>。</p><p>我给你举个例子。假设Hash类型集合user:info保存了100万个用户的信息，是一个bigkey。那么，我们就可以按照用户ID的范围，把这个集合拆分成10个小集合，每个小集合只保存10万个用户的信息（例如小集合1保存的是ID从1到10万的用户信息，小集合2保存的是ID从10万零1到20万的用户）。这样一来，我们就可以把一个bigkey化整为零、分散保存了，避免了bigkey给单个切片实例带来的访问压力。</p><p>需要注意的是，当bigkey访问量较大时，也会造成数据访问倾斜，我一会儿再给你讲具体怎么应对。</p><p>接下来，我们再来看导致数据量倾斜的第二个原因：Slot分配不均衡。</p><h4>Slot分配不均衡导致倾斜</h4><p>如果集群运维人员没有均衡地分配Slot，就会有大量的数据被分配到同一个Slot中，而同一个Slot只会在一个实例上分布，这就会导致，大量数据被集中到一个实例上，造成数据倾斜。</p><p>我以Redis Cluster为例，来介绍下Slot分配不均衡的情况。</p><p>Redis Cluster一共有16384个Slot，假设集群一共有5个实例，其中，实例1的硬件配置较高，运维人员在给实例分配Slot时，就可能会给实例1多分配些Slot，把实例1的资源充分利用起来。</p><p>但是，我们其实并不知道数据和Slot的对应关系，这种做法就可能会导致大量数据正好被映射到实例1上的Slot，造成数据倾斜，给实例1带来访问压力。</p><p>为了应对这个问题，我们可以通过运维规范，在分配之前，我们就要避免把过多的Slot分配到同一个实例。如果是已经分配好Slot的集群，我们可以先查看Slot和实例的具体分配关系，从而判断是否有过多的Slot集中到了同一个实例。如果有的话，就将部分Slot迁移到其它实例，从而避免数据倾斜。</p><p>不同集群上查看Slot分配情况的方式不同：如果是Redis Cluster，就用CLUSTER SLOTS命令；如果是Codis，就可以在codis dashboard上查看。</p><p>比如说，我们执行CLUSTER SLOTS命令查看Slot分配情况。命令返回结果显示，Slot 0 到Slot 4095被分配到了实例192.168.10.3上，而Slot 12288到Slot 16383被分配到了实例192.168.10.5上。</p><pre><code>127.0.0.1:6379&gt; cluster slots
+1) 1) (integer) 0
+   2) (integer) 4095
+   3) 1) "192.168.10.3"
+      2) (integer) 6379
+2) 1) (integer) 12288
+   2) (integer) 16383
+   3) 1) "192.168.10.5"
+      2) (integer) 6379
+</code></pre><p>如果某一个实例上有太多的Slot，我们就可以使用迁移命令把这些Slot迁移到其它实例上。在Redis Cluster中，我们可以使用3个命令完成Slot迁移。</p><ol>
+<li>CLUSTER SETSLOT：使用不同的选项进行三种设置，分别是设置Slot要迁入的目标实例，Slot要迁出的源实例，以及Slot所属的实例。</li>
+<li>CLUSTER GETKEYSINSLOT：获取某个Slot中一定数量的key。</li>
+<li>MIGRATE：把一个key从源实例实际迁移到目标实例。</li>
+</ol><p>我来借助一个例子，带你了解下这三个命令怎么用。</p><p>假设我们要把Slot 300从源实例（ID为3）迁移到目标实例（ID为5），那要怎么做呢？</p><p>实际上，我们可以分成5步。</p><p>第1步，我们先在目标实例5上执行下面的命令，将Slot 300的源实例设置为实例3，表示要从实例3上迁入Slot 300。</p><pre><code>CLUSTER SETSLOT 300 IMPORTING 3
+</code></pre><p>第2步，在源实例3上，我们把Slot 300的目标实例设置为5，这表示，Slot 300要迁出到实例5上，如下所示：</p><pre><code>CLUSTER SETSLOT 300 MIGRATING 5
+</code></pre><p>第3步，从Slot 300中获取100 个key。因为Slot中的key数量可能很多，所以我们需要在客户端上多次执行下面的这条命令，分批次获得并迁移key。</p><pre><code>CLUSTER GETKEYSINSLOT 300 100
+</code></pre><p>第4步，我们把刚才获取的100个key中的key1迁移到目标实例5上（IP为192.168.10.5），同时把要迁入的数据库设置为0号数据库，把迁移的超时时间设置为timeout。我们重复执行MIGRATE命令，把100个key都迁移完。</p><pre><code>MIGRATE 192.168.10.5 6379 key1 0 timeout
+</code></pre><p>最后，我们重复执行第3和第4步，直到Slot中的所有key都迁移完成。</p><p>从Redis 3.0.6开始，你也可以使用KEYS选项，一次迁移多个key（key1、2、3），这样可以提升迁移效率。</p><pre><code>MIGRATE 192.168.10.5 6379 "" 0 timeout KEYS key1 key2 key3
+</code></pre><p>对于Codis来说，我们可以执行下面的命令进行数据迁移。其中，我们把dashboard组件的连接地址设置为ADDR，并且把Slot 300迁移到编号为6的codis server group上。</p><pre><code>codis-admin --dashboard=ADDR -slot-action --create --sid=300 --gid=6
+</code></pre><p>除了bigkey和Slot分配不均衡会导致数据量倾斜，还有一个导致倾斜的原因，就是使用了Hash Tag进行数据切片。</p><h4>Hash Tag导致倾斜</h4><p>Hash Tag是指加在键值对key中的一对花括号{}。这对括号会把key的一部分括起来，客户端在计算key的CRC16值时，只对Hash Tag花括号中的key内容进行计算。如果没用Hash Tag的话，客户端计算整个key的CRC16的值。</p><p>举个例子，假设key是user:profile:3231，我们把其中的3231作为Hash Tag，此时，key就变成了user:profile:{3231}。当客户端计算这个key的CRC16值时，就只会计算3231的CRC16值。否则，客户端会计算整个“user:profile:3231”的CRC16值。</p><p>使用Hash Tag的好处是，如果不同key的Hash Tag内容都是一样的，那么，这些key对应的数据会被映射到同一个Slot中，同时会被分配到同一个实例上。</p><p>下面这张表就显示了使用Hash Tag后，数据被映射到相同Slot的情况，你可以看下。</p><p><img src="./37-数据分布优化：如何应对数据倾斜？_files/d560b0161f1f786328dbd8a1df66d036.jpg" alt=""></p><p>其中，user:profile:{3231}和user:order:{3231}的Hash Tag一样，都是3231，它们的CRC16计算值对16384取模后的值也是一样的，所以就对应映射到了相同的Slot 1024中。user:profile:{5328}和user:order:{5328}也是相同的映射结果。</p><p>那么，Hash Tag一般用在什么场景呢？其实，它主要是用在Redis Cluster和Codis中，支持事务操作和范围查询。因为Redis Cluster和Codis本身并不支持跨实例的事务操作和范围查询，当业务应用有这些需求时，就只能先把这些数据读取到业务层进行事务处理，或者是逐个查询每个实例，得到范围查询的结果。</p><p>这样操作起来非常麻烦，所以，我们可以使用Hash Tag把要执行事务操作或是范围查询的数据映射到同一个实例上，这样就能很轻松地实现事务或范围查询了。</p><p>但是，使用Hash Tag的潜在问题，就是大量的数据可能被集中到一个实例上，导致数据倾斜，集群中的负载不均衡。那么，该怎么应对这种问题呢？我们就需要在范围查询、事务执行的需求和数据倾斜带来的访问压力之间，进行取舍了。</p><p>我的建议是，如果使用Hash Tag进行切片的数据会带来较大的访问压力，就优先考虑避免数据倾斜，最好不要使用Hash Tag进行数据切片。因为事务和范围查询都还可以放在客户端来执行，而数据倾斜会导致实例不稳定，造成服务不可用。</p><p>好了，到这里，我们完整地了解了数据量倾斜的原因以及应对方法。接下来，我们再来看数据访问倾斜的原因和应对方法。</p><h2>数据访问倾斜的成因和应对方法</h2><p>发生数据访问倾斜的根本原因，就是实例上存在热点数据（比如新闻应用中的热点新闻内容、电商促销活动中的热门商品信息，等等）。</p><p>一旦热点数据被存在了某个实例中，那么，这个实例的请求访问量就会远高于其它实例，面临巨大的访问压力，如下图所示：</p><p><img src="./37-数据分布优化：如何应对数据倾斜？_files/94b1ca50143db1d09c60475fa7b41820.jpg" alt=""></p><p>那么，我们该如何应对呢？</p><p>和数据量倾斜不同，热点数据通常是一个或几个数据，所以，直接重新分配Slot并不能解决热点数据的问题。</p><p>通常来说，热点数据以服务读操作为主，在这种情况下，我们可以采用<strong>热点数据多副本</strong>的方法来应对。</p><p>这个方法的具体做法是，我们把热点数据复制多份，在每一个数据副本的key中增加一个随机前缀，让它和其它副本数据不会被映射到同一个Slot中。这样一来，热点数据既有多个副本可以同时服务请求，同时，这些副本数据的key又不一样，会被映射到不同的Slot中。在给这些Slot分配实例时，我们也要注意把它们分配到不同的实例上，那么，热点数据的访问压力就被分散到不同的实例上了。</p><p>这里，有个地方需要注意下，<strong>热点数据多副本方法只能针对只读的热点数据</strong>。如果热点数据是有读有写的话，就不适合采用多副本方法了，因为要保证多副本间的数据一致性，会带来额外的开销。</p><p>对于有读有写的热点数据，我们就要给实例本身增加资源了，例如使用配置更高的机器，来应对大量的访问压力。</p><h2>小结</h2><p>这节课，我向你介绍了数据倾斜的两种情况：数据量倾斜和数据访问倾斜。</p><p>造成数据量倾斜的原因主要有三个：</p><ol>
+<li>数据中有bigkey，导致某个实例的数据量增加；</li>
+<li>Slot手工分配不均，导致某个或某些实例上有大量数据；</li>
+<li>使用了Hash Tag，导致数据集中到某些实例上。</li>
+</ol><p>而数据访问倾斜的主要原因就是有热点数据存在，导致大量访问请求集中到了热点数据所在的实例上。</p><p>为了应对数据倾斜问题，我给你介绍了四个方法，也分别对应了造成数据倾斜的四个原因。我把它们总结在下表中，你可以看下。</p><p><img src="./37-数据分布优化：如何应对数据倾斜？_files/092da1ee7425d20b1af4900ec8e9926f.jpg" alt=""></p><p>当然，如果已经发生了数据倾斜，我们可以通过数据迁移来缓解数据倾斜的影响。Redis Cluster和Codis集群都提供了查看Slot分配和手工迁移Slot的命令，你可以把它们应用起来。</p><p>最后，关于集群的实例资源配置，我再给你一个小建议：在构建切片集群时，尽量使用大小配置相同的实例（例如实例内存配置保持相同），这样可以避免因实例资源不均衡而在不同实例上分配不同数量的Slot。</p><h2>每课一问</h2><p>按照惯例，我给你提个小问题，在有数据访问倾斜时，如果热点数据突然过期了，而Redis中的数据是缓存，数据的最终值保存在后端数据库，此时会发生什么问题？</p><p>欢迎在留言区写下你的思考和答案，我们一起交流讨论。如果你觉得今天的内容对你有所帮助，也欢迎你分享给你的朋友或同事。我们下节课见。</p><h2>精选留言：</h2>
+        <ul>
+        
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            Kaito  2020-11-16 00:06:53
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            在有数据访问倾斜时，如果热点数据突然过期了，而 Redis 中的数据是缓存，数据的最终值保存在后端数据库，此时会发生什么问题？<br><br>此时会发生缓存击穿，热点请求会直接打到后端数据库上，数据库的压力剧增，可能会压垮数据库。<br><br>Redis 的很多性能问题，例如导致 Redis 阻塞的场景：bigkey、集中过期、大实例 RDB 等等，这些场景都与数据倾斜类似，都是因为数据集中、处理逻辑集中导致的耗时变长。其解决思路也类似，都是把集中变分散，例如 bigkey 拆分为小 key、单个大实例拆分为切片集群等。<br><br>从软件架构演进过程来看，从单机到分布式，再到后来出现的消息队列、负载均衡等技术，也都是为了将请求压力分散开，避免数据集中、请求集中的问题，这样既可以让系统承载更大的请求量，同时还保证了系统的稳定性。 [17赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            nxcat  2020-11-16 00:22:16
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            终于追上了，期待课代表的留言！课后问题我理解的话，只读模式下会发生缓存击穿，严重的话还可能造成雪崩。 [3赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            Lemon  2020-11-17 10:11:20
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            课后题：将发生缓存击穿，导致数据库压力激增，可能导致数据库奔溃。与之相对的解决方法是不设置热点 Key 的过期时间，并以采用热点数据多副本的方法减少单实例压力。<br><br>疑问：老师您好，热点数据多副本的方法使得每一个数据副本的 key 都有一个随机前缀，那么客户端在读取的时候怎么获取这个随机前缀？又怎么保证带上随机前缀后的热点 Key 会被较为均匀的请求呢？ 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            Geek_9a0c9f  2020-11-16 14:35:58
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            缓存击穿，压力打到mysql.可能瞬间打爆mysql 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            花轮君  2020-11-16 09:47:48
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            最终的结果是雪崩 
+        </div>
+        
+    </div>
+</li>
+            
+<br>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            test  2020-11-16 08:43:04
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            课后题：会发生缓存击穿 
+        </div>
+        
+    </div>
+</li>
+            </ul>
+</div>
+
+</body></html>
