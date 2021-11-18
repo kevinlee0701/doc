@@ -16,6 +16,7 @@ import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.client.indices.GetIndexResponse;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -56,9 +57,10 @@ public class Es {
      */
     @Test
     public void test() throws IOException {
-        final GetIndexRequest indexRequest = new GetIndexRequest("movies");
+        final GetIndexRequest indexRequest = new GetIndexRequest("titles");
         final boolean exists = restHighLevelClient.indices().exists(indexRequest, RequestOptions.DEFAULT);
-        System.out.println(exists);
+        GetIndexResponse getIndexResponse = restHighLevelClient.indices().get(indexRequest, RequestOptions.DEFAULT);
+        System.out.println(getIndexResponse.getMappings());
     }
 
     /**
