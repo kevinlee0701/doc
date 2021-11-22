@@ -37,7 +37,7 @@ public class JsoupTest {
         String  url = "https://search.jd.com/Search?keyword=java";
         Document document = Jsoup.parse(new URL(url), 30000);
         Element element = document.getElementById("J_goodsList");
-//        log.info("html={}",element.html());
+//      log.info("html={}",element.html());
         Elements els = element.getElementsByTag("li");
         for (Element el : els) {
             String img = el.getElementsByTag("img").eq(0).attr("data-lazy-img");
