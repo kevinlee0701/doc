@@ -3,6 +3,8 @@ package com.kevinlee.demo;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import com.alibaba.fastjson.JSONObject;
+import com.kevinlee.demo.es.Title;
+import com.kevinlee.demo.es.TitleDao;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
@@ -33,6 +35,10 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.data.elasticsearch.core.query.UpdateQuery;
+import org.springframework.data.elasticsearch.core.query.UpdateResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -45,7 +51,12 @@ import java.util.*;
 public class Es {
 
     @Resource
-    RestHighLevelClient restHighLevelClient;
+    private RestHighLevelClient restHighLevelClient;
+    @Resource
+    private TitleDao titleDao;
+
+    @Resource
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     String index ="movies";
     String testId="49273";
@@ -275,7 +286,32 @@ public class Es {
 
         }
     }
+    @Test
+    public void testSpringData(){
+        Iterable<Title> all = titleDao.findAll();
+        for (Title title : all) {
+            log.info(""+title);
+        }
+    }
+    @Test
+    public void testSpringDataSave(){
+      Title title = new Title();
+      title.setId("7");
+      title.setTitle("spring data 7");
+      title.setBody("spring data body 7");
+      titleDao.save(title);
+    }
 
+    @Test
+    public void testSpringDataUpdate() throws IOException {
+        Title title = new Title();
+        title.setId("7");
+        title.setTitle("spring data 7.1");
+
+
+
+//        UpdateResponse update = elasticsearchRestTemplate.update(updateRequest, IndexCoordinates.of(index));
+    }
 
     @Data
     class Movie {
