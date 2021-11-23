@@ -1,6 +1,8 @@
 package com.kevinlee.demo.jsoup;
 
 import com.kevinlee.demo.es.JDProduct;
+import com.kevinlee.demo.es.LianJia;
+import com.kevinlee.demo.es.LianJiaDao;
 import com.kevinlee.demo.es.ProductDao;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -14,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,8 @@ import java.util.List;
 public class JsoupTest {
     @Autowired
     private ProductDao productDao;
+    @Autowired
+    private LianJiaDao lianJiaDao;
 
 
 
@@ -60,5 +65,46 @@ public class JsoupTest {
         log.info("list={}",list);
 //        productDao.saveAll(list);
 
+    }
+    /**
+     * @description: 爬取链家
+     * @Author kevinlee
+     * @Date  2021/11/23
+     **/
+    @Test
+    public void testLianjia() throws Exception {
+        ArrayList<LianJia> lianJias = new ArrayList<>();
+        for(int i=1;i<100;i++){
+            String  url = "https://bj.lianjia.com/ershoufang/changping/pg"+i+"l2p1p2";
+            Document document = Jsoup.parse(new URL(url), 30000);
+            if(document==null){
+                break;
+            }
+            Elements sellListContent = document.getElementsByClass("sellListContent");
+            if(sellListContent == null || sellListContent.isEmpty()){
+                break;
+            }
+            for (Element element : sellListContent) {
+                Elements els = element.getElementsByTag("li");
+                if(els !=null && els.size()>0){
+                    for (Element el : els) {
+                        String address = el.getElementsByClass("positionInfo").eq(0).text();
+                        String totalPrice = el.getElementsByClass("totalPrice").eq(0).text().replace("万","");
+                        String unitPrice = el.getElementsByClass("unitPrice").attr("data-price");
+                        String img = el.getElementsByClass("lj-lazy").attr("src");
+                        log.info("url={},address={},totalPrice={}，unitPrice={},img={}",url,address,totalPrice,unitPrice,img);
+                        LianJia lianJia = new LianJia();
+                        lianJia.setRemark("昌平-两室-200-200:250");
+                        lianJia.setAddress(address);
+                        lianJia.setTotalPrice(Double.parseDouble(totalPrice));
+                        lianJia.setUnitPrice(Double.parseDouble(unitPrice));
+                        lianJia.setImg(img);
+                        lianJias.add(lianJia);
+                    }
+                }
+            }
+        }
+        log.info("list={}",lianJias.size());
+        lianJiaDao.saveAll(lianJias);
     }
 }
