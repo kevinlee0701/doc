@@ -35,6 +35,8 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -129,7 +131,7 @@ public class Es {
      * match查询
      */
     @Test
-    public  void testMatch() throws Exception {
+    public  void testSearchRequest() throws Exception {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("movies");
 
@@ -312,16 +314,16 @@ public class Es {
       title.setBody("spring data body 7");
       titleDao.save(title);
     }
-
+    /**
+     * https://www.cxyzjd.com/article/u013089490/84323903
+     * @description: 根据方法名称来进行搜索
+     * @Author kevinlee
+     * @Date  2021/11/23
+     **/
     @Test
-    public void testSpringDataUpdate() throws IOException {
-        Title title = new Title();
-        title.setId("7");
-        title.setTitle("spring data 7.1");
-
-
-
-//        UpdateResponse update = elasticsearchRestTemplate.update(updateRequest, IndexCoordinates.of(index));
+    public void testFindByBody() {
+        List<Title> barks = titleDao.findByBody("dogs");
+        log.info("result={}",barks);
     }
 
     @Data
