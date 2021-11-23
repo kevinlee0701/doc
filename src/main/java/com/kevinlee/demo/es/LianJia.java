@@ -22,6 +22,9 @@ public class LianJia {
     //房子地址
     @Field(type = FieldType.Auto)
     private String address;
+    //房子网址
+    @Field(type = FieldType.Auto)
+    private String html;
     //总价
     @Field(type = FieldType.Auto)
     private Double totalPrice;

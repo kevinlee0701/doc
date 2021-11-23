@@ -3,6 +3,8 @@ package com.kevinlee.demo;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import com.alibaba.fastjson.JSONObject;
+import com.kevinlee.demo.es.LianJia;
+import com.kevinlee.demo.es.LianJiaDao;
 import com.kevinlee.demo.es.Title;
 import com.kevinlee.demo.es.TitleDao;
 import lombok.Data;
@@ -53,6 +55,8 @@ public class Es {
     private RestHighLevelClient restHighLevelClient;
     @Resource
     private TitleDao titleDao;
+    @Resource
+    private LianJiaDao lianJiaDao;
 
     @Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
@@ -324,6 +328,12 @@ public class Es {
     public void testFindByBody() {
         List<Title> barks = titleDao.findByBody("dogs");
         log.info("result={}",barks);
+    }
+
+    @Test
+    public void testFindAll() {
+        Iterable<LianJia> all = lianJiaDao.findAll();
+        ArrayList<LianJia> lianJias = new ArrayList<>();
     }
 
     @Data

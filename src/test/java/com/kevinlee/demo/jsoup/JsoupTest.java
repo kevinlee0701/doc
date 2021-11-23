@@ -92,13 +92,16 @@ public class JsoupTest {
                         String totalPrice = el.getElementsByClass("totalPrice").eq(0).text().replace("万","");
                         String unitPrice = el.getElementsByClass("unitPrice").attr("data-price");
                         String img = el.getElementsByClass("lj-lazy").attr("src");
+                        String html = el.getElementsByClass("title").get(0).getElementsByTag("a").attr("href");
                         log.info("url={},address={},totalPrice={}，unitPrice={},img={}",url,address,totalPrice,unitPrice,img);
                         LianJia lianJia = new LianJia();
+                        lianJia.setId(address+"-"+totalPrice+"-"+unitPrice+"-"+html);
                         lianJia.setRemark("昌平-两室-200-200:250");
                         lianJia.setAddress(address);
                         lianJia.setTotalPrice(Double.parseDouble(totalPrice));
                         lianJia.setUnitPrice(Double.parseDouble(unitPrice));
                         lianJia.setImg(img);
+                        lianJia.setHtml(html);
                         lianJias.add(lianJia);
                     }
                 }
