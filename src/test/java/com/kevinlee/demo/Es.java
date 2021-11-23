@@ -36,9 +36,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
-import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
-import org.springframework.data.elasticsearch.core.query.UpdateQuery;
-import org.springframework.data.elasticsearch.core.query.UpdateResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -93,7 +90,11 @@ public class Es {
         }
     }
 
-
+    /**
+     * @description: 根据id查询索引信息
+     * @Author kevinlee
+     * @Date  2021/11/23
+     **/
     @Test
     public void getIndex() {
         GetRequest getRequest = new GetRequest("movies","49272");
@@ -106,6 +107,11 @@ public class Es {
             throw new RuntimeException(e);
         }
     }
+    /**
+     * @description: 将查询数据转换为对象
+     * @Author kevinlee
+     * @Date  2021/11/23
+     **/
     @Test
     public void getIndexById(){
         GetRequest getRequest = new GetRequest("movies").id("49272");
@@ -286,6 +292,11 @@ public class Es {
 
         }
     }
+    /**
+     * @description: SpringData 测试
+     * @Author kevinlee
+     * @Date  2021/11/23
+     **/
     @Test
     public void testSpringData(){
         Iterable<Title> all = titleDao.findAll();
