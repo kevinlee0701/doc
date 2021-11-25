@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="app">
+    <span v-bind:title="message" >
+    {{message}}
+        </span>
+</div>
+<script src="/js/vue.min.js"></script>
+<script>
+    var vm = new Vue({
+        el:"#app",
+        data:{
+            message:"test3"
+        }
+    });
+</script>
+</body>
+</html>
