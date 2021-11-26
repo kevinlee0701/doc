@@ -44,8 +44,6 @@ class ShardingJdbcApplicationTests {
         System.out.println( userMapper.findUserById(671043090357682177l));
     }
 
-
-
     @Test
     public void orderyearMaster() {
         for (int i = 0; i <10 ; i++) {
