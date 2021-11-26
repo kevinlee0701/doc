@@ -34,4 +34,6 @@ public interface UserMapper {
      */
     @Select("select * from ksd_user")
     List<User> findUsers();
+    @Select("select * from ksd_user where id=#{id}")
+    User findUserById(Long id);
 }

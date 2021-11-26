@@ -39,6 +39,11 @@ class ShardingJdbcApplicationTests {
         System.out.println(user.getId());
     }
 
+    @Test
+    void selectUser() {
+        System.out.println( userMapper.findUserById(671043090357682177l));
+    }
+
 
 
     @Test

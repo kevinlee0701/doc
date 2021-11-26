@@ -34,8 +34,8 @@ spring:
           actual-data-nodes: ds0.ksd_user$->{0..1}
           table-strategy:
             inline:
-              sharding-column: age    # 分片字段（分片键）
-              algorithm-expression: ksd_user$->{age % 2} # 分片算法表达式
+              sharding-column: id    # 分片字段（分片键）
+              algorithm-expression: ksd_user$->{id % 2} # 分片算法表达式
 
 
 # 需求：我对用户1000W的数据，对用户表的数据进行分表和分库的操作。根据年龄单数存储在ksd_user1 偶数ksd_user0
