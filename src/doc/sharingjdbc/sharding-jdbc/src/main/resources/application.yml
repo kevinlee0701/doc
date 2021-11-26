@@ -5,10 +5,10 @@ spring:
   main:
     allow-bean-definition-overriding: true
   profiles:
-    active: sub
+    active: yearmonth
 
 
 # 整合mntityybatis的配置XXXXX
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.kevinlee.sharingjdbc.entity
+  type-aliases-package: com.kevinlee.shardingjdbc.entity
