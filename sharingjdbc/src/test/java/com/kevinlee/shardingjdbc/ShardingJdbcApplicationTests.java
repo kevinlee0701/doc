@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 @SpringBootTest
@@ -46,16 +47,24 @@ class ShardingJdbcApplicationTests {
 
     @Test
     public void orderyearMaster() {
-        for (int i = 0; i <10 ; i++) {
+        for (int i = 0; i <1 ; i++) {
             UserOrder userOrder = new UserOrder();
             userOrder.setCreateTime(new Date());
             userOrder.setOrdernumber("133455678");
-            userOrder.setYearmonth("202102");
+            userOrder.setYear("2019");
             userOrder.setUserid(1L);
             userOrderMapper.addUserOrder(userOrder);
         }
     }
+    @Test
+    void selectUserOrder() {
+//        List<UserOrder> year = userOrderMapper.findYear("2019");
+//        System.out.println(year);
 
+        List<UserOrder> userOrders = userOrderMapper.findorderId("672042168889638913");
+        System.out.println(userOrders);
+
+    }
 
     @Test
     public void countOrderyearMaster() {
@@ -92,7 +101,7 @@ class ShardingJdbcApplicationTests {
         UserOrder userOrder = new UserOrder();
         userOrder.setCreateTime(new Date());
         userOrder.setOrdernumber("133455678");
-        userOrder.setYearmonth("202102");
+        userOrder.setYear("202102");
         userOrder.setUserid(1L);
 
         userOrderService.saveUserOrder(user,userOrder);

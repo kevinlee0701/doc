@@ -7,6 +7,9 @@ public class YearMonthShardingAlgorithm implements PreciseShardingAlgorithm<Stri
     @Override
     public String doSharding(Collection availableTargetNames, PreciseShardingValue shardingValue) {
         String tbName = shardingValue.getLogicTableName() + "_" + shardingValue.getValue();
+        if (!shardingValue.getValue().equals("2021") && !"2022".equals(shardingValue.getValue())){
+            tbName = shardingValue.getLogicTableName() + "_other";
+        }
         System.out.println("Sharding input:" + shardingValue.getValue() + ", output:{}" + tbName);
         return tbName;
     }

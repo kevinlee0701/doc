@@ -19,7 +19,7 @@ public interface UserOrderMapper {
      * @params [user]
      * @date 2021/3/10 17:14
      */
-    @Insert("insert into ksd_user_order(ordernumber,userid,create_time,yearmonth) values(#{ordernumber},#{userid},#{createTime},#{yearmonth})")
+    @Insert("insert into ksd_user_order(ordernumber,userid,createTime,year) values(#{ordernumber},#{userid},#{createTime},#{year})")
     @Options(useGeneratedKeys = true,keyColumn = "orderid",keyProperty = "orderid")
     void addUserOrder(UserOrder userOrder);
 
@@ -27,6 +27,11 @@ public interface UserOrderMapper {
     @Select("select * from ksd_user_order limit #{pageNo},10")
     List<UserOrder> finduserOrders(@Param("pageNo")Integer pageNo);
 
+    @Select("select * from ksd_user_order where year=#{year}")
+    List<UserOrder> findYear(@Param("year") String year);
+
+    @Select("select * from ksd_user_order where orderid=#{orderid}")
+    List<UserOrder> findorderId(@Param("orderid") String orderId);
 
     @Select("select count(1) from ksd_user_order")
     int countuserOrders();

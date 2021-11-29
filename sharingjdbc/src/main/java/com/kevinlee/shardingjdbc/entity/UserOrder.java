@@ -18,7 +18,7 @@ public class UserOrder {
     // 用户ID
     private Long userid;
     // 产品id
-    private String yearmonth;
+    private String year;
     // 创建时间
     private Date createTime;
 }
