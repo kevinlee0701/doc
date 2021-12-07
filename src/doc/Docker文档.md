@@ -54,13 +54,7 @@ $ sudo yum remove docker
   安装所需的软件包。yum-utils 提供了 yum-config-manager ，并且 device mapper 存储驱动程序需要 device-mapper-persistent-data 和 lvm2。
 
 ```shell
-$ sudo yum install -y yum-utils 
-  device-mapper-persistent-data 
-  lvm2
-  #非centos系统
-  sudo apt-get install -y yum-utils
-  device-mapper-persistent-data
-  lvm2
+$ sudo yum install -y yum-utils device-mapper-persistent-data lvm2
 ```
 
 
@@ -68,24 +62,20 @@ $ sudo yum install -y yum-utils
 - 使用官方源地址（比较慢）
 
 ```shell
-$ sudo yum-config-manager 
-    --add-repo 
-    https://download.docker.com/linux/centos/docker-ce.repo
+$ sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 ```
 
 - 阿里云
 
 ```shell
-$ sudo yum-config-manager 
-    --add -repo 
-    http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+$ sudo yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 ```
 
 - 清华大学源
 
 ```shell
 $ sudo yum-config-manager 
-    --add -repo 
+    --add-repo 
     https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/docker-ce.repo
 ```
 
@@ -128,7 +118,7 @@ sudo systemctl start docker
 - 通过运行 hello-world 映像来验证是否正确安装了 Docker Engine-Community 。
 
   ```shell
-  sudo docker run hello-world
+  d
   ```
 
 #### Docker基本命令
@@ -141,7 +131,7 @@ sudo systemctl start docker
 
 ![image-20211201161930009](/Users/kevinlee/Library/Application Support/typora-user-images/image-20211201161930009.png)
 
-​		 ![image-20211201161953317](/Users/kevinlee/Library/Application Support/typora-user-images/image-20211201161953317.png)
+​		                      ![image-20211201161953317](/Users/kevinlee/Library/Application Support/typora-user-images/image-20211201161953317.png)
 
 ##### 帮助命令
 
@@ -234,11 +224,11 @@ SIZE            # 镜像的大小
 
   - docker rmi 删除镜像
 
-    ```shell
-    [root@iZ2zeg4ytp0whqtmxbsqiiZ ~]# docker rmi -f IMAGE ID                        # 删除指定镜像
-    [root@iZ2zeg4ytp0whqtmxbsqiiZ ~]# docker rmi -f IMAGE ID1 IMAGE ID2 IMAGE ID3   # 删除多个镜像
-    [root@iZ2zeg4ytp0whqtmxbsqiiZ ~]#  docker rmi -f $(docker images -aq)           # 删除所有镜像
-    ```
+  ```shell
+  [root@iZ2zeg4ytp0whqtmxbsqiiZ ~]# docker rmi -f IMAGE ID                        # 删除指定镜像
+  [root@iZ2zeg4ytp0whqtmxbsqiiZ ~]# docker rmi -f IMAGE ID1 IMAGE ID2 IMAGE ID3   # 删除多个镜像
+  [root@iZ2zeg4ytp0whqtmxbsqiiZ ~]#  docker rmi -f $(docker images -aq)           # 删除所有镜像
+  ```
 
 
 
@@ -533,3 +523,15 @@ MySQL，容器删了，删库跑路！`需求：MySQL数据可以存储在本地
 这就是卷技术，目录的挂载，将我们容器内的目录挂载到linux目录上面！
 
 **总结： **容器的持久化和同步操作！容器间数据也是可以共享的！
+
+##### 使用数据卷
+
+方式一：直接使用命令来挂载 -v
+
+``` shell
+
+docker run -it -v 主机目录：容器目录
+ 
+[root@iZ2zeg4ytp0whqtmxbsqiiZ home]# docker run -it -v /home/ceshi:/home centos /bin/bash
+```
+
