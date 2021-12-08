@@ -12,11 +12,11 @@
 ##### jdk8安装
 
 ```shell
-[root@root ~]# yum install java-1.8.0-openjdk.x86_64
-一直y确定
+[root@root ~] yum install java-1.8.0-openjdk.x86_64
+#一直y确定
 
 # 检验安装
-[root@root ~]# java -version
+[root@root ~] java -version
 
 #设置jdk环境变量
 [root@root alternatives]# vi /etc/profile
@@ -32,7 +32,7 @@ export JAVA_HOME CLASSPATH PATH
 [root@root alternatives]#. /etc/profile   
 ```
 
-#### 安装es7.6.1
+#### 安装ES7.6.1
 
 > 引用 https://www.jianshu.com/p/b670648be8bb
 
@@ -70,7 +70,7 @@ node.master: true
 node.data: true
 ```
 
-#### 基础命令
+##### 基础命令
 
 ```shell
 #启动命令
@@ -82,7 +82,7 @@ ps -ef | grep elastic
 kill -9 2382（进程号）
 ```
 
-#### 查询命令
+##### 查询命令
 
 ```shell
 match_phrase #会将检索关键词分词。match_phrase的分词结果必须在被检索字段的分词中都包含，而且顺序必须相同，而且默认必须都是连续的
@@ -159,14 +159,14 @@ GET /_search
 
 ```
 
-#### 授权用户文件夹权限
+##### 授权用户文件夹权限
 
 ``` shell
 #授权文件夹权限 my文件夹和里面的文件权限都是不同的。现在递归修改，都改为统一的权限777
  chmod -R 777 my/
 ```
 
-#### 问题解决
+##### 问题解决
 
 > **max virtual memory areas vm.max_map_count [65530] likely too low, increase to at least [262144]** 
 
@@ -219,6 +219,63 @@ POST http://172.16.95.136:9200/_analyze
   "analyzer": "ik_max_word",
   "text":     "中华人民共和国国歌"
 }
+```
+
+#### kibana安装
+
+- 下载安装
+
+```shell
+wget https://artifacts.elastic.co/downloads/kibana/kibana-7.6.1-x86_64.rpm
+yum install -y kibana-7.6.1-x86_64.rpm
+```
+
+- 修改配置文件
+
+```shell
+server.port: 5606 #kibana端口号
+server.host: "172.16.95.136"#kibana服务ip地址
+server.name: tanklog
+elasticsearch.hosts: ["http://172.0.0.1:9200/"] #es地址
+```
+
+##### 基础命令
+
+```shell
+sudo service kibana start #
+sudo service kibana stop
+```
+
+
+
+- 停用kibana
+
+```shell
+netstat -tunlp|grep 5606# 查看占用端口5601端口的进程
+```
+
+![image-20211207183950613](/Users/kevinlee/Library/Application Support/typora-user-images/image-20211207183950613.png)
+
+```shell
+kill -9 34269 #杀进程
+```
+
+>**杀死进程后又重启的解决方案**
+
+```shell
+ps -aux | grep kibana 命令找到pid号
+cd /proc/PID号
+cat status, 找到父进程的PPID号
+#先杀掉父进程
+kill -9 PPID号
+#再杀掉子进程 这时候很大可能性子进程已经和父进程一起被杀死了，如果没被杀死，就使用以下命令杀死子进程
+kill -9 PID号
+```
+
+> **查看日志**
+
+```shell
+cd /var/log/kibana/ #错误日志地址
 ```
 
 
