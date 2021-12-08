@@ -254,11 +254,14 @@ public class Es {
         //设置查询超时时间
         Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
 
-        BoolQueryBuilder must = QueryBuilders.boolQuery().filter(QueryBuilders.rangeQuery("id").gte(1000).lte(2000)).must(QueryBuilders.matchQuery("id", 101423));
+        BoolQueryBuilder must = QueryBuilders.boolQuery()
+                                                .filter(QueryBuilders.rangeQuery("id").gte(1000).lte(2000))
+                                                .must(QueryBuilders.matchQuery("id", 101423));
 
         builder.query(must);
         //设置最多一次能够取出10000笔数据，从第10001笔数据开始，将开启滚动查询  PS:滚动查询也属于这一次查询，只不过因为一次查不完，分多次查
         builder.size(1000);
+        builder.from(0);
         searchRequest.source(builder);
         //将滚动放入
         searchRequest.scroll(scroll);
@@ -282,7 +285,7 @@ public class Es {
         while (hitsScroll != null && hitsScroll.length > 0) {
             i++;
             //构造滚动查询条件
-            SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
+            SearchScrollRequest searchScrollRequest = new SearchScrollRequest( );
             searchScrollRequest.scroll(scroll);
             try {
                 //响应必须是上面的响应对象，需要对上一层进行覆盖
