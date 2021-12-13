@@ -1,7 +1,6 @@
 package com.kevin.juc.Thread;
 
-import com.kevinlee.demo.DemoApplication;
-
+import com.kevin.juc.JucApplication;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +10,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit4.SpringRunner;
 @Slf4j
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = DemoApplication.class)
+@SpringBootTest(classes = JucApplication.class)
 public class TestSpringBoot {
     @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;

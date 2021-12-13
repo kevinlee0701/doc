@@ -1,6 +1,6 @@
 package com.kevin.juc.Thread;
 
-import com.kevinlee.demo.DemoApplication;
+import com.kevin.juc.JucApplication;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +17,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = DemoApplication.class)
+@SpringBootTest(classes = JucApplication.class)
 @Slf4j
 public class TestFuture {
     @Autowired
