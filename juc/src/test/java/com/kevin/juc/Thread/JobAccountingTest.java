@@ -1,8 +1,8 @@
-package com.kevinlee.demo.Thread;
+package com.kevin.juc.Thread;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.kevinlee.demo.Thread.bean.JobAccountingBo;
+import com.kevin.juc.Thread.bean.JobAccountingBo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;

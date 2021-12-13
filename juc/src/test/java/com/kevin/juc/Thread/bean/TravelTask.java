@@ -1,4 +1,4 @@
-package com.kevinlee.demo.Thread.bean;
+package com.kevin.juc.Thread.bean;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,21 +11,20 @@ import java.util.concurrent.CyclicBarrier;
  *
  */
 @Slf4j
-public class TravelTask2 implements Runnable {
+public class TravelTask implements Callable {
 
     private CyclicBarrier cyclicBarrier;
     private String name;
     private int arriveTime;//赶到的时间
 
-    public TravelTask2(CyclicBarrier cyclicBarrier, String name, int arriveTime){
+    public TravelTask(CyclicBarrier cyclicBarrier,String name,int arriveTime){
         this.cyclicBarrier = cyclicBarrier;
         this.name = name;
         this.arriveTime = arriveTime;
     }
 
-
     @Override
-    public void run() {
+    public Object call() throws Exception {
         try {
             //模拟达到需要花的时间
             Thread.sleep(arriveTime * 1000);
@@ -37,5 +36,6 @@ public class TravelTask2 implements Runnable {
         } catch (BrokenBarrierException e) {
             log.error("run is error",e);
         }
+        return null;
     }
 }

@@ -1,4 +1,4 @@
-package com.kevinlee.demo.Thread.bean;
+package com.kevin.juc.Thread.bean;
 
 
 import java.util.Map;

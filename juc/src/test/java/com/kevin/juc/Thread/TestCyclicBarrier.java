@@ -1,15 +1,14 @@
-package com.kevinlee.demo.Thread;
+package com.kevin.juc.Thread;
 
-import com.kevinlee.demo.Thread.bean.TourGuideTask;
-import com.kevinlee.demo.Thread.bean.TravelTask;
-import com.kevinlee.demo.Thread.bean.TravelTask2;
+import com.kevin.juc.Thread.bean.TourGuideTask;
+import com.kevin.juc.Thread.bean.TravelTask;
+import com.kevin.juc.Thread.bean.TravelTask2;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.*;
 @Slf4j

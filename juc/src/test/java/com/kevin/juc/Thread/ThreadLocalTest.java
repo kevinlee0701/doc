@@ -1,4 +1,4 @@
-package com.kevinlee.demo.Thread;
+package com.kevin.juc.Thread;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;

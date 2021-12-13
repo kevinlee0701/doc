@@ -1,4 +1,4 @@
-package com.kevinlee.demo.Thread.JUC;
+package com.kevin.juc.Thread.JUC;
 
 import org.junit.Test;
 
