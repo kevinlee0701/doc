@@ -1,4 +1,4 @@
-package com.kevin.juc.Thread;
+package com.kevin.juc.Thread.JUC;
 
 import com.kevin.juc.Thread.bean.TourGuideTask;
 import com.kevin.juc.Thread.bean.TravelTask;

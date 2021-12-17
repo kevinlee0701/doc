@@ -1,4 +1,4 @@
-package com.kevin.juc.Thread;
+package com.kevin.juc.Thread.JUC;
 
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
