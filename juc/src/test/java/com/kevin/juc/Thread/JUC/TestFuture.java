@@ -29,12 +29,15 @@ public class TestFuture {
         FutureTask<String> ft2 = new FutureTask(new T2Task());
         // 创建任务T1的FutureTask
         FutureTask<String> ft1 = new FutureTask(new T1Task(ft2));
-        // 线程T1执行任务ft1
-        Thread T1 = new Thread(ft1, "T1-Thread");
-        T1.start();
-        // 线程T2执行任务ft2
-        Thread T2 = new Thread(ft2, "T2-Thread");
-        T2.start();
+
+        threadPoolTaskExecutor.submit(ft1);
+        threadPoolTaskExecutor.submit(ft2);
+//        // 线程T1执行任务ft1
+//        Thread T1 = new Thread(ft1, "T1-Thread");
+//        T1.start();
+//        // 线程T2执行任务ft2
+//        Thread T2 = new Thread(ft2, "T2-Thread");
+//        T2.start();
         // 等待线程T1执行结果
         System.out.println(ft1.get());
 
@@ -46,23 +49,23 @@ public class TestFuture {
         CompletableFuture<Void> f1 =
                 CompletableFuture.runAsync(() -> {
 
-                    System.out.println("T1:洗水壶...");
+                    System.out.println("T1:洗水壶..."+Thread.currentThread().getName());
                     sleep(1, TimeUnit.SECONDS);
 
-                    System.out.println("T1:烧开水...");
-                    sleep(15, TimeUnit.SECONDS);
+                    System.out.println("T1:烧开水..."+Thread.currentThread().getName());
+                    sleep(10, TimeUnit.SECONDS);
                 });
 
         //任务2：洗茶壶->洗茶杯->拿茶叶
         CompletableFuture<String> f2 =
                 CompletableFuture.supplyAsync(() -> {
-                    System.out.println("T2:洗茶壶...");
+                    System.out.println("T2:洗茶壶..."+Thread.currentThread().getName());
                     sleep(1, TimeUnit.SECONDS);
 
-                    System.out.println("T2:洗茶杯...");
+                    System.out.println("T2:洗茶杯..."+Thread.currentThread().getName());
                     sleep(2, TimeUnit.SECONDS);
 
-                    System.out.println("T2:拿茶叶...");
+                    System.out.println("T2:拿茶叶..."+Thread.currentThread().getName());
                     sleep(1, TimeUnit.SECONDS);
                     return "龙井";
                 });
@@ -96,14 +99,14 @@ public class TestFuture {
 
         @Override
         public String call() throws Exception {
-            System.out.println("T1:洗水壶...");
+            System.out.println("T1:洗水壶..."+Thread.currentThread().getName());
             TimeUnit.SECONDS.sleep(1);
 
-            System.out.println("T1:烧开水...");
-            TimeUnit.SECONDS.sleep(15);
+            System.out.println("T1:烧开水..."+Thread.currentThread().getName());
+            TimeUnit.SECONDS.sleep(2);
             // 获取T2线程的茶叶
             String tf = ft2.get();
-            System.out.println("T1:拿到茶叶:" + tf);
+            System.out.println("T1:拿到茶叶:" + tf+"===="+Thread.currentThread().getName());
 
             System.out.println("T1:泡茶...");
             return "上茶:" + tf;
@@ -115,13 +118,13 @@ public class TestFuture {
     class T2Task implements Callable<String> {
         @Override
         public String call() throws Exception {
-            System.out.println("T2:洗茶壶...");
+            System.out.println("T2:洗茶壶..."+Thread.currentThread().getName());
             TimeUnit.SECONDS.sleep(1);
 
-            System.out.println("T2:洗茶杯...");
+            System.out.println("T2:洗茶杯..."+Thread.currentThread().getName());
             TimeUnit.SECONDS.sleep(2);
 
-            System.out.println("T2:拿茶叶...");
+            System.out.println("T2:拿茶叶..."+Thread.currentThread().getName());
             TimeUnit.SECONDS.sleep(1);
             return "龙井";
 
