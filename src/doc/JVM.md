@@ -17,7 +17,7 @@
 Java中提供的这四种类型的加载器，是有各自的职责的：
 
 - Bootstrap ClassLoader ，主要负责加载Java核心类库，%JRE_HOME%\lib下的rt.jar、resources.jar、charsets.jar和class等。
-- Extention ClassLoader，主要负责加载目录%JRE_HOME%\lib\ext目录下的jar包和class文件。
+-  Extention ClassLoader，主要负责加载目录%JRE_HOME%\lib\ext目录下的jar包和class文件。
 - Application ClassLoader ，主要负责加载当前应用的classpath下的所有类
 - User ClassLoader ， 用户自定义的类加载器,可加载指定路径的class文件
 
@@ -27,7 +27,7 @@ Java中提供的这四种类型的加载器，是有各自的职责的：
 
 - 首先，**通过委派的方式，可以避免类的重复加载**，当父加载器已经加载过某一个类时，子加载器就不会再重新加载这个类
 
-- 另外，**通过双亲委派的方式，还保证了安全性**。因为Bootstrap ClassLoader在加载的时候，只会加载JAVA_HOME中的jar包里面的类，如java.lang.Integer，那么这个类是不会被随意替换的，除非有人跑到你的机器上， 破坏你的JDK。那么，就可以避免有人自定义一个有破坏功能的java.lang.Integer被加载。这样可以有效的防止核心Java API被篡改。
+- 另外，**通过双亲委派的方式，还保证了安全性**。因为Bootstrap Cla ssLoader在加载的时候，只会加载JAVA_HOME中的jar包里面的类，如java.lang.Integer，那么这个类是不会被随意替换的，除非有人跑到你的机器上， 破坏你的JDK。那么，就可以避免有人自定义一个有破坏功能的java.lang.Integer被加载。这样可以有效的防止核心Java API被篡改。
 
 ##### "父子加载器"之间的关系是继承吗
 
@@ -287,7 +287,7 @@ if (c == null) {
 
 ##### 方法区
 
-- 各个线程共享的内存区域，`它用于存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据`
+- 各个线程共享的内存区域，它用于存储已被虚拟机加载的==类信息、常量、静态变量、即时编译器编译后的代码==等数据
 - 永久代。 方法区中的信息一般需要长期存在，而且它又是堆的逻辑分区，因此用堆的划分方法，把方法区称为“永久代”。
 - 内存回收效率低。 方法区中的信息一般需要长期存在，回收一遍之后可能只有少量信息无效。主要回收目标是：对常量池的回收；对类型的卸载
 
