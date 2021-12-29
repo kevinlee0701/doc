@@ -1,4 +1,4 @@
-package com.kevinlee.demo;
+package com.kevinlee;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
