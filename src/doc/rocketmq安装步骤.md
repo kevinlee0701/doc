@@ -145,3 +145,14 @@ rocketmq服务关闭
 yum install java-devel
 ```
 
+
+
+### rocketmq可视化客户端
+
+运行如下命令启动客户端
+
+```sh
+cd /home/kevinlee/software
+java -jar rocketmq-console-ng-1.0.0.jar
+```
+
