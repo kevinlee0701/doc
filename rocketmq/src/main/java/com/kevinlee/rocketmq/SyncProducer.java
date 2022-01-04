@@ -19,7 +19,7 @@ public class SyncProducer {
         producer.setNamesrvAddr("172.16.95.138:9876");
         // 启动Producer实例
         producer.start();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             // 创建消息，并指定Topic，Tag和消息体
             Message msg = new Message("test2" /* Topic */,
                     "*" /* Tag */,
