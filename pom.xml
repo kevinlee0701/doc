@@ -16,6 +16,10 @@
     <properties>
         <java.version>1.8</java.version>
     </properties>
+    <modules>
+        <module>book</module>
+    </modules>
+    <packaging>pom</packaging>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
