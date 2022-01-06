@@ -1,4 +1,4 @@
-package com.kevinlee.bool;
+package com.kevinlee.book;
 
 
 import org.springframework.stereotype.Controller;
