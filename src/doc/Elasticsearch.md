@@ -232,6 +232,8 @@ yum install -y kibana-7.6.1-x86_64.rpm
 
 - 修改配置文件
 
+  进入：/etc/kibana/kibana.yml
+
 ```shell
 server.port: 5606 #kibana端口号
 server.host: "172.16.95.136"#kibana服务ip地址

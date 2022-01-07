@@ -156,3 +156,4 @@ cd /home/kevinlee/software
 java -jar rocketmq-console-ng-1.0.0.jar
 ```
 
+访问地址：http://72.16.95.138:8888
