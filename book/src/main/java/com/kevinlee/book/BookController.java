@@ -12,11 +12,11 @@ public class BookController {
 
     @RequestMapping("/")
     public String index(){
-        return "/index";
+        return "index";
     }
 
     @RequestMapping("/test")
     public String test(){
-        return "/test";
+        return "test";
     }
 }
