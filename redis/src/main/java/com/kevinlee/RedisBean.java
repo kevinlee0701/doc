@@ -2,6 +2,7 @@ package com.kevinlee;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
  * @Version 1.0
  **/
 @Data
-public class RedisBean {
+public class RedisBean implements Serializable  {
 
     private Integer id;
 
