@@ -2539,7 +2539,7 @@ Code
 
 
 
-```
+```shell
 # 日期 range
 POST products/_search
 {
