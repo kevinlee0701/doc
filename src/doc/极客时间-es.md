@@ -920,7 +920,7 @@ Code
 
 
 
-```
+```json
 PUT movies
 {
     "mappings": {
@@ -950,7 +950,7 @@ Code
 
 
 
-```
+```json
 PUT users
 {
 	"mapping" : {
@@ -976,7 +976,7 @@ Index Options
 - positions - 记录 doc id / term frequencies / term position
 - offsets - doc id / term frequencies / term posistion / character offects
 
-Text类型默认记录postions, 其他默认为docs
+==Text类型默认记录postions, 其他默认为docs==
 
 记录内容越多，占用存储空间越大
 
@@ -986,7 +986,7 @@ Code
 
 
 
-```
+```json
 PUT users
 {
 	"mapping" : {
@@ -1017,7 +1017,7 @@ Code
 
 
 
-```
+```json
 GET users/_search?q=mobile:NULL
 
 PUT users
@@ -1049,7 +1049,7 @@ Code
 
 
 
-```
+```json
 PUT users
 {
 	"mapping" : {
@@ -1073,13 +1073,9 @@ GET users/_search?q=fullName:(Ruan YiMing)
 
 Elasticsearch中不提供专门的数组类型。但是任何字段，都可以包含多个相同类类型的数值
 
-
-
 Code
 
-
-
-```
+```json
 put users/_doc/1
 {
 	"name":"onebird",
@@ -1095,13 +1091,9 @@ put users/_doc/2
 
 ##### demo
 
-
-
 Code
 
-
-
-```
+```json
 #设置 index 为 false
 DELETE users
 PUT users
@@ -1253,9 +1245,7 @@ GET users/_mapping
 
 Code
 
-
-
-```
+```json
 PUT products
 {
   "mappings":{
@@ -1334,7 +1324,7 @@ Code
 
 
 
-```
+```json
 {
   "settings": {
     "analysis": {
@@ -1363,7 +1353,7 @@ Code
 
 
 
-```
+```json
 PUT logs/_doc/1
 {"level":"DEBUG"}
 
@@ -1479,7 +1469,7 @@ Code
 
 
 
-```
+```json
 PUT _template/template_default
 {
   "index_patterns": ["*"],
@@ -1500,7 +1490,7 @@ Code
 
 
 
-```
+```json
 PUT /_template/template_test
 {
   "index_patterns": ["test*"],
@@ -1539,7 +1529,7 @@ Code
 
 
 
-```
+```shell
 #数字字符串被映射成text，日期字符串被映射成日期
 PUT ttemplate/_doc/1
 {
@@ -1608,6 +1598,8 @@ DELETE /_template/template_default
 DELETE /_template/template_test
 ```
 
+---
+
 ##### Dynamic Template
 
 什么是 Dynamic Template
@@ -1626,7 +1618,7 @@ Code
 
 
 
-```
+```shell
 PUT my_test_index
 {
   "mapping": {
@@ -1655,13 +1647,9 @@ PUT my_test_index
 
 留意数组中的顺序
 
-
-
 Code
 
-
-
-```
+```shell
 put my_index
 {
   "mapping": {
@@ -1796,8 +1784,8 @@ Kibana可视化报表-聚合分析
 
 集合的分类
 
-- Bucket Aggregation - —些列满足特定条件的文档的集合
-- Metric Aggregation - 一些数学运算，可以对文档字段进行统计分析
+- Bucket Aggregation - —些列满足特定条件的文档的集合【相当于group】
+- Metric Aggregation - 一些数学运算，可以对文档字段进行统计分析【相当于 count，sum函数 】
 - Pipeline Aggregation - 对其他的聚合结果进行二次聚合
 - Matrix Aggregration -支持对多个字段的操作并提供一个结果矩阵
 
@@ -1827,7 +1815,7 @@ Code
 
 
 
-```
+```shell
 GET 127.0.0.1/mytest/doc/_search
 {
     "query": { ... },
@@ -1852,6 +1840,32 @@ GET 127.0.0.1/mytest/doc/_search
     }
 }
 ```
+
+
+
+```shell
+GET kibana_sample_data_flights/_search
+{
+  "aggs": {
+    "flight_dest": {
+      "terms": {
+        "field": "DestCountry"
+      }
+      ,
+      "aggs": {
+        "avg_price": {
+          "avg": {
+            "field": "AvgTicketPrice"
+          }
+        }
+      }
+    }
+   
+  }
+}
+```
+
+
 
 一个 Bucket 的例子
 
@@ -1934,7 +1948,7 @@ GET kibana_sample_data_flights/_search
           }
         },
         "weather": {
-          "team": {
+          "terms": {
             "field": "DestWeather"
           }
         }
@@ -2164,7 +2178,7 @@ Code
 
 
 
-```
+```json
 DELETE products
 PUT products
 {"settings": { "number_of_shards": 1 } }
@@ -2404,7 +2418,7 @@ Code
 
 
 
-```
+```shell
 #结构化搜索，精确匹配
 DELETE products
 POST /products/_bulk
