@@ -3578,7 +3578,7 @@ POST titles/_bulk
 { "index": { "_id": 1 }}
 { "title": "My dog barks" }
 { "index": { "_id": 2 }}
-{ "title": "I see a lot of barking dogs on the road " }
+{ "title": "I see a lot of barking dogds on the road " }
 
 
 GET titles/_search
