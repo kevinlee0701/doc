@@ -2744,7 +2744,7 @@ IDF 的概念，最早是剑桥大学的“斯巴克.琼斯”提出
 
 Lucene中的 TF-IDF 评分公式
 
-[![TF-IDF 评分公式](https://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210105125721873.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210105125721873.png)
+<img src="/Users/kevinlee/Library/Application Support/typora-user-images/image-20220210102349288.png" alt="image-20220210102349288" style="zoom:80%;" />
 
 TF-IDF 评分公式
 
@@ -2753,15 +2753,11 @@ BM 25
 - 从 ES 5 开始，默认算法改为 BM 25
 - 和经典的TF-IDF相比，当 TF 无限增加时， BM 25算分会趋于一个数值
 
-[![image-20210105125841555](https://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210105125841555.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210105125841555.png)
-
-image-20210105125841555
+![image-20220210102620461](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220210102620461.png)
 
 定制 Similarity
 
-[![image-20210105125935878](https://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210105125935878.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210105125935878.png)
-
-image-20210105125935878
+![image-20220210102712496](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220210102712496.png)
 
 - K 默认值是 1.2，数值越小，饱和度越高，b 默认值是0.75（取值范围 0-1），0 代表禁止 Normalization
 
@@ -2779,7 +2775,7 @@ Code
 
 
 
-```
+```apl
 PUT testscore
 {
   "settings": {
@@ -3241,7 +3237,7 @@ POST news/_search
 }
 ```
 
-Boosting Query
+==Boosting Query-用于不排除搜索结果，将匹配低的放到最后==
 
 
 
@@ -3504,3 +3500,694 @@ POST blogs/_search
 相关阅读
 
 - https://www.elastic.co/guide/en/elasticsearch/reference/7.1/query-dsl-dis-max-query.html
+
+---
+
+#### 29 | 单字符串多字段查询：Multi Match
+
+三种场景
+
+- 最佳字段 (Best Fields): 当字段之间相互竞争，又相互关联。例如 title 和 body 这样的字段。评分来自最匹配字段
+- 多数字段 (Most Fields): 处理英文内容时：一种常⻅的手段是，在主字段( English Analyzer)，抽取词干，加入同义词，以匹配更多的文档。相同的文本，加入子字段(Standard Analyzer)，以提供更加精确的匹配。其他字段作为匹配文档提高相关度的信号。匹配字段越多则越好
+- 混合字段 (Cross Field): 对于某些实体，例如人名，地址，图书信息。需要在多个字段中确定信息，单个字段只能作为整体的一部分。希望在任何这些列出的字段中找到尽可能多的词
+
+Multi Match Query
+
+Best Fields 是默认类型，可以不用指定
+
+Minimum should match 等参数可以传递到生成的 query中
+
+
+
+Code
+
+
+
+```shell
+POST blogs/_search
+{
+    "query": {
+        "dis_max": {
+            "queries": [
+                { "match": { "title": "Quick pets" }},
+                { "match": { "body":  "Quick pets" }}
+            ],
+            "tie_breaker": 0.2
+        }
+    }
+}
+
+POST blogs/_search
+{
+  "query": {
+    "multi_match": {
+      "type": "best_fields",
+      "query": "Quick pets",
+      "fields": ["title","body"],
+      "tie_breaker": 0.2,
+      "minimum_should_match": "20%"
+    }
+  }
+}
+```
+
+一个查询案例
+
+英文分词器，导致精确度降低，时态信息丢失
+
+
+
+Code
+
+
+
+```
+PUT /titles
+{
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text",
+        "analyzer": "english"
+      }
+    }
+  }
+}
+
+POST titles/_bulk
+{ "index": { "_id": 1 }}
+{ "title": "My dog barks" }
+{ "index": { "_id": 2 }}
+{ "title": "I see a lot of barking dogs on the road " }
+
+
+GET titles/_search
+{
+  "query": {
+    "match": {
+      "title": "barking dogs"
+    }
+  }
+}
+```
+
+使用多数字段匹配解决
+
+用广度匹配字段 title 包括尽可能多的文档——以提升召回率——同时又使用字段 title.std 作为信号 将相关度更高的文档置于结果顶部。
+
+每个字段对于最终评分的贡献可以通过自定义值 boost 来控制。比如，使 title 字段更为重要， 这样同时也降低了其他信号字段的作用：
+
+
+
+Code
+
+
+
+```
+DELETE /titles
+PUT /titles
+{
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text",
+        "analyzer": "english",
+        "fields": {"std": {"type": "text","analyzer": "standard"}}
+      }
+    }
+  }
+}
+
+POST titles/_bulk
+{ "index": { "_id": 1 }}
+{ "title": "My dog barks" }
+{ "index": { "_id": 2 }}
+{ "title": "I see a lot of barking dogs on the road " }
+
+GET /titles/_search
+{
+   "query": {
+        "multi_match": {
+            "query":  "barking dogs",
+            "type":   "most_fields",
+            "fields": [ "title", "title.std" ]
+        }
+    }
+}
+
+GET /titles/_search
+{
+   "query": {
+        "multi_match": {
+            "query":  "barking dogs",
+            "type":   "most_fields",
+            "fields": [ "title^10", "title.std" ]
+        }
+    }
+}
+```
+
+跨字段搜索
+
+无法使用 Operator
+
+可以用 copy_to 解决，但是需要额外的存储空间
+
+
+
+Code
+
+
+
+```
+POST address/_msearch
+{
+  "query": {
+    "multi_match": {
+      "query": "Poland Street W1V",
+      "type": "cross_fields",
+      // "operator": "and",
+      "fields": [ "street", "city", "country", "postcode" ]
+    }
+  }
+}
+```
+
+支持使用 Operator
+
+与 copy_to, 相比，其中一个优势就是它可以在搜索时为单个字段提升权重。
+
+
+
+Code
+
+
+
+```
+POST address/_msearch
+{
+  "query": {
+    "multi_match": {
+      "query": "Poland Street W1V",
+      "type": "cross_fields",
+      "operator": "and",
+      "fields": [ "street", "city", "country", "postcode" ]
+    }
+  }
+}
+```
+
+本节知识点回顾
+
+- Multi Match 查询的基本语法
+- 查询的类型：最佳字段 / 多数字段 / 跨字段
+- Boosting
+- 控制 Precision：以及使用子字段多数字段算分，控制；使用 Operator
+
+#### 30 | 多语言及中文分词与检索
+
+自然语言与查询 Recall
+
+当处理人类自然语言时，有些情况，尽管搜索和原文不完全匹配，但是希望搜到一些内容; 例如 Quick brown fox 和 fast brown fox / Jumping fox 和 Jumped foxes
+
+一些可采取的优化
+
+- 归一化词元：清除变音符号，如 rôle 的时候也会匹配 role
+- 抽取词根：清除单复数和时态的差异
+- 包含同义词
+- 拼写错误：拼写错误，或者同音异形词
+
+混合多语言的挑战
+
+一些具体的多语言场景； 例如 不同的索引使用不同的语言 / 同一个索引中，不同的字段使用不同的语言 / 一个文档的一个字段内混合不同的语言
+
+混合语言存在的一些挑战
+
+- 词干提取：以色列文档，包含了希伯来语，阿拉伯语，俄语和英文
+- 不正确的文档频率 – 英文为主的文章中，德文算分高（稀有）
+- 需要判断用户搜索时使用的语言，语言识别（Compact Language Detector)，例如，根据语言，查询不同的索引
+
+分词的挑战
+
+英文分词：You’re 分成一个还是多个？Half-baked
+
+中文分词：
+
+- 分词标准：哈工大标准中，姓和名分开。 HanLP 是在一起的。具体情况需制定不同的标准
+- 歧义 （组合型歧义，交集型歧义，真歧义），例如 中华人⺠共和国 / 美国会通过对台售武法案 / 上海仁和服装厂
+
+
+
+Code
+
+
+
+```
+#stop word
+
+DELETE my_index
+PUT /my_index/_doc/1
+{ "title": "I'm happy for this fox" }
+
+PUT /my_index/_doc/2
+{ "title": "I'm not happy about my fox problem" }
+
+POST my_index/_search
+{
+  "query": {
+    "match": {
+      "title": "not happy fox"
+    }
+  }
+}
+```
+
+中文分词方法的演变 - 字典法
+
+查字典 - 最容易想到的分词方法 （北京航空大学的梁南元教授提出）
+
+- 一个句子从左到右扫描一遍。遇到有的词就标示出来。找到复合词，就找最⻓的
+- 不认识的字串就分割成单字词
+
+最小词数的分词理论 – 哈工大王晓⻰博士把查字典的方法理论化
+
+- 一句话应该分成数量最少的词串
+- 遇到二义性的分割，无能为力（例如：“发展中国家” / “上海大学城书店”）
+- 用各种文化规则来解决二义性，都并不成功
+
+中文分词方法的演变 - 基于统计学的机器学习方法
+
+统计语言模型 – 1990年前后，清华大学电子工程系郭进博士
+
+解决了二义性问题，将中文分词的错误率降低了一个数量级。概率问题，动态规划 + 利用维特比算法快速找到最佳分词
+
+基于统计的机器学习算法
+
+这类目前常用的是算法是HMM、CRF、SVM、深度学习等算法。比如 Hanlp 分词工具是基于CRF 算法以CRF为例，基本思路是对汉字进行标注训练，不仅考虑了词语出现的频率，还考虑上下文， 具备较好的学习能力，因此其对歧义词和未登录词的识别都具有良好的效果。
+
+随着深度学习的兴起，也出现了基于神经网络的分词器，有人尝试使用双向LSTM+CRF实现分词器， 其本质上是序列标注，据报道其分词器字符准确率可高达97.5%
+
+中文分词现状
+
+中文分词器以统计语言模型为基础，经过几十年的发展，今天基本已经可以看作是一个已经解决的问题
+
+不同分词器的好坏，主要的差别在于数据的使用和工程使用的精度
+
+常⻅的分词器都是使用机器学习算法和词典相结合，一方面能够提高分词准确率，另一方面能够改善领域适应性。
+
+一些中文分词期
+
+HanLP – 面向生产环境的自然语言处理工具包
+
+- http://hanlp.com/
+- https://github.com/KennFalcon/elasticsearch-analysis-hanlp
+
+IK 分词器：https://github.com/medcl/elasticsearch-analysis-ik
+
+HanLP Analysis
+
+HanLP：./elasticsearch-plugin install https://github.com/KennFalcon/elasticsearch-analysis-hanlp/releases/download/v7.1.0/elasticsearch-analysis-hanlp-7.1.0.zip
+
+也可以通过远程字典配置
+
+IK Analysis
+
+HanLP：./elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v7.1.0/elasticsearch-analysis-ik-7.1.0.zip
+
+特性：支持字典热更新
+
+Pinyin Analysis
+
+Pinyin：./elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-pinyin/releases/download/v7.1.0/elasticsearch-analysis-pinyin-7.1.0.zip
+
+##### 中文分词Demo
+
+使用不同的分词器测试效果
+
+索引时，尽量切分的短，查询的时候，尽量用⻓的词
+
+拼音分词器
+
+- 来到杨过曾经生活过的地方，小龙女动情地说：“我也想过过过儿过过的生活。”
+- 你也想犯范范玮琪犯过的错吗
+- 校长说衣服上除了校徽别别别的
+- 这几天天天天气不好
+- 我背有点驼，麻麻说“你的背得背背背背佳
+
+分词期有：analysis-icu，
+
+
+
+Code
+
+
+
+```
+#ik_max_word
+#ik_smart
+#hanlp: hanlp默认分词
+#hanlp_standard: 标准分词
+#hanlp_index: 索引分词
+#hanlp_nlp: NLP分词
+#hanlp_n_short: N-最短路分词
+#hanlp_dijkstra: 最短路分词
+#hanlp_crf: CRF分词（在hanlp 1.6.6已开始废弃）
+#hanlp_speed: 极速词典分词
+
+POST _analyze
+{
+  "analyzer": "hanlp_standard",
+  "text": ["剑桥分析公司多位高管对卧底记者说，他们确保了唐纳德·特朗普在总统大选中获胜"]
+}
+
+#Pinyin
+PUT /artists/
+{
+    "settings" : {
+        "analysis" : {
+            "analyzer" : {
+                "user_name_analyzer" : {
+                    "tokenizer" : "whitespace",
+                    "filter" : "pinyin_first_letter_and_full_pinyin_filter"
+                }
+            },
+            "filter" : {
+                "pinyin_first_letter_and_full_pinyin_filter" : {
+                    "type" : "pinyin",
+                    "keep_first_letter" : true,
+                    "keep_full_pinyin" : false,
+                    "keep_none_chinese" : true,
+                    "keep_original" : false,
+                    "limit_first_letter_length" : 16,
+                    "lowercase" : true,
+                    "trim_whitespace" : true,
+                    "keep_none_chinese_in_first_letter" : true
+                }
+            }
+        }
+    }
+}
+
+GET /artists/_analyze
+{
+  "text": ["刘德华 张学友 郭富城 黎明 四大天王"],
+  "analyzer": "user_name_analyzer"
+}
+```
+
+##### 本节知识点回顾
+
+多语言搜索的挑战，例如 分词 / 语言检测 / 相关性算分
+
+Elasticsearch 中，多语言搜索所使用的一些技巧，例如 归一化词元 / 单词词根抽取 / 同义词 / 拼写错误
+
+中文分词的演进及一些 ES 中文分词器 & 拼音分词器介绍
+
+#### 31 | Space Jam，一次全文搜索的实例
+
+目的
+
+目标：用过一个具体案例，帮助你了解并巩固所学的知识点
+
+- 写入数据 / 设置 Mapping，设置 Analysis
+- 查询并高亮显示结果
+- 分析查询结果，通过修改配置和查询，优化搜索的相关性
+
+分析问题，结合原理，分析思考并加以实践
+
+TMDB 数据库
+
+创建于 2008 年，电影的 Meta Data 库, 有46 万本电影 / 12万本电视剧 / 230万张图片 / 每周 20万次编辑；他们 提供 API。总共有超过20万开发人员和公司在使用
+
+数据导入
+
+- 数据特征 – 标题信息较短 / 概述相对较⻓
+- 通 过 TDMB Search API
+- 将查询数据保存在本地 CSV 文件中
+- 使用 Python 导入及查询数据
+- 索引的主分片数设置为 1，使用默认 Dynamic Mapping
+
+Use Case - 查找 Space Jam
+
+空中大灌篮 (Space JAM)，有华纳公司动画明星 / 篮球巨星乔丹 / 外星小怪物
+
+案例：用户不记得电影名，而希望通过一些关键字，搜索到电影的详细信息，搜索关键字：“Basketball with Cartoon Aliens”
+
+思考和分析
+
+- “精确值” 还是 “全文”？
+- 搜索是怎么样的？不同的字段需要配置怎么样的分词器
+- 测试不同的的选项
+  - 分词期 / 多字段属性 / 是否要 g-grams / what are some critical synonyms / 为字段设置不同的权重
+  - 测试不同的选项，测试不同的搜索条件
+
+demo
+
+- 查看 csv 文件中的电影源数据
+- 使用默认 Dynamic Mapping，用 Python 导入数据
+- 查看搜索结果和相关性算分 / 对搜索结果高亮显示
+- 使用英文分词器 / 为查询语句设置不同的 Boosting / 增加子多字段
+
+测试相关性 - 理解原理 + 多分析 + 多调整测试
+
+技术分为道和术两种
+
+- 道 – 原理和原则
+- 术 – 具体的做法，具体的解法
+
+关于搜索，为了有一个好的搜索结果。除了真正理解背后的原理，更需要多加实践与分析
+
+- 单纯追求“术”，会一直很辛苦。只有掌握了本质和精髓之“道”，做事才能游刃有余
+- 要做好搜索，除了理解原理，也需要坚持去分析一些不好的搜索结果。只有通过一定时间的积累， 才能真正有所感觉
+- 总希望一个模型，一个算法，就能毕其功于一役，是不现实的
+
+监控并且理解用户行为
+
+- 不要过度调试相关度
+- 而要监控搜索结果，监控用户点击最顶端结果的频次
+- 将搜索结果提高到极高水平，唯一途径就是
+  - 需要具有度量用户行为的强大能力
+  - 可以在后台实现统计数据，比如，用户的查询和结果，有多少被点击了
+  - 哪些搜索，没有返回结果
+
+本节知识点回顾
+
+- 目标：用过一个具体案例，帮助你了解并巩固所学的知识点
+- 使用 Python 脚本导入及查询数据 / Mapping 设定
+- Mapping 设定和分词器的选择至关重要
+- 监控并理解用户行为 / 查询并调试相关度
+  - Boosting 查询字段 / Explain API / 高亮显示
+
+环境要求
+
+- Python 2.7.15
+- 可以使用pyenv管理多个python版本（可选）
+
+进入 tmdb-search目录
+
+
+
+Code
+
+
+
+```
+Run
+pip install -r requirements.txt
+Run python ./ingest_tmdb_from_file.py
+```
+
+通过不同的索引，查看搜索结果
+
+
+
+Code
+
+
+
+```
+tmdb-search]# python ./ingest_tmdb_from_file.py
+tmdb-search]# python query_tmdb.py
+```
+
+课程demo
+
+
+
+Code
+
+
+
+```
+POST tmdb/_search
+{
+"_source": ["title","overview"],
+ "query": {
+   "match_all": {}
+ }
+}
+
+POST tmdb/_search
+{
+  "_source": ["title","overview"],
+  "query": {
+    "multi_match": {
+      "query": "basketball with cartoon aliens",
+      "fields": ["title","overview"]
+    }
+  },
+  "highlight" : {
+        "fields" : {
+            "overview" : { "pre_tags" : ["\\033[0;32;40m"], "post_tags" : ["\\033[0m"] },
+            "title" : { "pre_tags" : ["\\033[0;32;40m"], "post_tags" : ["\\033[0m"] }
+
+        }
+    }
+}
+```
+
+相关
+
+- Windows 安装 pyenv https://github.com/pyenv-win/pyenv-win
+- Mac 安装pyenv https://segmentfault.com/a/1190000017403221
+- Linux 安装 pyenv https://blog.csdn.net/GX_1_11_real/article/details/80237064
+- Python.org https://www.python.org/
+
+#### 32 | 使 用 Search Template 和 Index Alias
+
+Search Template - 解偶程序 & 搜索 DSL
+
+Elasticsearch 的查询语句, 对相关性算分 / 查询性能都至关重要
+
+在开发初期，虽然可以明确查询参数，但是往往还不能最终定义查询的DSL的具体结构, 通过 Search Template 定义一个Contract; 通过 Search Template 定义一个Contract
+
+各司其职，解耦, 例如 开发人员 / 搜索工程师 / 性能工程师
+
+使用 Search Template 进行查询
+
+
+
+Code
+
+
+
+```
+DELETE _scripts/tmdb
+POST _scripts/tmdb
+{
+  "script": {
+    "lang": "mustache",
+    "source": {
+      "_source": [
+        "title","overview"
+      ],
+      "size": 20,
+      "query": {
+        "multi_match": {
+          "query": "{{q}}",
+          "fields": ["title","overview"]
+        }
+      }
+    }
+  }
+}
+
+GET _scripts/tmdb
+
+POST tmdb/_search/template
+{
+    "id":"tmdb",
+    "params": {
+        "q": "basketball with cartoon aliens"
+    }
+}
+```
+
+Index Alias 实现零停机运维
+
+- 为索引定义一个别名
+- 通过别名读写数据
+
+
+
+Code
+
+
+
+```
+PUT movies-2019/_doc/1
+{
+  "name":"the matrix",
+  "rating":5
+}
+
+PUT movies-2019/_doc/2
+{
+  "name":"Speed",
+  "rating":3
+}
+
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "movies-2019",
+        "alias": "movies-latest"
+      }
+    }
+  ]
+}
+
+POST movies-latest/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+
+使用 Alias 创建不同查询的视图
+
+
+
+Code
+
+
+
+```
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "movies-2019",
+        "alias": "movies-lastest-highrate",
+        "filter": {
+          "range": {
+            "rating": {
+              "gte": 4
+            }
+          }
+        }
+      }
+    }
+  ]
+}
+
+POST movies-lastest-highrate/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+
+本期知识点回顾
+
+Search Template 的使用场景：如果通过 Mocha 语法定义一个 Search Template
+
+Index Alias 的使用场景
+
+1. 如何创建与使用 Index Alias
+2. 通过 Index Alias 创建不同的查询视图
