@@ -4155,7 +4155,7 @@ Code
 
 
 
-```
+```shell
 POST _aliases
 {
   "actions": [
@@ -4191,3 +4191,1197 @@ Index Alias 的使用场景
 
 1. 如何创建与使用 Index Alias
 2. 通过 Index Alias 创建不同的查询视图
+
+#### 33 | 综合排序：Function Score Query 优化算分
+
+算分和排序
+
+- Elasticsearch 默认会以文档的相关度算分进行排序
+- 可以通过指定一个或者多个字段进行排序
+- 使用相关度算分(score)排序，不能满足某些特定条件
+  - 无法针对相关度，对排序实现更多的控制
+
+Function Score Query
+
+可以在查询结束后，对每一个匹配的文档进行一系列的重新算分，根据新生成的分数进行排序。
+
+提供了几种默认的计算分值的函数
+
+- Weight ：为每一个文档设置一个简单而不被规范化的权重
+- Field Value Factor：使用该数值来修改 _score，例如将 “热度”和“点赞数”作为算分的参考因素
+- Random Score：为每一个用户使用一个不同的，随机算分结果
+- 衰减函数： 以某个字段的值为标准，距离某个值越近，得分越高
+- Script Score：自定义脚本完全控制所需逻辑
+
+按受欢迎度提升权重
+
+希望能够将点赞多的 blog，放在搜索列表相对靠前的位置。同时搜索的评分，还是要作为排序的主要依据
+
+新的算分 = 老的算分 * 投票数；比如 投票数 为 0，或者 投票数很大时
+
+
+
+Code
+
+
+
+```sh
+DELETE blogs
+PUT /blogs/_doc/1
+{
+  "title":   "About popularity",
+  "content": "In this post we will talk about...",
+  "votes":   0
+}
+
+PUT /blogs/_doc/2
+{
+  "title":   "About popularity",
+  "content": "In this post we will talk about...",
+  "votes":   100
+}
+
+PUT /blogs/_doc/3
+{
+  "title":   "About popularity",
+  "content": "In this post we will talk about...",
+  "votes":   1000000
+}
+
+POST /blogs/_search
+{
+  "query": {
+    "function_score": {
+      "query": {
+        "multi_match": {
+          "query":    "popularity",
+          "fields": [ "title", "content" ]
+        }
+      },
+      "field_value_factor": {
+        "field": "votes"
+      }
+    }
+  }
+}
+```
+
+使用 Modifier 平滑曲线
+
+新的算分 = 老的算分 * log( 1 + 投票数 )
+
+
+
+Code
+
+
+
+```sh
+POST /blogs/_search
+{
+  "query": {
+    "function_score": {
+      "query": {
+        "multi_match": {
+          "query":    "popularity",
+          "fields": [ "title", "content" ]
+        }
+      },
+      "field_value_factor": {
+        "field": "votes",
+        "modifier": "log1p"
+      }
+    }
+  }
+}
+```
+
+引入 Factor
+
+新的算分 = 老的算分 * log( 1 + factor *投票数 )
+
+
+
+Code
+
+
+
+```sh
+POST /blogs/_search
+{
+  "query": {
+    "function_score": {
+      "query": {
+        "multi_match": {
+          "query":    "popularity",
+          "fields": [ "title", "content" ]
+        }
+      },
+      "field_value_factor": {
+        "field": "votes",
+        "modifier": "log1p" ,
+        "factor": 0.1
+      }
+    }
+  }
+}
+```
+
+Boost Mode 和 Max Boost
+
+Boost Mode
+
+- Multiply：算分与函数值的乘积
+- Sum：算分与函数的和
+- Min / Max：算分与函数取 最小/ 最大值
+- Replace：使用函数值取代算分
+
+Max Boost 可以将算分控制在一个最大值
+
+
+
+Code
+
+
+
+```
+POST /blogs/_search
+{
+  "query": {
+    "function_score": {
+      "query": {
+        "multi_match": {
+          "query":    "popularity",
+          "fields": [ "title", "content" ]
+        }
+      },
+      "field_value_factor": {
+        "field": "votes",
+        "modifier": "log1p" ,
+        "factor": 0.1
+      },
+      "boost_mode": "sum",
+      "max_boost": 3
+    }
+  }
+}
+```
+
+一致性随机函数
+
+使用场景：网站的广告需要提高展现率
+
+具体需求：让每个用户能看到不同的随机排名，但是也希望同一个用户访问时，结果的相对顺序，保持一致 (Consistently Random)
+
+
+
+Code
+
+
+
+```
+POST /blogs/_search
+{
+  "query": {
+    "function_score": {
+      "random_score": {
+        "seed": 911119
+      }
+    }
+  }
+}
+```
+
+本节知识点回顾
+
+- 复合查询：Function Score Query：提供了多种函数，自定义脚本，完全控制算分
+- Field Value Factor：搜索的相关度，能够结合投票的数量进行重算。通过一些参数的设定，对算分进行控制
+- 随机函数：用户提供 Seed，返回一个随机一致性的排序结果
+
+相关阅读
+
+- https://www.elastic.co/guide/en/elasticsearch/reference/7.1/query-dsl-function-score-query.html
+
+#### 34 | Term & Phrase Suggester[自动补全，推荐]
+
+什么是搜索建议
+
+现代的搜索引擎，一般都会提供 Suggest as you type 的功能，帮助用户在输入搜索的过程中，进行自动补全或者纠错。通过协助用户输入更加精准的关键词，提高后续搜索阶段文档匹配的程度
+
+在 google 上搜索，一开始会自动补全。当输入到 一定⻓度，如因为单词拼写错误无法补全， 就会开始提示相似的词或者句子
+
+Elasticsearch Suggester API
+
+搜索引擎中类似的功能，在 Elasticsearch 中是通过 Suggester API 实现的
+
+原理：将输入的文本分解为 Token，然后在索引的字典里查找相似的 Term 并返回
+
+根据不同的使用场景，Elasticsearch 设计了 4 种类别的 Suggesters
+
+- Term & Phrase Suggester
+- Complete & Context Suggester
+
+Term Suggester
+
+Suggester 就是一种特殊类型的搜索。”text” 里是调用时候提供的文本，通常来自于用户界面上用户输入的内容,
+
+用户输入的 “lucen” 是一个错误的拼写, 会到 指定的字段 “body” 上搜索，当无法搜索到结果时 (missing)，返回建议的词
+
+
+
+Code
+
+
+
+```sh
+DELETE articles
+
+POST articles/_bulk
+{ "index" : { } }
+{ "body": "lucene is very cool"}
+{ "index" : { } }
+{ "body": "Elasticsearch builds on top of lucene"}
+{ "index" : { } }
+{ "body": "Elasticsearch rocks"}
+{ "index" : { } }
+{ "body": "elastic is the company behind ELK stack"}
+{ "index" : { } }
+{ "body": "Elk stack rocks"}
+{ "index" : {} }
+{  "body": "elasticsearch is rock solid"}
+
+
+POST _analyze
+{
+  "analyzer": "standard",
+  "text": ["Elk stack  rocks rock"]
+}
+
+POST /articles/_search
+{
+  "size": 1,
+  "query": {
+    "match": {
+      "body": "lucen rock"
+    }
+  },
+  "suggest": {
+    "term-suggestion": {
+      "text": "lucen rock",
+      "term": {
+        "suggest_mode": "missing",
+        "field": "body"
+      }
+    }
+  }
+}
+```
+
+一些测试数据
+
+默认使用 standard 分词器
+
+- 大写转小写
+- rocks 和 rock 是两个词
+
+
+
+Code
+
+
+
+```
+DELETE articles
+PUT articles
+{
+  "mappings": {
+    "properties": {
+      "title_completion":{
+        "type": "completion"
+      }
+    }
+  }
+}
+
+POST articles/_bulk
+{ "index" : { } }
+{ "title_completion": "lucene is very cool"}
+{ "index" : { } }
+{ "title_completion": "Elasticsearch builds on top of lucene"}
+{ "index" : { } }
+{ "title_completion": "Elasticsearch rocks"}
+{ "index" : { } }
+{ "title_completion": "elastic is the company behind ELK stack"}
+{ "index" : { } }
+{ "title_completion": "Elk stack rocks"}
+{ "index" : {} }
+
+
+POST articles/_search?pretty
+{
+  "size": 0,
+  "suggest": {
+    "article-suggester": {
+      "prefix": "elk ",
+      "completion": {
+        "field": "title_completion"
+      }
+    }
+  }
+}
+```
+
+Term Suggester - Missing Mode
+
+搜索 “lucen rock”：每个建议都包含了一个算分，相似性是通过 Levenshtein Edit Distance 的算法实现的。核心思想就是一个词改动多少字符就可以和另外一个词一致。 提供了很多可选参数来控制相似性的模糊程度。例如 “max_edits”
+
+几种 Suggestion Mode
+
+- Missing – 如索引中已经存在，就不提供建议
+- Popular – 推荐出现频率更加高的词
+- Always – 无论是否存在，都提供建议
+
+Term Suggester - Popular Mode
+
+
+
+Code
+
+
+
+```
+POST /articles/_search
+{
+
+  "suggest": {
+    "term-suggestion": {
+      "text": "lucen rock",
+      "term": {
+        "suggest_mode": "popular",
+        "field": "body"
+      }
+    }
+  }
+}
+```
+
+Sorting by Frequency & Prefix Length
+
+默认按照 score 排序，也可以按照“frequency
+
+默认首字⺟不一致就不会匹配推荐，但是如果将 prefix_length 设置为 0，就会为 hock 建议 rock
+
+
+
+Code
+
+
+
+```
+POST /articles/_search
+{
+
+  "suggest": {
+    "term-suggestion": {
+      "text": "lucen hocks",
+      "term": {
+        "suggest_mode": "always",
+        "field": "body",
+        "prefix_length":0,
+        "sort": "frequency"
+      }
+    }
+  }
+}
+```
+
+Phrase Suggester
+
+Phrase Suggester 在 Term Suggester 上增加了一些额外的逻辑
+
+一些参数
+
+- Suggest Mode ：missing, popular, always
+- Max Errors：最多可以拼错的 Terms 数
+- Confidence：限制返回结果数，默认为 1
+
+
+
+Code
+
+
+
+```
+POST /articles/_search
+{
+  "suggest": {
+    "my-suggestion": {
+      "text": "lucne and elasticsear rock hello world ",
+      "phrase": {
+        "field": "body",
+        "max_errors":2,
+        "confidence":0,
+        "direct_generator":[{
+          "field":"body",
+          "suggest_mode":"always"
+        }],
+        "highlight": {
+          "pre_tag": "<em>",
+          "post_tag": "</em>"
+        }
+      }
+    }
+  }
+}
+```
+
+本节知识点回顾
+
+Term Suggester 和 Phrase Suggester 分别有三种不同类型的 Suggestion Mode
+
+- Missing / Popular / Always
+- 通过使用 Suggestion Phrase 可以提高搜索的 Precision 和 Recall
+
+#### 35 | 自动补全与基于上下文的提示
+
+##### The Completion Suggester
+
+Completion Suggester 提供了“自动完成” (Auto Complete) 的功能。用户每输入一个字符，就需要即时发送一个查询请求到后段查找匹配项
+
+对性能要求比较苛刻。Elasticsearch 采用了不同的数据结构，并非通过倒排索引来完成。而是将 Analyze 的数据编码成 FST 和索引一起存放。FST 会被 ES 整个加载进内存，速度很快
+
+FST 只能用于前缀查找
+
+使用 Completion Suggester 的一些步骤
+
+- 定义Mapping，使用 “completion” type
+- 索引数据
+- 运行 “suggest” 查询，得到搜索建议
+
+
+
+Code
+
+
+
+```sh
+DELETE articles
+PUT articles
+{
+  "mappings": {
+    "properties": {
+      "title_completion":{
+        "type": "completion"
+      }
+    }
+  }
+}
+```
+
+索引数据
+
+
+
+Code
+
+
+
+```sh
+POST articles/_bulk
+{ "index" : { } }
+{ "title_completion": "lucene is very cool"}
+{ "index" : { } }
+{ "title_completion": "Elasticsearch builds on top of lucene"}
+{ "index" : { } }
+{ "title_completion": "Elasticsearch rocks"}
+{ "index" : { } }
+{ "title_completion": "elastic is the company behind ELK stack"}
+{ "index" : { } }
+{ "title_completion": "Elk stack rocks"}
+{ "index" : {} }
+```
+
+搜索数据
+
+
+
+Code
+
+
+
+```
+POST articles/_search?pretty
+{
+  "size": 0,
+  "suggest": {
+    "article-suggester": {
+      "prefix": "elk ",
+      "completion": {
+        "field": "title_completion"
+      }
+    }
+  }
+}
+```
+
+什么是 Context Suggester
+
+- Completion Suggester 的扩展
+- 可以在搜索中加入更多的上下文信息，例如，输入 “star”
+  - 咖啡相关：建议 “Starbucks”
+  - 电影相关：”star wars”
+
+实现 Context Suggester
+
+可以定义两种类型的 Context
+
+- Category – 任意的字符串
+- Geo – 地理位置信息
+
+● 实现 Context Suggester 的具体步骤
+
+- 定制一个 Mapping
+- 索引数据，并且为每个文档加入 Context 信息
+- 结合 Context 进行 Suggestion 查询
+
+定义 Mapping
+
+- 增加 Contexts
+  - Type
+  - name
+
+
+
+Code
+
+
+
+```
+DELETE comments
+
+PUT comments/_mapping
+{
+  "properties": {
+    "comment_autocomplete":{
+      "type": "completion",
+      "contexts":[{
+        "type":"category",
+        "name":"comment_category"
+      }]
+    }
+  }
+}
+```
+
+索引数据
+
+设置不同的 Category
+
+
+
+Code
+
+
+
+```
+POST comments/_doc
+{
+  "comment":"I love the star war movies",
+  "comment_autocomplete":{
+    "input":["star wars"],
+    "contexts":{
+      "comment_category":"movies"
+    }
+  }
+}
+
+POST comments/_doc
+{
+  "comment":"Where can I find a Starbucks",
+  "comment_autocomplete":{
+    "input":["starbucks"],
+    "contexts":{
+      "comment_category":"coffee"
+    }
+  }
+}
+```
+
+不同的上下文，自动提示
+
+
+
+Code
+
+
+
+```
+POST comments/_search
+{
+  "suggest": {
+    "MY_SUGGESTION": {
+      "prefix": "sta",
+      "completion":{
+        "field":"comment_autocomplete",
+        "contexts":{
+          "comment_category":"movies"
+          // "comment_category":"coffee"
+        }
+      }
+    }
+  }
+}
+```
+
+精准度和召回率
+
+- 精准度: Completion > Phrase > Term
+- 召回率: Term > Phrase > Completion
+- 性能: Completion > Phrase > Term
+
+本节知识点回顾
+
+- Completion Suggester，对性能要求比较苛刻。采用了不同的数据结构，并非通过倒排索引来完成。而是将 Analyze 的数据编码成 FST 和索引一起存放。FST 会被 ES 整个加载进内存，速度很快
+- 需要设置特定的 Mapping
+- Context Completion Suggester 支持结合不同的上下文，给出推荐
+
+#### 36 | 跨集群搜索
+
+水平扩展的痛点
+
+单集群 – 当水平扩展时，节点数不能无限增加。当集群的 meta 信息（节点，索引，集群状态）过多，会导致更新压力变大，单个 Active Master 会成为性能瓶颈，导致整个集群无法正常工作
+
+早期版本，通过 Tribe Node 可以实现多集群访问的需求，但是还存在一定的问题
+
+- Tribe Node 会以 Client Node 的方式加入每个集群。 集群中 Master 节点的任务变更需要 Tribe Node 的回应才能继续
+- Tribe Node 不保存 Cluster State 信息，一旦重启，初始化很慢
+- 当多个集群存在索引重名的情况时，只能设置一种 Prefer 规则
+
+跨集群搜索 - Cross Cluster Search
+
+早期 Tribe Node 的方案存在一定的问题，现已被 Deprecated
+
+Elasticsearch 5.3 引入了跨集群搜索的功能(Cross Cluster Search)，推荐使用
+
+- 允许任何节点扮演 federated 节点，以轻量的方式，将搜索请求进行代理
+- 不需要以 Client Node 的形式加入其他集群
+
+Demo
+
+- 配置跨集群搜索
+- 每个集群创建相同的索引名，并写入数据
+- 跨集群搜索
+- 在 Kibana 的 Index Pattern 中配置跨集群搜索
+
+配置及查询
+
+
+
+Code
+
+
+
+```sh
+bin/elasticsearch -E node.name=cluster0node -E cluster.name=cluster0 -E path.data=cluster0_data -E discovery.type=single-node -E http.port=9200 -E transport.port=9300 -d
+bin/elasticsearch -E node.name=cluster1node -E cluster.name=cluster1 -E path.data=cluster1_data -E discovery.type=single-node -E http.port=9201 -E transport.port=9301 -d
+bin/elasticsearch -E node.name=cluster2node -E cluster.name=cluster2 -E path.data=cluster2_data -E discovery.type=single-node -E http.port=9202 -E transport.port=9302 -d
+```
+
+配置集群
+
+
+
+Code
+
+
+
+```sh
+//在每个集群上设置动态的设置
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster": {
+      "remote": {
+        "cluster0": {
+          "seeds": [
+            "127.0.0.1:9300"
+          ],
+          "transport.ping_schedule": "30s"
+        },
+        "cluster1": {
+          "seeds": [
+            "127.0.0.1:9301"
+          ],
+          "transport.compress": true,
+          "skip_unavailable": true
+        },
+        "cluster2": {
+          "seeds": [
+            "127.0.0.1:9302"
+          ]
+        }
+      }
+    }
+  }
+}
+
+#cURL
+curl -XPUT "http://localhost:9200/_cluster/settings" -H 'Content-Type: application/json' -d'
+{"persistent":{"cluster":{"remote":{"cluster0":{"seeds":["127.0.0.1:9300"],"transport.ping_schedule":"30s"},"cluster1":{"seeds":["127.0.0.1:9301"],"transport.compress":true,"skip_unavailable":true},"cluster2":{"seeds":["127.0.0.1:9302"]}}}}}'
+
+curl -XPUT "http://localhost:9201/_cluster/settings" -H 'Content-Type: application/json' -d'
+{"persistent":{"cluster":{"remote":{"cluster0":{"seeds":["127.0.0.1:9300"],"transport.ping_schedule":"30s"},"cluster1":{"seeds":["127.0.0.1:9301"],"transport.compress":true,"skip_unavailable":true},"cluster2":{"seeds":["127.0.0.1:9302"]}}}}}'
+
+curl -XPUT "http://localhost:9202/_cluster/settings" -H 'Content-Type: application/json' -d'
+{"persistent":{"cluster":{"remote":{"cluster0":{"seeds":["127.0.0.1:9300"],"transport.ping_schedule":"30s"},"cluster1":{"seeds":["127.0.0.1:9301"],"transport.compress":true,"skip_unavailable":true},"cluster2":{"seeds":["127.0.0.1:9302"]}}}}}'
+```
+
+创建测试数据并查询
+
+
+
+Code
+
+
+
+```shell
+#创建测试数据
+curl -XPOST "http://localhost:9200/users/_doc" -H 'Content-Type: application/json' -d'
+{"name":"user1","age":10}'
+
+curl -XPOST "http://localhost:9201/users/_doc" -H 'Content-Type: application/json' -d'
+{"name":"user2","age":20}'
+
+curl -XPOST "http://localhost:9202/users/_doc" -H 'Content-Type: application/json' -d'
+{"name":"user3","age":30}'
+
+#查询
+GET /users,cluster1:users,cluster2:users/_search
+{
+  "query": {
+    "range": {
+      "age": {
+        "gte": 20,
+        "lte": 40
+      }
+    }
+  }
+}
+```
+
+本节知识点回顾
+
+- 当集群无法水平扩展，或者需要将不同的集群数据实现 数据的 Federation，可以采用跨集群搜索（CCS）
+- Tribe Node 和 Cross Cluster Search 的比较，推荐在新版本中使用 CCS
+- 如何配置并使用 Cross Cluster Search 查询数据
+
+相关阅读
+
+- 在Kibana中使用Cross data search https://kelonsoftware.com/cross-cluster-search-kibana/
+
+#### 37 | 集群分布式模型及选主与脑裂问题
+
+##### 分布式特性
+
+Elasticsearch 的分布式架构带来的好处
+
+- 存储的水平扩容，支持 PB 级数据
+- 提高系统的可用性，部分节点停止服务，整个集群的服务不受影响
+
+Elasticsearch 的分布式架构
+
+- 不同的集群通过不同的名字来区分，默认名字 “elasticsearch”
+- 通过配置文件修改，或者在命令行中 -E cluster.name=geektime 进行设定
+
+节点
+
+节点是一个 Elasticsearch 的实例
+
+- 其本质上就是一个 JAVA 进程
+- 一台机器上可以运行多个 Elasticsearch 进程，但是生产环境一般建议一台机器上就运行一个 Elasticsearch 实例
+
+每一个节点都有名字，通过配置文件配置，或者启动时候 -E node.name=geektime 指定
+
+每一个节点在启动之后，会分配一个 UID，保存在 data 目录下
+
+Coordinating Node
+
+处理请求的节点，叫 Coordinating Node；路由请求到正确的节点，例如创建索引的请求，需要路由到 Master 节点
+
+所有节点默认都是 Coordinating Node
+
+通过将其他类型设置成 False，使其成为 Dedicated Coordinating Node
+
+##### Demo - 启动节点，Cerebro介绍
+
+启动一个节点的
+
+
+
+Code
+
+
+
+```
+ 
+```
+
+https://github.com/lmenezes/cerebro/releases
+
+- Overview /Filter by node / index
+- Nodes
+- REST / More
+- Health Status
+
+
+
+##### 多节点启动
+
+启动es
+
+Code
+
+```
+bin/elasticsearch -E node.name=node1 -E cluster.name=geektime -E path.data=node1_data -d
+bin/elasticsearch -E node.name=node2 -E cluster.name=geektime -E path.data=node2_data -d
+bin/elasticsearch -E node.name=node3 -E cluster.name=geektime -E path.data=node3_data -d
+```
+
+部署Cerebro
+
+
+
+Code
+
+
+
+```
+wget -O /opt/src/cerebro-0.9.3.tgz https://github.com/lmenezes/cerebro/releases/download/v0.9.3/cerebro-0.9.3.tgz 
+tar xf cerebro-0.9.3.tgz -C /opt/
+ln -s /opt/cerebro-0.9.3 /opt/cerebro
+```
+
+启动Cerebor
+
+
+
+Code
+
+
+
+```
+cd /opt/cerebro
+bin/cerebro
+```
+
+Demo - 创建一个新的索引
+
+发送创建索引的请求
+
+- Settings 3 Primary 和 1 个 Replica
+- 请求可以发送到任何的节点，处理你请求的节点，叫做 Coordinating Node
+- 创建 / 删除 索引的请求，只能被 Master 节点处理
+
+cerebor创建索引
+
+more -> create index -> 设置名称，分片，副本数 -> Create
+
+##### 分布式组件
+
+Data Node
+
+可以保存数据的节点，叫做 Data Node；节点启动后，默认就是数据节点。可以设置 node.data: false 禁止
+
+Data Node的职责：保存分片数据。在数据扩展上起到了至关重要的作用（由 Master Node 决定如何把 分片分发到数据节点上）
+
+通过增加数据节点：可以解决数据水平扩展和解决数据单点问题
+
+Master Node
+
+Master Node 的职责
+
+- 处理创建，删除索引等请求 /决定分片被分配到哪个节点 / 负责索引的创建与删除
+- 维护并且更新 Cluster State
+
+Master Node 的最佳实践
+
+- Master 节点非常重要，在部署上需要考虑解决单点的问题
+- 为一个集群设置多个 Master 节点 / 每个节点只承担 Master 的单一⻆色
+
+Master Eligible Nodes & 选主流程
+
+一个集群，支持配置多个 Master Eligible 节点。这些节点可以在必要时(如 Master 节点出现故障，网络故障时)参与选主流程，成为 Master 节点
+
+每个节点启动后，默认就是一个 Master eligible 节点；可以设置 node.master: false 禁止
+
+当集群内第一个 Master eligible 节点启动时候，它会将自己选举成 Master 节点
+
+集群状态
+
+- 集群状态信息（Cluster State），维护了一个集群中，必要的信息
+  - 所有的节点信息
+  - 所有的索引和其相关的 Mapping 与 Setting 信息
+  - 分片的路由信息
+- 在每个节点上都保存了集群的状态信息
+- 但是，只有 Master 节点才能修改集群的状态信息，并负责同步给其他节点；因为，任意节点都能修改信息会导致 Cluster State 信息的不一致
+
+Demo - 增加一个新的节点
+
+- bin/elasticsearch -E node.name=node2 -E cluster.name=geektime -E path.data=node2_data -E http.port=9201
+- Nodes API 看到新增节点
+- 发现 Replica 被分配
+
+Master Eligible Nodes & 选主的过程
+
+- 互相 Ping 对方，Node Id 低的会成为被选举的节点
+- 其他节点会加入集群，但是不承担 Master 节点的⻆色。一旦发现被选中的主节点丢失， 就会选举出新的 Master 节点
+
+脑裂问题
+
+Split-Brain，分布式系统的经典网络问题，当出现网络问题，一个节点和其他节点无法连接
+
+- Node 2 和 Node 3 会重新选举 Master
+- Node 1 自己还是作为 Master，组成一个集群，同时更新 Cluster State
+- 导致 2 个 master，维护不同的 cluster state。当网络恢复时，无法选择正确恢复
+
+如何避免脑裂问题
+
+限定一个选举条件，设置 quorum(仲裁)，只有在 Master eligible 节点数大于 quorum 时，才能进行选举
+
+- 限定一个选举条件，设置 quorum(仲裁)，只有在 Master eligible 节点数大于 quorum 时，才能进行选举
+- 当 3 个 master eligible 时，设置 discovery.zen.minimum_master_nodes 为 2，即可避免脑裂
+
+从 7.0 开始，无需这个配置
+
+- 移除 minimum_master_nodes 参数，让Elasticsearch自己选择可以形成仲裁的节点。
+- 典型的主节点选举现在只需要很短的时间就可以完成。集群的伸缩变得更安全、更容易，并且可能造成丢失数据的系统配置选项更少了
+- 节点更清楚地记录它们的状态，有助于诊断为什么它们不能加入集群或为什么无法选举出主节点
+
+配置节点类型
+
+一个节点默认情况下是一个 Master eligible，data and ingest node:
+
+| 节点类型          | 配置参数    | 默认值                      |
+| ----------------- | ----------- | --------------------------- |
+| maste eligible    | node.master | true                        |
+| data              | node.data   | true                        |
+| ingest            | node.ingest | ture                        |
+| coordinating only | 无          | 设置上面三个参数全部为false |
+| machine learning  | node.ml     | true (需要enable x-pack)    |
+
+本节知识点回顾
+
+- Elasticsearch 天生的分布式架构。为了实现实现数据可用性
+  - 部署多台 Data Nodes，可以实现数据存储的水平扩展
+- 提高服务可用性
+  - Master 节点非常重要。设置多台 Master Eligible Nodes，同时 设置合理的 quorum 数，避免脑裂问题
+  - 设置多台 Coordinating Node，提升查询的可用性和性能
+
+相关阅读
+
+- https://www.elastic.co/cn/blog/a-new-era-for-cluster-coordination-in-elasticsearch
+
+## 38 | 分片与集群的故障转移
+
+### 集群的分片
+
+Primary Shard - 提升系统存储容量
+
+分片是 Elasticsearch 分布式存储的基石
+
+- 主分片 / 副本分片
+
+通过主分片，将数据分布在所有节点上
+
+- Primary Shard，可以将一份索引的数据，分散在多个 Data Node 上，实现存储的水平扩展
+- 主分片(Primary Shard)数在索引创建时候指定，后续默认不能修改，如要修改，需重建索引
+
+Primary Shard - 提升数据可用性
+
+数据可用性：通过引入副本分片 (Replica Shard) 提高数据的可用性。一旦主分片丢失，副本分片可以 Promote 成主分片。副本分片数可以动态调整。每个节点上都有完备的数据。如果不设置副本分片，一旦出现节点硬件故障，就有可能造成数据丢失
+
+提升系统的读取性能：副本分片由主分片(Primary Shard)同步。通过支持增加 Replica 个数，一定程度可以提高读取的吞吐量
+
+分片数的设定
+
+如何规划一个索引的主分片数和副本分片数？
+
+- 主分片数过小：例如创建了 1 个 Primary Shard 的 Inde； 如果该索引增⻓很快，集群无法通过增加节点实现对这个索引的数据扩展
+- 主分片数设置过大：导致单个 Shard 容量很小，引发一个节点上有过多分片，影响性能
+- 副本分片数设置过多，会降低集群整体的写入性能
+
+### 故障转移
+
+单节点的集群
+
+副本无法分片，集群状态为黄色
+
+增加一个数据节点, 总共2个节点
+
+- 集群状态转为绿色
+- 集群具备故障转移能力
+- 尝试着将 Replica 设置成 2 和 3， 查看集群的状况
+
+再增加一个数据节点, 总共3个节点
+
+- 集群具备故障转移能力
+- Master 节点会决定分片分配到哪个节点
+- 通过增加节点，提高集群的计算能力
+
+故障转移
+
+- 3 个节点共同组成。包含了 1 个索引，索引设置了 3 个 Primary Shard 和 1 个 Replica
+- 节点 1 是 Master 节点，节点意外出现故障。集群重新选举 Master 节点
+- Node 3 上的 R0 提升成 P0，集群变⻩
+- R0 和 R1 分配，集群变绿
+
+集群健康状态
+
+查看集群健康状态 - GET /_cluster/health
+
+- Green：健康状态，所有的主分片和副本分片都可用
+- Yellow：亚健康，所有的主分片可用，部分副本分片不可
+- 用Red：不健康状态，部分主分片不可用
+
+### Demo
+
+1. 启动一个节点，3 个 Primary shard，一个 Replica，集群⻩色，因为无法分配 Replica
+2. 启动三个节点，1 个索引上包含 3 个 Primary Shard，一个 Replica
+3. 关闭 Node 1（Master）
+4. 查看 Master Node 重新选举
+5. 集群变⻩，然后重新分配
+
+本节知识点回顾
+
+- 主分片，副本分片的作用
+  - 主分片的分片数，设置后不能修改，除非重新索引数据
+  - 副本分片可以随时修改
+- 集群的故障转移
+  - 需要集群具备故障转移的能力，必须将索引的副本分片数设置为 1，否则，一点有节点就是，就会造成数据丢失
+
+## 39 | 文档分布式存储
+
+文档存储在分片上
+
+文档会存储在具体的某个主分片和副本分片上：例如 文档 1， 会存储在 P0 和 R0 分片上
+
+文档到分片的映射算法
+
+- 确保文档能均匀分布在所用分片上，充分利用硬件资源，避免部分机器空闲，部分机器繁忙
+- 潜在的算法
+  - 随机 / Round Robin。当查询文档 1，分片数很多，需要多次查询才可能查到 文档 1
+  - 维护文档到分片的映射关系，当文档数据量大的时候，维护成本高
+  - 实时计算，通过文档 1，自动算出，需要去那个分片上获取文档
+
+文档到分片的路由算法
+
+算法：shard = hash(_routing) % number_of_primary_shards
+
+- Hash 算法确保文档均匀分散到分片中
+- 默认的 _routing 值是文档 id
+- 可以自行制定 routing数值，例如用相同国家的商品，都分配到指定的 shard
+- 设置 Index Settings 后， Primary 数，不能随意修改的根本原因
+
+更新一个文档
+
+[![image-20210108214959293](http://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210108214959293.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210108214959293.png)
+
+image-20210108214959293
+
+删除一个文档
+
+[![image-20210108215113774](http://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210108215113774.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210108215113774.png)
+
+image-20210108215113774
+
+本节知识点回顾
+
+1. 可以通过设置 Index Settings，控制数据的分片
+2. Primary Shard 的值不能修改，修改需要重新 Index。默认值是 5， 从 7 开始，默认值改为 1
+3. 索引写入数据后，Replica 的值可以修改。增加副本，可提高大并发下的读取性能
+4. 通过控制集群的节点数，设置 Primary Shard 数，实现水平扩展
+
+## 40 | 分⽚及其⽣命周期
+
+### 分片的内部原理
+
+什么是 ES 的分片? ES 中最小的工作单元 / 是一个 Lucene 的 Index
+
+一些问题：
+
+- 为什么 ES 的搜索是近实时的(1 秒后被搜到)
+- ES 如何保证在断电时数据也不会丢失
+- 为什么删除文档，并不会立刻释放空间
+
+倒排索引不可变性
+
+倒排索引采用 Immutable Design，一旦生成，不可更改
+
+不可变性，带来了的好处如下：
+
+- 无需考虑并发写文件的问题，避免了锁机制带来的性能问题
+- 一旦读入内核的文件系统缓存，便留在哪里。只要文件系统存有足够的空间，大部分请求就会直接请求内存，不会命中磁盘，提升了很大的性能
+- 缓存容易生成和维护 / 数据可以被压缩
+
+不可变更性，带来了的挑战：如果需要让一个新的文档可以被搜索，需要重建整个索引。
+
+### 分片存储的几个概念
+
+> Lucene Index
+
+在 Lucene 中，单个倒排索引文件被称为Segment。Segment 是自包含的，**不可变更**的。多个 Segments 汇总在一起，称为 Lucene 的Index，其对应的就是 ES 中的 Shard
+
+当有新文档写入时，会生成新 Segment，查询时会同时查询所有 Segments，并且对结果汇总。Lucene 中有一个文件，用来记录所有Segments 信息，叫做 Commit Point
+
+删除的文档信息，保存在“.del”文件中
+
+![image-20220221163651155](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220221163651155.png)
+
+> 什么是 Refresh
+
+将 Index buffer[内存空间] 写入 Segment 的过程叫Refresh。Refresh 不执行 fsync 操作 
+
+Refresh 频率：默认 1 秒发生一次，可通过index.refresh_interval 配置。Refresh 后， 数据就可以被搜索到了。这也是为什么Elasticsearch 被称为近实时搜索
+
+如果系统有大量的数据写入，那就会产生很多的 Segment
+
+Index Buffer 被占满时，会触发 Refresh，默认值是 JVM 的 10%
+
+![image-20220221163730453](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220221163730453.png)
+
+> 什么是 Transaction Log
+
+Segment 写入磁盘的过程相对耗时，借助文件系统缓存，Refresh 时，先将Segment 写入缓存以开放查询
+
+为了保证数据不会丢失。所以在 Index 文档时，同时写 Transaction Log，高版本开始，Transaction Log 默认落盘。每个分片有一个 Transaction Log
+
+在 ES Refresh 时，Index Buffer 被清空， Transaction log 不会清空
+
+![image-20220221163844805](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220221163844805.png)
+
+
+
+> 什么是 Flush
+
+ES Flush & Lucene Commit
+
+- 调用 Refresh，Index Buffer 清空并且 Refresh
+- 调用 fsync，将缓存中的 Segments 写入磁盘
+- 清空（删除）Transaction Log
+- 默认 30 分钟调用一次
+- Transaction Log 满 （默认 512 MB）
+
+Merge
+
+Segment 很多，需要被定期被合并; 减少 Segments / 删除已经删除的文档
+
+ES 和 Lucene 会自动进行 Merge 操作; 命令 `POST my_index/_forcemerge`
+
+![image-20220221164530421](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220221164530421.png)
+
+### 本节知识点回顾
+
+- Shard 和 Lucene Index
+  - Index Buffer / Segment / Transaction Log
+- Refresh & Flush
+- Merge

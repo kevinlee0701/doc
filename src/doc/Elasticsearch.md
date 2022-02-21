@@ -75,6 +75,8 @@ node.data: true
 ```shell
 #启动命令
 ./bin/elasticsearch
+#启动一个集群节点
+bin/elasticsearch -E node.name=node1 -E cluster.name=my-es -E path.data=node1_data -E http.port=9201
 #停止启动
 #查找ES进程
 ps -ef | grep elastic
