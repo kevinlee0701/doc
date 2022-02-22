@@ -6171,3 +6171,43 @@ public List<String> scrollSearchAll(String indexName, String utime) throws IOExc
     return resultSearchHit;
 }
 ```
+
+# logstash-es集群迁移-知识插播
+
+## 1.下载logstash
+
+```http
+https://www.elastic.co/cn/downloads/past-releases#logstash
+```
+
+## 2.创建配置文件qianyi.conf内容如下
+
+```shell
+#迁出方
+input{
+	elasticsearch{
+		index => "crm_clue"
+		hosts => ["http://elasticsearch-7.neibu.koolearn.com"]
+		user => 'manageapp'
+		password => 'XM5zIcuWlMky'
+		size => 1000
+		scroll => '1m'
+        docinfo => true
+	}
+}
+#迁入方
+output{
+	elasticsearch{
+		hosts => ["http://172.16.95.138:9200"]
+		index => "crm_clue"
+		document_id => '%{[@metadata][_id]}'
+	}
+}
+```
+
+## 3.运行如下命令
+
+```shell
+/Users/kevinlee/Desktop/logstash/bin/logstash -f /Users/kevinlee/Desktop/logstash/qianyi.conf  --config.reload.automatic --http.port 23153 --path.data /Users/kevinlee/Desktop/logstash/data/23153 --path.logs /Users/kevinlee/Desktop/logstash/logs/23153
+```
+
