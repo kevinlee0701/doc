@@ -13,9 +13,7 @@ import org.assertj.core.util.Lists;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.action.search.*;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -252,15 +250,15 @@ public class Es {
         SearchRequest searchRequest = new SearchRequest(index);
         SearchSourceBuilder builder = new SearchSourceBuilder();
         //设置查询超时时间
-        Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
+        Scroll scroll = new Scroll(TimeValue.timeValueSeconds(1L));
 
         BoolQueryBuilder must = QueryBuilders.boolQuery()
                                                 .filter(QueryBuilders.rangeQuery("id").gte(1000).lte(2000))
-                                                .must(QueryBuilders.matchQuery("id", 101423));
+                                             ;
 
         builder.query(must);
         //设置最多一次能够取出10000笔数据，从第10001笔数据开始，将开启滚动查询  PS:滚动查询也属于这一次查询，只不过因为一次查不完，分多次查
-        builder.size(1000);
+        builder.size(2);
         builder.from(0);
         searchRequest.source(builder);
         //将滚动放入
@@ -280,12 +278,12 @@ public class Es {
         //滚动查询部分，将从第10001笔数据开始取
         SearchHit[] hitsScroll = hits.getHits();
         int i=1;
-        log.info("i={},scrollId={},获取查询结果：{}",i,scrollId,hitsScroll.length);
+        log.info("i={},scrollId={},获取查询结果：{}",i,scrollId,hitsScroll);
 
         while (hitsScroll != null && hitsScroll.length > 0) {
             i++;
             //构造滚动查询条件
-            SearchScrollRequest searchScrollRequest = new SearchScrollRequest( );
+            SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
             searchScrollRequest.scroll(scroll);
             try {
                 //响应必须是上面的响应对象，需要对上一层进行覆盖
@@ -296,10 +294,21 @@ public class Es {
             scrollId = searchResponse.getScrollId();
             hits = searchResponse.getHits();
             hitsScroll = hits.getHits();
-            log.info("i={},scrollId={},获取查询结果：{}",i,scrollId,hitsScroll.length);
+            log.info("i={},scrollId={},获取查询结果：{}",i,scrollId,hitsScroll);
             //TODO 同上面完全一致的结果集处理
 
         }
+        //清除滚动，否则影响下次查询
+//        ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+//        clearScrollRequest.addScrollId(scrollId);
+//        ClearScrollResponse clearScrollResponse = null;
+//        try {
+//            clearScrollResponse = restHighLevelClient.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+//        } catch (IOException e) {
+//            log.error("滚动查询清除失败",e.getMessage(),e);
+//        }
+//        //清除滚动是否成功
+//        boolean succeeded = clearScrollResponse.isSucceeded();
     }
     /**
      * @description: SpringData 测试

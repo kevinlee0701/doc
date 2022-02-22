@@ -5305,7 +5305,7 @@ image-20210108215113774
 
 ### 分片的内部原理
 
-什么是 ES 的分片? ES 中最小的工作单元 / 是一个 Lucene 的 Index
+> 什么是 ES 的分片? ES 中最小的工作单元 / 是一个 Lucene 的 Index
 
 一些问题：
 
@@ -5325,7 +5325,7 @@ image-20210108215113774
 
 不可变更性，带来了的挑战：如果需要让一个新的文档可以被搜索，需要重建整个索引。
 
-### 分片存储的几个概念
+### 分片存储的几个概念-写入流程
 
 > Lucene Index
 
@@ -5371,13 +5371,15 @@ ES Flush & Lucene Commit
 - 默认 30 分钟调用一次
 - Transaction Log 满 （默认 512 MB）
 
-Merge
+![image-20220221164530421](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220221164530421.png)
+
+> Merge
 
 Segment 很多，需要被定期被合并; 减少 Segments / 删除已经删除的文档
 
 ES 和 Lucene 会自动进行 Merge 操作; 命令 `POST my_index/_forcemerge`
 
-![image-20220221164530421](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220221164530421.png)
+
 
 ### 本节知识点回顾
 
@@ -5385,3 +5387,787 @@ ES 和 Lucene 会自动进行 Merge 操作; 命令 `POST my_index/_forcemerge`
   - Index Buffer / Segment / Transaction Log
 - Refresh & Flush
 - Merge
+
+## 41 | 剖析分布式查询及相关性算分
+
+分布式搜索的运行机制
+
+Elasticsearch 的搜索，会分两阶段进行
+
+- 第一阶段 - Query
+- 第二阶段 - Fetch
+
+Query-then-Fetch
+
+> Query 阶段
+
+用户发出搜索请求到 ES 节点。节点收到请求后， 会以 Coordinating 节点的身份，在 6 个主副分片中随机选择 3 个分片，发送查询请求
+
+被选中的分片执行查询，进行排序。然后，每个分片都会返回 From + Size 个排序后的文档 Id 和排序值 给 Coordinating 节点
+
+![image-20220221165413939](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220221165413939.png)
+
+> Fetch 阶段
+
+Coordinating Node 会将 Query 阶段，从每个分片获取的排序后的文档 Id 列表重新进行排序。选取 From 到 From + Size 个文档的 Id
+
+以 multi get 请求的方式，到相应的分片获取详细的文档数据
+
+![image-20220221170034550](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220221170034550.png)
+
+> Query Then Fetch 潜在的问题
+
+性能问题
+
+- 每个分片上需要查的文档个数 = from + size
+- 最终协调节点需要处理：number_of_shard * ( from+size )
+- 深度分⻚
+
+相关性算分：每个分片都基于自己的分片上的数据进行相关度计算。这会导致打分偏离的情况，特别是数据量很少时。相关性算分在分片之间是相互独立。当文档总数很少的情况下，如果主分片大于 1，主分片数越多 ，相关性算分会越不准
+
+> 解决算分不准的方法
+
+数据量不大的时候，可以将主分片数设置为 1
+
+当数据量足够大时候，只要保证文档均匀分散在各个分片上，结果一般就不会出现偏差
+
+> 使 用 DFS Query Then Fetch
+
+- 搜索的URL 中指定参数 “_search?search_type=dfs_query_then_fetch”
+- 到每个分片把各分片的词频和文档频率进行搜集，然后完整的进行一次相关性算分， 耗费更加多的 CPU 和内存，执行性能低下，一般不建议使用
+
+> 相关性算分问题 Demo
+
+1. 写入 3 条记录 “Good” / “Good morning” / “good morning everyone”
+2. 使用 1 个主分片测试， Good 应该排在第一，Good DF 数值应该是 3
+3. 和 20 个主分片，测试
+4. 当 多个 个主分片时，3 个文档的算分都一样。 可以通过 Explain API 进行分析
+5. 在 3 个主分片上 执行 DFS Query Then Fetch，结果和一个分片上一致
+
+> 使用1个主分片测试
+
+Code
+
+```sh
+DELETE message
+
+POST message/_doc?routing=1
+{ "content":"good" }
+
+POST message/_doc?routing=2
+{  "content":"good morning" }
+
+POST message/_doc?routing=3
+{ "content":"good morning everyone" }
+
+POST message/_search
+{
+  "explain": true,
+  "query": {
+    "term": {
+      "content": {
+        "value": "good"
+      }
+    }
+  }
+}
+```
+
+> 使用20个主分片测试
+
+
+
+Code
+
+
+
+```sh
+DELETE message
+PUT message
+{
+  "settings": {
+    "number_of_shards": 20
+  }
+}
+
+GET message
+
+POST message/_doc?routing=1
+{ "content":"good" }
+
+POST message/_doc?routing=2
+{  "content":"good morning" }
+
+POST message/_doc?routing=3
+{ "content":"good morning everyone" }
+
+POST message/_search
+{
+  "explain": true,
+  "query": {
+    "term": {
+      "content": {
+        "value": "good"
+      }
+    }
+  }
+}
+
+POST message/_search?search_type=dfs_query_then_fetch
+{
+  "query": {
+    "term": {
+      "content": {
+        "value": "good"
+      }
+    }
+  }
+}
+```
+
+本节知识点回顾
+
+- 学习了分布式搜索 Query then Fetch 的机制
+  - Why / How
+- Query Then Fetch 带来的潜在问题
+  - 深度分⻚：使用 Search After
+  - 算分不准 ：设置 1 个主分片 / 数据量大时，只需要保证文档平均分布 / DFS Query then Fetch
+
+## 42 | 排序及 Doc Values & Field Data
+
+排序
+
+Elasticsearch 默认采用相关性算分对结果进行降序排序
+
+可以通过设定 sorting 参数，自行设定排序
+
+如果不指定_score，算分为 Null
+
+
+
+Code
+
+
+
+```sh
+#单字段排序
+POST /kibana_sample_data_ecommerce/_search
+{
+  "size": 5,
+  "query": {
+    "match_all": {
+
+    }
+  },
+  "sort": [
+    {"order_date": {"order": "desc"}}
+  ]
+}
+```
+
+多字段进行排序
+
+- 组合多个条件
+- 优先考虑写在前面的排序
+- 支持对相关性算分进行排序
+
+
+
+Code
+
+
+
+```
+#多字段排序
+POST /kibana_sample_data_ecommerce/_search
+{
+  "size": 5,
+  "query": {
+    "match_all": {
+
+    }
+  },
+  "sort": [
+    {"order_date": {"order": "desc"}},
+    {"_doc":{"order": "dasc"}},
+    {"_score":{ "order": "desc"}}
+  ]
+}
+```
+
+Demo
+
+- Elasticsearch 默认对查询结果的相关性算分进行降序排序
+- 用户可以设定对单个 sorting 参数，自行设定排序。如果不对算分进行排序。_score 为 null
+- 支持多个字段排序
+
+对 Text 类型排序
+
+
+
+Code
+
+
+
+```
+GET kibana_sample_data_ecommerce/_mapping
+
+#对 text 字段进行排序。默认会报错，需打开fielddata
+POST /kibana_sample_data_ecommerce/_search
+{
+  "size": 5,
+  "query": {
+    "match_all": {
+
+    }
+  },
+  "sort": [
+    {"customer_full_name": {"order": "desc"}}
+  ]
+}
+```
+
+> 排序的过程
+
+- 排序是针对字段原始内容进行的。 倒排索引无法发挥作用
+- 需要用到正排索引。通过文档 Id 和字段快速得到字段原始内容
+- Elasticsearch 有两种实现方法
+  - Fielddata
+  - Doc Values （列式存储，对 Text 类型无效）
+
+> Doc Values vs Field Data
+
+|          | Doc Values                     | Field data                                      |
+| -------- | ------------------------------ | ----------------------------------------------- |
+| 何时创建 | 索引时，和倒排索引一起创建     | 搜索时候动态创建                                |
+| 创建位置 | 磁盘文件                       | JVM Heap                                        |
+| 优点     | 避免大量内存占用               | 索引速度快，不占用额外的磁盘空间                |
+| 缺点     | 降低索引速度，占用额外磁盘空间 | 文档过多时，动态创建开销大，占用 过多JVM Heap， |
+| 缺省值   | ES 2.x 之后                    | ES 1.x 及之前                                   |
+
+Demo
+
+- 单字段多字段排序
+- 对 Text 和 Keyword 类型进行排序
+
+> 打开 Fielddata
+
+- 默认关闭，可以通过 Mapping 设置打开。修改设置后，即时生效，无需重建索引
+- 其他字段类型不支持，只支持对 Text 进行设定
+- 打开后，可以对 Text 字段进行排序。但是是对分词后的 term 排序，所以，结果往往无法满足预期，不建议使用
+- 部分情况下打开，满足一些聚合分析的特定需求
+
+
+
+Code
+
+
+
+```sh
+#打开 text的 fielddata
+PUT kibana_sample_data_ecommerce/_mapping
+{
+  "properties": {
+    "customer_full_name" : {
+          "type" : "text",
+          "fielddata": true,
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        }
+  }
+}
+```
+
+> 关闭 Doc Values
+
+默认启用，可以通过 Mapping 设置关闭，增加索引的速度 / 减少磁盘空间
+
+如果重新打开，需要重建索引
+
+什么时候需要关闭：明确不需要做排序及聚合分析
+
+
+
+Code
+
+
+
+```
+#关闭 keyword的 doc values
+PUT test_keyword
+PUT test_keyword/_mapping
+{
+  "properties": {
+    "user_name":{
+      "type": "keyword",
+      "doc_values":false
+    }
+  }
+}
+
+DELETE test_keyword
+
+PUT test_text
+PUT test_text/_mapping
+{
+  "properties": {
+    "intro":{
+      "type": "text",
+      "doc_values":true
+    }
+  }
+}
+
+DELETE test_text
+```
+
+获取 Doc Values & Fielddata 中存储的内容
+
+- Text 类型的不支持 Doc Values
+- Text 类型打开 Fielddata后，可以查看分词后的数据
+
+
+
+Code
+
+
+
+```
+DELETE temp_users
+PUT temp_users
+PUT temp_users/_mapping
+{
+  "properties": {
+    "name":{"type": "text","fielddata": true},
+    "desc":{"type": "text","fielddata": true}
+  }
+}
+
+Post temp_users/_doc
+{"name":"Jack","desc":"Jack is a good boy!","age":10}
+
+#打开fielddata 后，查看 docvalue_fields数据
+POST  temp_users/_search
+{
+  "docvalue_fields": [
+    "name","desc"
+    ]
+}
+
+#查看整型字段的docvalues
+POST  temp_users/_search
+{
+  "docvalue_fields": [
+    "age"
+    ]
+}
+```
+
+Fielddata Demo
+
+- 对 Text 字段设置 fielddata，支持随时修改
+- Doc Values 可以在 Mapping 中关闭。但是需要重新索引
+- Text 不支持 Doc Values
+- 使用 docvalue_fields 查看存储的信息
+
+本节知识点回顾
+
+- Elasticsearch 支持自定义排序
+- Doc Values 和 Fielddata 的对比
+- 如何设置 Doc Values 和 Fielddata
+
+## 43 | 分⻚与遍历 – From，Size，Search After & Scroll API
+
+From / Size
+
+默认情况下，查询按照相关度算分排序，返回前10 条记录
+
+容易理解的分⻚方案:
+
+- From：开始位置
+- Size：期望获取文档的总数
+
+分布式系统中深度分页的问题
+
+ES 天生就是分布式的。查询信息，但是数据分别保存在多个分片，多台机器上，ES 天生就需要满足排序的需要（按照相关性算分）
+
+当一个查询： From = 990， Size =10
+
+1. 会在每个分片上先都获取 1000 个文档。然后， 通过 Coordinating Node 聚合所有结果。最后再通过排序选取前 1000 个文档
+2. ⻚数越深，占用内存越多。为了避免深度分⻚带来的内存开销。ES 有一个设定，默认限定到10000 个文档 (参数 Index.max_result_window)
+
+From / Size Demo
+
+- 简单的 From / Size demo
+- From + Size 必须小与 10000
+
+
+
+Code
+
+
+
+```
+POST tmdb/_search
+{
+  "from": 10000,
+  "size": 1,
+  "query": {
+    "match_all": {
+
+    }
+  }
+}
+```
+
+##### Search After 避免深度分页的问题
+
+避免深度分⻚的性能问题，可以实时获取下一⻚文档信息, 缺点是
+
+- 不支持指定⻚数（From）
+- 只能往下翻
+
+第一步搜索需要指定 sort，并且保证值是唯一的（可以通过加入 _id 保证唯一性）；然后使用上一次，最后一个文档的 sort 值进行查询
+
+
+
+Code
+
+
+
+```
+#Scroll API
+DELETE users
+
+POST users/_doc
+{"name":"user1","age":10}
+
+POST users/_doc
+{"name":"user2","age":11}
+
+
+POST users/_doc
+{"name":"user3","age":12}
+
+POST users/_doc
+{"name":"user4","age":13}
+
+POST users/_count
+
+POST users/_search
+{
+    "size": 1,
+    "query": {
+        "match_all": {}
+    },
+    "sort": [
+        {"age": "desc"} ,
+        {"_id": "asc"}    
+    ]
+}
+
+POST users/_search
+{
+    "size": 1,
+    "query": {
+        "match_all": {}
+    },
+    "search_after":
+        [ 13, "7P5M5nYBRcT7yup-OCwn" ],
+    "sort": [
+        {"age": "desc"} ,
+        {"_id": "asc"}    
+    ]
+}
+```
+
+Search After 是如何解决深度分页的问题
+
+- 假 定 Size 是 10
+- 当查询 990 – 1000
+- 通过唯一排序值定位，将每次要处理的文档数都控制在 10
+
+Scroll API
+
+- 创建一个快照，有新的数据写入以后，无法被查到
+- 每次查询后，输入上一次的 Scroll Id
+
+
+
+Code
+
+
+
+```
+# 获取到镜像的 scroll_id
+POST /users/_search?scroll=5m
+{
+    "size": 1,
+    "query": {
+        "match_all" : {
+        }
+    }
+}
+
+POST users/_doc
+{"name":"user5","age":50}
+POST /_search/scroll
+{
+    "scroll" : "1m",
+    "scroll_id" : "DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAADo0WRW9xSXI2ek1UTHVhWEUzX3Y5eGluZw=="
+}
+```
+
+Demo for Scroll API
+
+1. 插入 4 条记录
+2. 调用 Scroll API
+3. 插入一条新的记录
+4. 发现只能查到 4 条数据
+
+不同的搜索类型和使用场景
+
+- Regular：需要实时获取顶部的部分文档。例如查询最新的订单
+- Scroll: 需要全部文档，例如导出全部数据
+- Pagination: From 和 Size, 如果需要深度分⻚，则选用 Search After
+
+本节知识点回顾
+
+- Elasticsearch 默认返回 10 个结果
+- 为了获取更多的结果，提供 3 种方式解决分⻚与遍历
+  - From / Size 的用法，深度分⻚所存在的问题
+  - Search After 解决深度分⻚的问题
+  - Scroll API，通过快照，遍历数据
+
+## 44 | 处理并发读写操作
+
+并发控制的必要性
+
+两个 Web 程序同时更新某个文档，如果缺乏有效的并发，会导致更改的数据丢失
+
+悲观并发控制：
+
+- 假定有变更冲突的可能。会对资源加锁，防止冲突。
+- 例如数据库行锁
+
+乐观并发控制：
+
+- 假定冲突是不会发生的，不会阻塞正在尝试的操作。如果数据在读写中被修改，更新将会失败。应用程序决定如何解决冲突，例如重试更新，使用新的数据，或者将错误报告给用户。
+- ES 采用的是乐观并发控制
+
+ES 的乐观并发控制
+
+- ES 中的文档是不可变更的。如果你更新一个文档，会将就文档标记为删除，同时增加一个全新的文档。同时文档的 version 字段加 1
+- 内部版本控制：If_seq_no + If_primary_term
+- 使用外部版本(使用其他数据库作为主要数据存储)：version + version_type=external
+
+
+
+Code
+
+
+
+```
+DELETE products
+PUT products
+
+PUT products/_doc/1
+{
+  "title":"iphone",
+  "count":100
+}
+GET products/_doc/1
+
+# 内部版本控制：If_seq_no + If_primary_term
+PUT products/_doc/1?if_seq_no=0&if_primary_term=1
+{
+  "title":"iphone",
+  "count":101
+}
+GET products/_doc/1
+
+# 外部版本控制：version + version_type=external
+PUT products/_doc/1?version=3&version_type=external
+{
+  "title":"iphone",
+  "count":102
+}
+GET products/_doc/1
+```
+
+本节知识点回顾
+
+- ES 采用的是乐观并发控制
+- 在需要控制并发的场景，通过指定 If_seq_no 和 If_primary_term
+- 外部版版本 version & version_type=external
+
+# Scroll-知识插播
+
+```http
+#官网地址：
+https://www.elastic.co/guide/cn/elasticsearch/guide/current/scroll.html
+```
+
+`scroll` 查询 可以用来对 [Elasticsearch](https://so.csdn.net/so/search?q=Elasticsearch&spm=1001.2101.3001.7020) 有效地执行大批量的文档查询，而又不用付出深度分页那种代价。
+
+游标查询允许我们 先做查询初始化，然后再批量地拉取结果。 这有点儿像传统数据库中的 *cursor* 。
+
+游标查询会取某个时间点的快照数据。 查询初始化之后索引上的任何变化会被它忽略。 它通过保存旧的数据文件来实现这个特性，结果就像保留初始化时的索引 *视图* 一样。
+
+深度分页的代价根源是结果集全局排序，如果去掉全局排序的特性的话查询结果的成本就会很低。 游标查询用字段 `_doc` 来排序。 这个指令让 Elasticsearch 仅仅从还有结果的分片返回下一批结果。
+
+启用游标查询可以通过在查询的时候设置参数 `scroll` 的值为我们期望的游标查询的过期时间。 ==游标查询的过期时间会在每次做查询的时候刷新，所以这个时间只需要足够处理当前批的结果就可以了，而不是处理查询结果的所有文档的所需时间==。 这个过期时间的参数很重要，因为保持这个游标查询窗口需要消耗资源，所以我们期望如果不再需要维护这种资源就该早点儿释放掉。 设置这个超时能够让 Elasticsearch 在稍后空闲的时候自动释放这部分资源。
+
+```groovy
+GET /old_index/_search?scroll=1m   //保持游标查询窗口一分钟。
+{
+    "query": { "match_all": {}},
+    "sort" : ["_doc"],   //关键字 _doc 是最有效的排序顺序。
+    "size":  1000
+}
+```
+
+这个查询的返回结果包括一个字段 `_scroll_id`， 它是一个base64编码的长字符串 。 现在我们能传递字段 `_scroll_id` 到 `_search/scroll` 查询接口获取下一批结果：
+
+```groovy
+GET /_search/scroll
+{
+    "scroll": "1m",   //注意再次设置游标查询过期时间为一分钟。
+    "scroll_id" : "cXVlcnlUaGVuRmV0Y2g7NTsxMDk5NDpkUmpiR2FjOFNhNnlCM1ZDMWpWYnRROzEwOTk1OmRSamJHYWM4U2E2eUIzVkMxalZidFE7MTA5OTM6ZFJqYkdhYzhTYTZ5QjNWQzFqVmJ0UTsxMTE5MDpBVUtwN2lxc1FLZV8yRGVjWlI2QUVBOzEwOTk2OmRSamJHYWM4U2E2eUIzVkMxalZidFE7MDs="
+}
+```
+
+> 注意游标查询每次返回一个新字段 `_scroll_id`。每次我们做下一次游标查询， 我们必须把前一次查询返回的字段 `_scroll_id` 传递进去。 当没有更多的结果返回的时候，我们就处理完所有匹配的文档了。
+
+这个游标查询返回的下一批结果。 尽管我们指定字段 `size` 的值为1000，我们有可能取到超过这个值数量的文档。 当查询的时候， 字段 `size` 作用于单个分片，所以每个批次实际返回的文档数量最大为 `size * number_of_primary_shards` 。
+
+## 1. scroll-scan 的高效滚动
+
+分页检索即from-size形式，from指的是从哪里开始拿数据，size是结果集中返回的文档个数。from-size的工作原理是：如size=10&from=100，那么Elasticsearch会从每个分片里取出110条数据，然后汇集到一起再排序，取出101~110序号的文档。由此可见，from-size的效率必然不会很高，特别是分页越深，需要排序的数据越多，其效率就越低。 
+
+这时更为有效的方法是使用Scroll-Scan。Scroll是先做一次初始化搜索把所有符合搜索条件的结果缓存起来生成一个快照，然后持续地、批量地从快照里拉取数据直到没有数据剩下。而这时对索引数据的插入、删除、更新都不会影响遍历结果，因此scroll 并不适合用来做实时搜索。Scan是搜索类型，告诉Elasticsearch不用对结果集进行排序，只要分片里还有结果可以返回，就返回一批结果。scroll- scan使用中不能跳页获取结果，必须一页接着一页获取。
+
+为了使用scroll-scan，需要执行一个初始化搜索请求，将search_type设置成scan，并且传递一个scroll参数来告诉 Elasticsearch缓存应该持续多长时间，在缓存持续时间内初始化搜索请求后对索引的修改不会反应到快照中。每次搜索请求后都会返回一个scrollId，是一个 64 位的字符串编码，后续会使用此scrollId来获取数据。scroll时间指的是本次数据处理所需要的时间，如果超过此时间，继续使用该scrollId搜索数据则会报错。在使用scroll-scan时可以指定返回结果集大小，在 scan 的时候，size 作用在每个分片上，所以将会在每批次中得到最大为 size * 主分片数 个文档。
+
+一般来说，你仅仅想要找到结果，不关心顺序。你可以通过组合 scroll 和 scan 来关闭任何打分或者排序，以最高效的方式返回结果。你需要做的就是将 search_type=scan 加入到查询的字符串中：
+
+```groovy
+POST /twitter/tweet/_search?scroll=1m&search_type=scan
+{
+   "query": {
+       "match" : {
+           "title" : "elasticsearch"
+       }
+   }
+}
+# 设置 search_type 为 scan 可以关闭打分，让滚动更加高效。
+```
+
+扫描式的滚动请求和标准的滚动请求有四处不同：
+
+1. 不算分，关闭排序。结果会按照在索引中出现的顺序返回。
+2. 不支持聚合
+3. 初始 search 请求的响应不会在 hits 数组中包含任何结果。第一批结果就会按照第一个 scroll 请求返回。
+4. 参数 size 控制了每个分片上而非每个请求的结果数目，所以 size 为 10 的情况下，如果命中了 5 个分片，那么每个 scroll 请求最多会返回 50 个结果。
+
+## 2. 清除 scroll API
+
+搜索上下文当 `scroll` 超时就会自动移除。但是保持 scroll 存活需要代价，如在前一节讲的那样，所以 scrolls 当scroll不再被使用的时候需要被用 `clear-scroll` 显式地清除：
+
+```groovy
+DELETE /_search/scroll
+{ 
+"scroll_id" : ["c2Nhbjs2OzM0NDg1ODpzRlBLc0FXNlNyNm5JWUc1"]
+}
+```
+
+所有搜索上下文可以通过 `_all` 参数而清除：
+
+```sql
+DELETE /_search/scroll/_all
+```
+
+`scroll_id` 也可以使用一个查询字符串的参数或者在请求的body中传递。多个scroll ID 可以使用逗号分隔传入：
+
+```sql
+DELETE /_search/scroll/DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAAD4WYm9laVYtZndUQlNsdDcwakFMNjU1QQ==,DnF1ZXJ5VGhlbkZldGNoBQAAAAAAAAABFmtSWWRRWUJrU2o2ZExpSGJCVmQxYUEAAAAAAAAAAxZrUllkUVlCa1NqNmRMaUhiQlZkMWFBAAAAAAAAAAIWa1JZZFFZQmtTajZkTGlIYkJWZDFhQQAAAAAAAAAFFmtSWWRRWUJrU2o2ZExpSGJCVmQxYUEAAAAAAAAABBZrUllkUVlCa1NqNmRMaUhiQlZkMWFB
+```
+
+## 3. Sliced Scroll 
+
+对于返回大量文档的滚动查询，可以将滚动分割为多个切片，可以单独使用：
+
+```haskell
+POST ip:port/index/type/_search?scroll=1m
+{
+   "query": { "match_all": {}},
+    "slice": {
+        "id": 0,
+        "max": 5
+    }   
+}
+```
+
+# 实例分享
+
+## 1. scroll滚动查询
+
+```java
+
+/**
+ * 滚动查询数据
+ * @param indexName
+ * @param utime
+ */
+public List<String> scrollSearchAll(String indexName, String utime) throws IOException{
+ 
+    BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+    boolQueryBuilder.must(QueryBuilders.rangeQuery("utime").lt(utime).gt("946656000"));//946656000为2000-01-01 00:00:00
+ 
+    //builder
+    SearchSourceBuilder builder = new SearchSourceBuilder()
+            .query(boolQueryBuilder)
+            .size(500);
+ 
+    // 构建SearchRequest
+    SearchRequest searchRequest = new SearchRequest();
+    searchRequest.indices(indexName);
+    searchRequest.source(builder);
+ 
+    Scroll scroll = new Scroll(new TimeValue(600000));
+    searchRequest.scroll(scroll);
+ 
+    SearchResponse searchResponse = restHighLevelClient.search(searchRequest);
+ 
+    String scrollId = searchResponse.getScrollId();
+    SearchHit[] hits = searchResponse.getHits().getHits();
+ 
+    List<String> resultSearchHit = new ArrayList<>();
+ 
+    while (ArrayUtils.isNotEmpty(hits)) {
+        
+        for (SearchHit hit : hits) {
+            log.info("准备删除的数据hit:{}", hit);
+            resultSearchHit.add(hit.getId());
+        }
+ 
+        // 再次发送请求,并使用上次搜索结果的ScrollId
+        SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
+        searchScrollRequest.scroll(scroll);
+        SearchResponse searchScrollResponse = restHighLevelClient.searchScroll(searchScrollRequest);
+ 
+        scrollId = searchScrollResponse.getScrollId();
+        hits = searchScrollResponse.getHits().getHits();
+    }
+    // 及时清除es快照，释放资源
+    ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+    clearScrollRequest.addScrollId(scrollId);
+    restHighLevelClient.clearScroll(clearScrollRequest);
+ 
+    return resultSearchHit;
+}
+```
