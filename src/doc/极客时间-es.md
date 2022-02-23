@@ -6172,6 +6172,8 @@ public List<String> scrollSearchAll(String indexName, String utime) throws IOExc
 }
 ```
 
+
+
 # logstash-es集群迁移-知识插播
 
 ## 1.下载logstash
@@ -6192,7 +6194,8 @@ input{
 		password => 'XM5zIcuWlMky'
 		size => 1000
 		scroll => '1m'
-        docinfo => true
+    docinfo => true
+    query =>'{"query":{"term":{"dm_id":{"value": "208866"}}}}'
 	}
 }
 #迁入方
@@ -6204,6 +6207,19 @@ output{
 	}
 }
 ```
+
+参数说明：
+
+| 参数           | 说明                                                         |
+| :------------- | :----------------------------------------------------------- |
+| hosts          | ES服务的访问地址。input中为http://<阿里云ES公网地址>:<端口>:output中为http://腾讯云ES实例 |
+| user           | 访问ES服务的用户名                                           |
+| password       | 访问ES服务的密码                                             |
+| index          | 指定同步索引名，通配符*代表所有索引                          |
+| docinfo        | 设置为true，将会提取ES文档的元信息，例如index、type和id      |
+| docinfo_fields | 指定文档元信息，默认不带routing元信息                        |
+
+
 
 ## 3.运行如下命令
 
