@@ -21,6 +21,8 @@ public class UserController {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private List<Test> tests;
 
 
     // 写
