@@ -5611,7 +5611,7 @@ Code
 
 
 
-```
+```shell
 GET kibana_sample_data_ecommerce/_mapping
 
 #对 text 字段进行排序。默认会报错，需打开fielddata
@@ -5698,7 +5698,7 @@ Code
 
 
 
-```
+```shell
 #关闭 keyword的 doc values
 PUT test_keyword
 PUT test_keyword/_mapping
@@ -5738,7 +5738,7 @@ Code
 
 
 
-```
+```shell
 DELETE temp_users
 PUT temp_users
 PUT temp_users/_mapping
