@@ -5415,6 +5415,8 @@ Coordinating Node 会将 Query 阶段，从每个分片获取的排序后的文�
 
 ![image-20220221170034550](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220221170034550.png)
 
+
+
 > Query Then Fetch 潜在的问题
 
 性能问题
@@ -5577,7 +5579,7 @@ Code
 
 
 
-```
+```shell
 #多字段排序
 POST /kibana_sample_data_ecommerce/_search
 {
