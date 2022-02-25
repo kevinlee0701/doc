@@ -6007,6 +6007,1226 @@ GET products/_doc/1
 - 在需要控制并发的场景，通过指定 If_seq_no 和 If_primary_term
 - 外部版版本 version & version_type=external
 
+
+
+## 45 | Bucket & Metric 聚合分析及嵌套聚合
+
+### Bucket & Metric Aggregation
+
+- Metric - 一些系列的统计方法
+- Bucket - 一组满足条件的文档
+
+Aggregation 的语法
+
+Aggregation 属于 Search 的 一部分。一般情况下，建议将其 Size 指定为 0
+
+[![image-20210110123451170](https://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210110123451170.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210110123451170.png)
+
+image-20210110123451170
+
+### 具体案例
+
+#### 一个例子：工资统计信息
+
+
+
+Code
+
+
+
+```shell
+DELETE /employees
+PUT /employees/
+{
+  "mappings" : {
+      "properties" : {
+        "age" : {
+          "type" : "integer"
+        },
+        "gender" : {
+          "type" : "keyword"
+        },
+        "job" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 50
+            }
+          }
+        },
+        "name" : {
+          "type" : "keyword"
+        },
+        "salary" : {
+          "type" : "integer"
+        }
+      }
+    }
+}
+
+PUT /employees/_bulk
+{ "index" : {  "_id" : "1" } }
+{ "name" : "Emma","age":32,"job":"Product Manager","gender":"female","salary":35000 }
+{ "index" : {  "_id" : "2" } }
+{ "name" : "Underwood","age":41,"job":"Dev Manager","gender":"male","salary": 50000}
+{ "index" : {  "_id" : "3" } }
+{ "name" : "Tran","age":25,"job":"Web Designer","gender":"male","salary":18000 }
+{ "index" : {  "_id" : "4" } }
+{ "name" : "Rivera","age":26,"job":"Web Designer","gender":"female","salary": 22000}
+{ "index" : {  "_id" : "5" } }
+{ "name" : "Rose","age":25,"job":"QA","gender":"female","salary":18000 }
+{ "index" : {  "_id" : "6" } }
+{ "name" : "Lucy","age":31,"job":"QA","gender":"female","salary": 25000}
+{ "index" : {  "_id" : "7" } }
+{ "name" : "Byrd","age":27,"job":"QA","gender":"male","salary":20000 }
+{ "index" : {  "_id" : "8" } }
+{ "name" : "Foster","age":27,"job":"Java Programmer","gender":"male","salary": 20000}
+{ "index" : {  "_id" : "9" } }
+{ "name" : "Gregory","age":32,"job":"Java Programmer","gender":"male","salary":22000 }
+{ "index" : {  "_id" : "10" } }
+{ "name" : "Bryant","age":20,"job":"Java Programmer","gender":"male","salary": 9000}
+{ "index" : {  "_id" : "11" } }
+{ "name" : "Jenny","age":36,"job":"Java Programmer","gender":"female","salary":38000 }
+{ "index" : {  "_id" : "12" } }
+{ "name" : "Mcdonald","age":31,"job":"Java Programmer","gender":"male","salary": 32000}
+{ "index" : {  "_id" : "13" } }
+{ "name" : "Jonthna","age":30,"job":"Java Programmer","gender":"female","salary":30000 }
+{ "index" : {  "_id" : "14" } }
+{ "name" : "Marshall","age":32,"job":"Javascript Programmer","gender":"male","salary": 25000}
+{ "index" : {  "_id" : "15" } }
+{ "name" : "King","age":33,"job":"Java Programmer","gender":"male","salary":28000 }
+{ "index" : {  "_id" : "16" } }
+{ "name" : "Mccarthy","age":21,"job":"Javascript Programmer","gender":"male","salary": 16000}
+{ "index" : {  "_id" : "17" } }
+{ "name" : "Goodwin","age":25,"job":"Javascript Programmer","gender":"male","salary": 16000}
+{ "index" : {  "_id" : "18" } }
+{ "name" : "Catherine","age":29,"job":"Javascript Programmer","gender":"female","salary": 20000}
+{ "index" : {  "_id" : "19" } }
+{ "name" : "Boone","age":30,"job":"DBA","gender":"male","salary": 30000}
+{ "index" : {  "_id" : "20" } }
+{ "name" : "Kathy","age":29,"job":"DBA","gender":"female","salary": 20000}
+```
+
+#### Metric Aggregation
+
+- 单值分析：只输出一个分析结果
+  - min, max, avg, sum
+  - Cardinality （类似 distinct Count）
+- 多值分析：输出多个分析结果
+  - stats, extended_stats
+  - percentile, percentile rank
+  - top hits （排在前面的示例）
+
+Metric 聚合的具体 Demo
+
+- 查看最低工资
+- 查看最高工资
+- 一个聚合输出多个值
+- 一次查询包含多个聚合：同时查看最低，最高和平均工资
+
+
+
+Code
+
+
+
+```
+# Metric 聚合，找到最低的工资
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "min_salary": {
+      "min": {
+        "field": "salary"
+      }
+    }
+  }
+}
+
+# 多个 Metric 聚合，找到最低最高和平均工资
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "max_salary": {
+      "max": {
+        "field": "salary"
+      }
+    },
+    "min_salary": {
+      "min": {
+        "field": "salary"
+      }
+    },
+    "avg_salary": {
+      "avg": {
+        "field": "salary"
+      }
+    }
+  }
+}
+
+# 一个聚合，输出多值
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "stats_salary": {
+      "stats": {
+        "field": "salary"
+      }
+    }
+  }
+}
+```
+
+#### Bucket
+
+按照一定的规则，将文档分配到不同的桶中，从而达到分类的目的。ES 提供的一些常⻅的 Bucket Aggregation
+
+- Terms
+- 数字类型
+  - Range / Data Range
+  - Histogram / Date Histogram
+
+支持嵌套：也就在桶里再做分桶
+
+#### Terms Aggregation
+
+字段需要打开 fielddata，才能进行 Terms Aggregation
+
+- Keyword 默认支持 doc_values
+- Text 需要在 Mapping 中 enable。会按照分词后的结果进行分
+
+Demo
+
+- 对 job 和 job.keyword 进行聚合
+- 对性别进行 Terms 聚合
+- 指定 bucket size
+
+对 job 和 job.keyword 进行聚合
+
+
+
+Code
+
+
+
+```
+# 对keword 进行聚合
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field": "job.keyword"      
+      }
+    }
+  }
+}
+
+# 对 Text 字段进行 terms 聚合查询，失败
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field": "job"      
+      }
+    }
+  }
+}
+
+POST employees/_mapping
+{
+  "properties": {
+    "job":{
+      "type": "text",
+      "fielddata": true
+    }
+  }
+}
+
+# 对 Text 字段进行 terms 分词。分词后的terms
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field":"job"
+      }
+    }
+  }
+}
+```
+
+对性别进行 Terms 聚合
+
+
+
+Code
+
+
+
+```
+# 对 性别的 keyword 进行聚合
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "gender": {
+      "terms": {
+        "field": "gender"
+      }
+    }
+  }
+}
+```
+
+指定 bucket size
+
+
+
+Code
+
+
+
+```
+#指定 bucket 的 size
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "ages_5": {
+      "terms": {
+        "field": "age",
+        "size": 5
+      }
+    }
+  }
+}
+```
+
+#### Cardinality
+
+类似 SQL 中的 Distinct
+
+
+
+Code
+
+
+
+```
+# 对job.keyword 和 job 进行 terms 聚合，分桶的总数并不一样
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "cardinate": {
+      "cardinality": {
+        "field": "job.keyword"
+      }
+    }
+  }
+}
+```
+
+Bucket Size & Top Hits Demo
+
+- 应用场景：当获取分桶后，桶内最匹配的顶部文档列表
+- Size：按年龄分桶，找出指定数据量的分桶信息
+- Top Hits：查看各个工种中，年纪最大的 3 名员工
+
+
+
+Code
+
+
+
+```
+# 指定size，不同工种中，年纪最大的3个员工的具体信息
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field":"job.keyword"
+      },
+      "aggs":{
+        "old_employee":{
+          "top_hits":{
+            "size":3,
+            "sort":[
+              {
+                "age":{
+                  "order":"desc"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### 优化 Terms 聚合的性能
+
+https://[www.elastic.co/guide/en/elasticsearch/reference/7.1/tune-for-search-speed.html](http://www.elastic.co/guide/en/elasticsearch/reference/7.1/tune-for-search-speed.html)
+
+[![image-20210110123723713](http://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210110123723713.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210110123723713.png)
+
+image-20210110123723713
+
+优化命令：”eager_global_ordinals”: true
+
+使用场景：需要对聚合性能要求较高
+
+Range & Hisogram 聚合
+
+- 按照数字的范围，进行分桶
+- 在 Range Aggregation 中，可以自定义 Key
+- Demo:
+  - 按照工资的 Range 分桶
+  - 按照工资的间隔（Histogram）分桶
+
+
+
+Code
+
+
+
+```
+#Salary Ranges 分桶，可以自己定义 key
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "salary_range": {
+      "range": {
+        "field": "salary",
+        "ranges": [
+          {
+            "from": 0,
+            "to": 10000
+          },
+          {
+            "from": 10000,
+            "to": 20000
+          },
+          {
+            "key": "> 20000",
+            "from": 20000
+          }
+        ]
+      }
+    }
+  }
+}
+
+
+#Salary Histogram,工资0到10万，以 5000一个区间进行分桶
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "salary_histrogram": {
+      "histogram": {
+        "field":"salary",
+        "interval":5000,
+        "extended_bounds":{
+          "min":0,
+          "max":100000
+        }
+      }
+    }
+  }
+}
+```
+
+### 嵌套聚合 Bucket + Metric Aggregation
+
+Bucket 聚合分析允许通过添加子聚合分析来进一步分析，子聚合分析可以是: Bucket 和 Metric
+
+Demo：
+
+- 按照工作类型进行分桶，并统计工资信息
+- 先按照工作类型分桶，然后按性别分桶，并统计工资信息
+
+
+
+Code
+
+
+
+```
+# 嵌套聚合1，按照工作类型分桶，并统计工资信息
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "Job_salary_stats": {
+      "terms": {
+        "field": "job.keyword"
+      },
+      "aggs": {
+        "salary": {
+          "stats": {
+            "field": "salary"
+          }
+        }
+      }
+    }
+  }
+}
+
+# 多次嵌套。根据工作类型分桶，然后按照性别分桶，计算工资的统计信息
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "Job_gender_stats": {
+      "terms": {
+        "field": "job.keyword"
+      },
+      "aggs": {
+        "gender_stats": {
+          "terms": {
+            "field": "gender"
+          },
+          "aggs": {
+            "salary_stats": {
+              "stats": {
+                "field": "salary"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+本节知识点
+
+- 聚合分析的具体语法：一个聚合查询中可以包含多个聚合； 每个 Bucket 聚合可以包含子聚合
+- Metrix：单值输出 & 多值输出
+- Bucket：Terms & 数字范围
+
+相关阅读
+
+- https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations-metrics.html
+- https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations-bucket.html
+
+## 46 | Pipeline 聚合分析
+
+### 一个例子
+
+在员工数最多的工种里，找出平均工资最低的工种
+
+1. 结果和其他的聚合同级
+2. min_bucket 求之前结果的最小值
+3. 通过 **bucket_path** 关键字指定路径
+
+使用上一章的测试数据
+
+
+
+Code
+
+
+
+```
+# 平均工资最低的工作类型
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field": "job.keyword",
+        "size": 10
+      },
+      "aggs": {
+        "avg_salary": {
+          "avg": {
+            "field": "salary"
+          }
+        }
+      }
+    },
+    "min_salary_by_job":{
+      "min_bucket": {
+        "buckets_path": "jobs>avg_salary"
+      }
+    }
+  }
+}
+```
+
+### Pipeline
+
+管道的概念: 支持对聚合分析的结果，再次进行聚合分析
+
+Pipeline 的分析结果会输出到原结果中，根据位置的不同，分为两类
+
+- Sibling - 结果和现有分析结果同级
+  - Max，min，Avg & Sum Bucket
+  - Stats，Extended Status Bucket
+  - Percentiles Bucket
+- Parent - 结果内嵌到现有的聚合分析结果之中
+  - Derivative （求导）
+  - Cumultive Sum （累计求和）
+  - Moving Function (滑动窗口)
+
+Sibling Pipeline 的例子
+
+对不同类型工作的，平均工资
+
+- 求最大
+- 平均
+- 统计信息
+- 百分位数
+
+
+
+Code
+
+
+
+```
+# 平均工资最高的工作类型
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field": "job.keyword",
+        "size": 10
+      },
+      "aggs": {
+        "avg_salary": {
+          "avg": {
+            "field": "salary"
+          }
+        }
+      }
+    },
+    "max_salary_by_job":{
+      "max_bucket": 
+      // "avg_bucket": 
+      // "stats_bucket": 
+      // "percentiles_bucket": 
+      {
+        "buckets_path": "jobs>avg_salary"
+      }
+    }
+  }
+}
+```
+
+### Parent Pipeline
+
+#### Derivative 求导
+
+按照年龄，对工资进行求导（看工资发展的趋势）; 采用直方图进行分桶
+
+1. 位置和 avg salary 同级
+2. bucket_path 指定为 avg_salary
+
+
+
+Code
+
+
+
+```
+#按照年龄对平均工资求导
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "age": {
+      "histogram": {
+        "field": "age",
+        "min_doc_count": 1,
+        "interval": 1
+      },
+      "aggs": {
+        "avg_salary": {
+          "avg": {
+            "field": "salary"
+          }
+        },
+        "derivative_avg_salary":{
+          "derivative": {
+            "buckets_path": "avg_salary"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+#### Cumulative_sum 求和
+
+
+
+Code
+
+
+
+```
+#Cumulative_sum
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "age": {
+      "histogram": {
+        "field": "age",
+        "min_doc_count": 1,
+        "interval": 1
+      },
+      "aggs": {
+        "avg_salary": {
+          "avg": {
+            "field": "salary"
+          }
+        },
+        "cumulative_salary":{
+          "cumulative_sum": {
+            "buckets_path": "avg_salary"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+#### Moving Function 移动函数
+
+
+
+Code
+
+
+
+```
+#Moving Function
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "age": {
+      "histogram": {
+        "field": "age",
+        "min_doc_count": 1,
+        "interval": 1
+      },
+      "aggs": {
+        "avg_salary": {
+          "avg": {
+            "field": "salary"
+          }
+        },
+        "moving_avg_salary":{
+          "moving_fn": {
+            "buckets_path": "avg_salary",
+            "window":10,
+            "script": "MovingFunctions.min(values)"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Parent Pipeline
+
+- 年龄直方图划分的平均工资
+  - Cumulative Sum
+  - Moving Function
+
+相关阅读
+
+- https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations-pipeline.html
+
+## 47 | 聚合的作用范围及排序
+
+### 聚合的作用范围
+
+ES 聚合分析的默认作用范围是 query 的查询结果集
+
+同时 ES 还支持以下方式改变聚合的作用范围
+
+- Filter
+- Post_Filter
+- Global
+
+使用上一节的测试数据
+
+
+
+Code
+
+
+
+```
+# query
+POST employees/_search
+{
+  "size": 0,
+  "query": {
+    "range": {
+      "age": {
+        "gte": 20
+      }
+    }
+  },
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field": "job.keyword"
+      }
+    }
+  }
+}
+```
+
+### 具体案例
+
+#### Filter
+
+- Filter 只对当前的子聚合语句生效
+- all_jobs 还是基于 query 的作用范围
+
+
+
+Code
+
+
+
+```
+#Filter
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "older_person": {
+      "filter":{
+        "range":{
+          "age":{
+            "from":35
+          }
+        }
+      },
+      "aggs":{
+         "jobs":{
+           "terms": {
+        "field":"job.keyword"
+      }
+      }
+    }},
+    "all_jobs": {
+      "terms": {
+        "field":"job.keyword"
+        
+      }
+    }
+  }
+}
+```
+
+#### Post_Filter
+
+- 是对聚合分析后的文档进行再次过滤
+- Size 无需设置为 0
+- 使用场景: 一条语句，获取聚合信息 + 获取符合条件的文档
+
+
+
+Code
+
+
+
+```
+#Post field. 一条语句，找出所有的job类型。还能找到聚合后符合条件的结果
+
+POST employees/_search
+{
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field": "job.keyword"
+      }
+    }
+  },
+  "post_filter": {
+    "match": {
+      "job.keyword": "Dev Manager"
+    }
+  }
+}
+```
+
+#### Global
+
+Global，无视 query，对全部文档进行统计
+
+
+
+Code
+
+
+
+```
+# global
+POST employees/_search
+{
+  "size": 0,
+  "query": {
+    "range": {
+      "age": {
+        "gte": 35
+      }
+    }
+  },
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field": "job.keyword"
+      }
+    },
+    "all": {
+      "global": {}, 
+      "aggs": {
+        "salary_avg": {
+          "avg": {
+            "field": "salary"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### 排序
+
+#### 指定 order， 按照 count 和 key 进行排序
+
+- 默认情况，按照 count 降序排序
+- 指定 size，就能返回相应的桶
+
+
+
+Code
+
+
+
+```
+#排序 order
+#count and key
+POST employees/_search
+{
+  "size": 0,
+  "query": {
+    "range": {
+      "age": {
+        "gte": 20
+      }
+    }
+  },
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field":"job.keyword",
+        "order":[
+          {"_count":"asc"},
+          {"_key":"desc"}
+          ]
+        
+      }
+    }
+  }
+}
+```
+
+#### 基于子聚合的值排序
+
+- 基于子聚合的数值进行排序
+- 使用子聚合，Aggregation name
+
+
+
+Code
+
+
+
+```
+#排序 order
+#count and key
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field":"job.keyword",
+        "order":[  {
+            "avg_salary":"desc"
+          }]
+        
+        
+      },
+    "aggs": {
+      "avg_salary": {
+        "avg": {
+          "field":"salary"
+        }
+      }
+    }
+    }
+  }
+}
+
+#排序 order
+#count and key
+POST employees/_search
+{
+  "size": 0,
+  "aggs": {
+    "jobs": {
+      "terms": {
+        "field":"job.keyword",
+        "order":[  {
+            "stats_salary.min":"desc"
+          }]
+        
+        
+      },
+    "aggs": {
+      "stats_salary": {
+        "stats": {
+          "field":"salary"
+        }
+      }
+    }
+    }
+  }
+}
+```
+
+## 48 | 聚合的精准度问题
+
+### 分布式系统的近似统计算法
+
+[![image-20210110180551987](https://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210110180551987.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210110180551987.png)
+
+image-20210110180551987
+
+Min 聚合分析的执行流程
+
+Min 发出聚合命令 -> 各个节点获取本节点 min value -> Coordination 节点统计最小值 -> 返回索引最小值
+
+在 Terms Aggregation 的返回中有两个特殊的数值
+
+- doc_count_error_upper_bound ： 被遗漏的term 分桶，包含的文档，有可能的最大值
+- sum_other_doc_count: 除了返回结果 bucket 的 terms 以外，其他 terms 的文档总数（总数-返回的总数）
+
+Terms 聚合分析的执行流程
+
+max 发出聚合命令 -> 各个节点获取本节点 max value -> Coordination 节点统计最大值 -> 返回索引最大值
+
+### 解决 Terms 不准的问题
+
+Terms 不正确的案例
+
+提升 shard_size 的参数
+
+- Terms 聚合分析不准的原因，数据分散在多个分片上， Coordinating Node 无法获取数据全貌
+- 方案 1：当数据量不大时，设置 Primary Shard 为 1；实现准确性
+- 方案 2：在分布式数据上，设置 shard_size 参数，提高精确度; 原理：每次从 Shard 上额外多获取数据，提升准确率
+
+打开 show_term_doc_count_error, 测试数据请看最后
+
+
+
+Code
+
+
+
+```
+GET kibana_sample_data_flights/_search
+{
+  "size": 0,
+  "aggs": {
+    "weather": {
+      "terms": {
+        "field":"OriginWeather",
+        "size":5,
+        "show_term_doc_count_error":true
+      }
+    }
+  }
+}
+
+
+GET my_flights/_search
+{
+  "size": 0,
+  "aggs": {
+    "weather": {
+      "terms": {
+        "field":"OriginWeather",
+        "size":1,
+        "shard_size": 5,
+        "show_term_doc_count_error":true
+      }
+    }
+  }
+}
+```
+
+shard_size 设定
+
+- 调整 shard size 大小，降低 doc_count_error_upper_bound 来提升准确度
+  - 增加整体计算量，提高了准确度，但会降低相应时间
+- Shard Size 默认大小设定
+  - shard size = size *1.5 +10
+  - https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations-bucket-terms-aggregation.html#search-aggregations-bucket-terms-aggregation-approximate-counts
+
+### 测试数据
+
+
+
+Code
+
+
+
+```
+DELETE my_flights
+PUT my_flights
+{
+  "settings": {
+    "number_of_shards": 20
+  },
+  "mappings" : {
+      "properties" : {
+        "AvgTicketPrice" : {
+          "type" : "float"
+        },
+        "Cancelled" : {
+          "type" : "boolean"
+        },
+        "Carrier" : {
+          "type" : "keyword"
+        },
+        "Dest" : {
+          "type" : "keyword"
+        },
+        "DestAirportID" : {
+          "type" : "keyword"
+        },
+        "DestCityName" : {
+          "type" : "keyword"
+        },
+        "DestCountry" : {
+          "type" : "keyword"
+        },
+        "DestLocation" : {
+          "type" : "geo_point"
+        },
+        "DestRegion" : {
+          "type" : "keyword"
+        },
+        "DestWeather" : {
+          "type" : "keyword"
+        },
+        "DistanceKilometers" : {
+          "type" : "float"
+        },
+        "DistanceMiles" : {
+          "type" : "float"
+        },
+        "FlightDelay" : {
+          "type" : "boolean"
+        },
+        "FlightDelayMin" : {
+          "type" : "integer"
+        },
+        "FlightDelayType" : {
+          "type" : "keyword"
+        },
+        "FlightNum" : {
+          "type" : "keyword"
+        },
+        "FlightTimeHour" : {
+          "type" : "keyword"
+        },
+        "FlightTimeMin" : {
+          "type" : "float"
+        },
+        "Origin" : {
+          "type" : "keyword"
+        },
+        "OriginAirportID" : {
+          "type" : "keyword"
+        },
+        "OriginCityName" : {
+          "type" : "keyword"
+        },
+        "OriginCountry" : {
+          "type" : "keyword"
+        },
+        "OriginLocation" : {
+          "type" : "geo_point"
+        },
+        "OriginRegion" : {
+          "type" : "keyword"
+        },
+        "OriginWeather" : {
+          "type" : "keyword"
+        },
+        "dayOfWeek" : {
+          "type" : "integer"
+        },
+        "timestamp" : {
+          "type" : "date"
+        }
+      }
+    }
+}
+
+
+POST _reindex
+{
+  "source": {
+    "index": "kibana_sample_data_flights"
+  },
+  "dest": {
+    "index": "my_flights"
+  }
+}
+
+GET kibana_sample_data_flights/_count
+GET my_flights/_count
+```
+
 # Scroll-知识插播
 
 ```http
