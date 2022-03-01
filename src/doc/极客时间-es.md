@@ -7035,9 +7035,7 @@ POST employees/_search
 
 ### 分布式系统的近似统计算法
 
-[![image-20210110180551987](https://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210110180551987.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210110180551987.png)
-
-image-20210110180551987
+[![image-20210110180551987](http://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210110180551987.png)](http://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210110180551987.png)
 
 Min 聚合分析的执行流程
 
@@ -7070,7 +7068,7 @@ Code
 
 
 
-```
+```shell
 GET kibana_sample_data_flights/_search
 {
   "size": 0,
@@ -7118,7 +7116,7 @@ Code
 
 
 
-```
+```shell
 DELETE my_flights
 PUT my_flights
 {
@@ -7226,6 +7224,576 @@ POST _reindex
 GET kibana_sample_data_flights/_count
 GET my_flights/_count
 ```
+
+
+
+## 49|关系型数据库的范式化设计
+
+### 在 Elasticsearch 中处理关联关系
+
+Elasticsearch 并不擅⻓处理关联关系。我们⼀般采⽤以下四种⽅法处理关联
+
+○ 对象类型
+
+○ 嵌套对象(Nested Object)
+
+○ ⽗⼦关联关系(Parent / Child )
+
+○ 应⽤端关联
+
+### 案例 1：博客和其作者信息[对象类型]
+
+![image-20220228111512462](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228111512462.png)
+
+![image-20220228111540360](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228111540360.png)
+
+```shell
+DELETE blog
+# 设置blog的 Mapping
+PUT /blog
+{
+  "mappings": {
+    "properties": {
+      "content": {
+        "type": "text"
+      },
+      "time": {
+        "type": "date"
+      },
+      "user": {
+        "properties": {
+          "city": {
+            "type": "text"
+          },
+          "userid": {
+            "type": "long"
+          },
+          "username": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}
+# 插入一条 Blog 信息
+PUT blog/_doc/1
+{
+  "content":"I like Elasticsearch",
+  "time":"2019-01-01T00:00:00",
+  "user":{
+    "userid":1,
+    "username":"Jack",
+    "city":"Shanghai"
+  }
+}
+
+
+# 查询 Blog 信息
+POST blog/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"match": {"content": "Elasticsearch"}},
+        {"match": {"user.username": "Jack"}}
+      ]
+    }
+  }
+}
+```
+
+### 案例 2：包含对象数组的⽂档【嵌套对象(Nested Object)】
+
+![image-20220228111655781](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228111655781.png)
+
+![image-20220228111718790](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228111718790.png)
+
+为什么会搜到不需要的结果？
+
+● 存储时，内部对象的边界并没有考虑在内，JSON 格式被处理成扁平式键值对的结构
+
+● 当对多个字段进⾏查询时，导致了意外的搜索结果
+
+● 可以⽤ Nested Data Type 解决这个问题
+
+![image-20220228111802902](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228111802902.png)
+
+![image-20220228111908926](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228111908926.png)
+
+![image-20220228111940483](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228111940483.png)
+
+
+
+![image-20220228112016001](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228112016001.png)11
+
+```shell
+DELETE my_movies
+# 电影的Mapping信息
+PUT my_movies
+{
+      "mappings" : {
+      "properties" : {
+        "actors" : {
+          "properties" : {
+            "first_name" : {
+              "type" : "keyword"
+            },
+            "last_name" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "title" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        }
+      }
+    }
+}
+# 写入一条电影信息
+POST my_movies/_doc/1
+{
+  "title":"Speed",
+  "actors":[
+    {
+      "first_name":"Keanu",
+      "last_name":"Reeves"
+    },
+
+    {
+      "first_name":"Dennis",
+      "last_name":"Hopper"
+    }
+
+  ]
+}
+# 查询电影信息
+POST my_movies/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"match": {"actors.first_name": "Keanu"}},
+        {"match": {"actors.last_name": "Hopper"}}
+      ]
+    }
+  }
+
+}
+
+DELETE my_movies
+# 创建 Nested 对象 Mapping
+PUT my_movies
+{
+      "mappings" : {
+      "properties" : {
+        "actors" : {
+          "type": "nested",
+          "properties" : {
+            "first_name" : {"type" : "keyword"},
+            "last_name" : {"type" : "keyword"}
+          }},
+        "title" : {
+          "type" : "text",
+          "fields" : {"keyword":{"type":"keyword","ignore_above":256}}
+        }
+      }
+    }
+}
+POST my_movies/_doc/1
+{
+  "title":"Speed",
+  "actors":[
+    {
+      "first_name":"Keanu",
+      "last_name":"Reeves"
+    },
+
+    {
+      "first_name":"Dennis",
+      "last_name":"Hopper"
+    }
+
+  ]
+}
+
+# Nested 查询
+POST my_movies/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"match": {"title": "Speed"}},
+        {
+          "nested": {
+            "path": "actors",
+            "query": {
+              "bool": {
+                "must": [
+                  {"match": {
+                    "actors.first_name": "Keanu"
+                  }},
+
+                  {"match": {
+                    "actors.last_name": "Hopper"
+                  }}
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+# Nested Aggregation
+POST my_movies/_search
+{
+  "size": 0,
+  "aggs": {
+    "actors": {
+      "nested": {
+        "path": "actors"
+      },
+      "aggs": {
+        "actor_name": {
+          "terms": {
+            "field": "actors.first_name",
+            "size": 10
+          }
+        }
+      }
+    }
+  }
+}
+# 普通 aggregation不工作
+POST my_movies/_search
+{
+  "size": 0,
+  "aggs": {
+    "NAME": {
+      "terms": {
+        "field": "actors.first_name",
+        "size": 10
+      }
+    }
+  }
+}
+```
+
+## 50|⽂档的⽗⼦关系
+
+### Parent / Child
+
+● 对象和 Nested 对象的局限性
+
+● 每次更新，需要重新索引整个对象（包括根对象和嵌套对象）
+
+● ES 提供了类似关系型数据库中 Join 的实现。使⽤ Join 数据类型实现，可以通过维护 Paren/ Child 的关系，从⽽分离两个对象
+
+● ⽗⽂档和⼦⽂档是两个独⽴的⽂档
+
+● 更新⽗⽂档⽆需重新索引⼦⽂档。⼦⽂档被添加，更新或者删除也不会影响到⽗⽂档和其他的⼦⽂档
+
+### ⽗⼦关系
+
+● 定义⽗⼦关系的⼏个步骤
+
+1. 设置索引的 Mapping
+
+2. 索引⽗⽂档
+
+3. 索引⼦⽂档
+
+4. 按需查询⽂档
+
+### 设置 Mapping
+
+![image-20220228143951362](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228143951362.png)
+
+### 索引⽗⽂档
+
+![image-20220228144038306](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228144038306.png)
+
+### 索引⼦⽂档
+
+![image-20220228144112177](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228144112177.png)
+
+```shell
+DELETE my_blogs
+
+# 设定 Parent/Child Mapping
+PUT my_blogs
+{
+  "settings": {
+    "number_of_shards": 2
+  },
+  "mappings": {
+    "properties": {
+      "blog_comments_relation": {
+        "type": "join",
+        "relations": {
+          "blog": "comment"
+        }
+      },
+      "content": {
+        "type": "text"
+      },
+      "title": {
+        "type": "keyword"
+      }
+    }
+  }
+}
+
+
+#索引父文档
+PUT my_blogs/_doc/blog1
+{
+  "title":"Learning Elasticsearch",
+  "content":"learning ELK @ geektime",
+  "blog_comments_relation":{
+    "name":"blog"
+  }
+}
+
+#索引父文档
+PUT my_blogs/_doc/blog2
+{
+  "title":"Learning Hadoop",
+  "content":"learning Hadoop",
+    "blog_comments_relation":{
+    "name":"blog"
+  }
+}
+
+
+#索引子文档
+PUT my_blogs/_doc/comment1?routing=blog1
+{
+  "comment":"I am learning ELK",
+  "username":"Jack",
+  "blog_comments_relation":{
+    "name":"comment",
+    "parent":"blog1"
+  }
+}
+
+#索引子文档
+PUT my_blogs/_doc/comment2?routing=blog2
+{
+  "comment":"I like Hadoop!!!!!",
+  "username":"Jack",
+  "blog_comments_relation":{
+    "name":"comment",
+    "parent":"blog2"
+  }
+}
+
+#索引子文档
+PUT my_blogs/_doc/comment3?routing=blog2
+{
+  "comment":"Hello Hadoop",
+  "username":"Bob",
+  "blog_comments_relation":{
+    "name":"comment",
+    "parent":"blog2"
+  }
+}
+
+# 查询所有文档
+POST my_blogs/_search
+{
+
+}
+
+
+#根据父文档ID查看
+GET my_blogs/_doc/blog2
+
+# Parent Id 查询
+POST my_blogs/_search
+{
+  "query": {
+    "parent_id": {
+      "type": "comment",
+      "id": "blog2"
+    }
+  }
+}
+
+# Has Child 查询,返回父文档
+POST my_blogs/_search
+{
+  "query": {
+    "has_child": {
+      "type": "comment",
+      "query" : {
+                "match": {
+                    "username" : "Jack"
+                }
+            }
+    }
+  }
+}
+
+
+# Has Parent 查询，返回相关的子文档
+POST my_blogs/_search
+{
+  "query": {
+    "has_parent": {
+      "parent_type": "blog",
+      "query" : {
+                "match": {
+                    "title" : "Learning Hadoop"
+                }
+            }
+    }
+  }
+}
+
+
+
+#通过ID ，访问子文档
+GET my_blogs/_doc/comment3
+#通过ID和routing ，访问子文档
+GET my_blogs/_doc/comment3?routing=blog2
+
+#更新子文档
+PUT my_blogs/_doc/comment3?routing=blog2
+{
+    "comment": "Hello Hadoop??",
+    "blog_comments_relation": {
+      "name": "comment",
+      "parent": "blog2"
+    }
+}
+```
+
+
+
+### 嵌套对象 v.s ⽗⼦⽂档
+
+![image-20220228162241250](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228162241250.png)
+
+
+
+## 51|Update By Query & Reindex API
+
+### 使⽤场景
+
+● ⼀般在以下⼏种情况时，我们需要重建索引
+
+​	● 索引的 Mappings 发⽣变更：字段类型更改，分词器及字典更新
+
+​	● 索引的 Settings 发⽣变更：索引的主分⽚数发⽣改变
+
+​	● 集群内，集群间需要做数据迁移
+
+
+
+● Elasticsearch 的内置提供的 API
+
+​	● Update By Query：在现有索引上重建
+
+​	● Reindex：在其他索引上重建索引
+
+### 案例 1：为索引增加⼦字段
+
+![image-20220228162445066](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228162445066.png)
+
+![image-20220228162508881](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228162508881.png)
+
+### 案例 2：更改已有字段类型的 Mappings
+
+![image-20220228162911404](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228162911404.png)
+
+### Reindex API
+
+![image-20220228162943098](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220228162943098.png)
+
+
+
+## 52|Ingest Pipeline 与 Painless Script
+
+### 需求：修复与增强写⼊的数据
+
+![image-20220301114328772](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220301114328772.png)
+
+### Ingest Node
+
+● Elasticsearch 5.0 后，引⼊的⼀种新的节点类型。默认配置下，每个节点都是 Ingest Node
+
+​		○ 具有预处理数据的能⼒，可拦截 Index 或 Bulk API 的请求
+
+​		○ 对数据进⾏转换，并重新返回给 Index 或 Bulk API
+
+● ⽆需 Logstash，就可以进⾏数据的预处理，例如
+
+​		○ 为某个字段设置默认值；重命名某个字段的字段名；对字段值进⾏ Split 操作
+
+​		○ ⽀持设置 Painless 脚本，对数据进⾏更加复杂的加⼯
+
+#### Pipeline & Processor
+
+● Pipeline - 管道会对通过的数据（⽂档），按照顺序进⾏加⼯
+
+● Processor - Elasticsearch 对⼀些加⼯的⾏为进⾏了抽象包装
+
+​		● Elasticsearch 有很多内置的 Processors。**也⽀持通过插件的⽅式，**实现⾃⼰的 Processor
+
+![image-20220301114451323](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220301114451323.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Scroll-知识插播
 
