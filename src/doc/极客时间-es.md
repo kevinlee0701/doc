@@ -7771,6 +7771,10 @@ PUT my_blogs/_doc/comment3?routing=blog2
 
 ![image-20220301161301755](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220301161301755.png)
 
+
+
+
+
 ```shell
 DELETE tech_blogs
 
@@ -7950,9 +7954,66 @@ POST tech_blogs/_update_by_query?pipeline=blog_pipeline
     }
 }
 
+```
 
-#########Demo for Painless###############
 
+
+## 53|Painless
+
+ ● ⾃ Elasticsearch 5.x 后引⼊，专⻔为 Elasticsearch 设计，扩展了 Java 的语法。 
+
+● 6.0 开始，ES 只⽀持 Painless。Groovy， JavaScript 和 Python 都不再⽀持
+
+● Painless ⽀持所有 Java 的数据类型及 Java API ⼦集
+
+● Painless Script 具备以下特性
+
+​		○ ⾼性能 / 安全
+
+​		○ ⽀持显示类型或者动态定义类型
+
+### Painless 的⽤途
+
+● 可以对⽂档字段进⾏加⼯处理
+
+​		● 更新或删除字段，处理数据聚合操作
+
+​		● Script Field：对返回的字段提前进⾏计算
+
+​		● Function Score：对⽂档的算分进⾏处理
+
+● 在 Ingest Pipeline 中执⾏脚本
+
+● 在 Reindex API，Update By Query 时，对数据进⾏处理
+
+### 通过 Painless 脚本访问字段
+
+|        上下文        |          语法          |
+| :------------------: | :--------------------: |
+| Ingestion【预处理】  |     ctx.field_name     |
+|        Update        | ctx._source.field_name |
+| Search & Aggregation |   doc[“field_name”]    |
+|                      |                        |
+
+### 案例 1：Script Processor
+
+![image-20220301162531690](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220301162531690.png)
+
+### 案例 2：⽂档更新计数
+
+![image-20220301163549419](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220301163549419.png)
+
+
+
+
+
+
+
+
+
+
+
+```shell
 # 增加一个 Script Prcessor
 POST _ingest/pipeline/_simulate
 {
@@ -8077,46 +8138,6 @@ GET tech_blogs/_search
   }
 }
 ```
-
-
-
-## 53|Painless
-
- ● ⾃ Elasticsearch 5.x 后引⼊，专⻔为 Elasticsearch 设计，扩展了 Java 的语法。 
-
-● 6.0 开始，ES 只⽀持 Painless。Groovy， JavaScript 和 Python 都不再⽀持
-
-● Painless ⽀持所有 Java 的数据类型及 Java API ⼦集
-
-● Painless Script 具备以下特性
-
-​		○ ⾼性能 / 安全
-
-​		○ ⽀持显示类型或者动态定义类型
-
-### Painless 的⽤途
-
-● 可以对⽂档字段进⾏加⼯处理
-
-​		● 更新或删除字段，处理数据聚合操作
-
-​		● Script Field：对返回的字段提前进⾏计算
-
-​		● Function Score：对⽂档的算分进⾏处理
-
-● 在 Ingest Pipeline 中执⾏脚本
-
-● 在 Reindex API，Update By Query 时，对数据进⾏处理
-
-### 通过 Painless 脚本访问字段
-
-|        上下文        |          语法          |
-| :------------------: | :--------------------: |
-| Ingestion【预处理】  |     ctx.field_name     |
-|        Update        | ctx._source.field_name |
-| Search & Aggregation |   doc[“field_name”]    |
-
-
 
 
 
