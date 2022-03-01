@@ -7759,23 +7759,17 @@ PUT my_blogs/_doc/comment3?routing=blog2
 
 ![image-20220301114828282](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220301114828282.png)
 
+### Pipeline API
 
+![image-20220301142245240](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220301142245240.png)
 
+### 添加 Pipeline 并测试
 
+![image-20220301142312860](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220301142312860.png)
 
+### Ingest Node v.s Logstash
 
-
-
-
-
-
-
-
-
-
-
-
-
+![image-20220301161301755](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220301161301755.png)
 
 ```shell
 DELETE tech_blogs
@@ -7899,6 +7893,8 @@ PUT _ingest/pipeline/blog_pipeline
 #查看Pipleline
 GET _ingest/pipeline/blog_pipeline
 
+#删除
+DELETE _ingest/pipeline/blog_pipeline
 
 #测试pipeline
 POST _ingest/pipeline/blog_pipeline/_simulate
@@ -8084,15 +8080,41 @@ GET tech_blogs/_search
 
 
 
+## 53|Painless
 
+ ● ⾃ Elasticsearch 5.x 后引⼊，专⻔为 Elasticsearch 设计，扩展了 Java 的语法。 
 
+● 6.0 开始，ES 只⽀持 Painless。Groovy， JavaScript 和 Python 都不再⽀持
 
+● Painless ⽀持所有 Java 的数据类型及 Java API ⼦集
 
+● Painless Script 具备以下特性
 
+​		○ ⾼性能 / 安全
 
+​		○ ⽀持显示类型或者动态定义类型
 
+### Painless 的⽤途
 
+● 可以对⽂档字段进⾏加⼯处理
 
+​		● 更新或删除字段，处理数据聚合操作
+
+​		● Script Field：对返回的字段提前进⾏计算
+
+​		● Function Score：对⽂档的算分进⾏处理
+
+● 在 Ingest Pipeline 中执⾏脚本
+
+● 在 Reindex API，Update By Query 时，对数据进⾏处理
+
+### 通过 Painless 脚本访问字段
+
+|        上下文        |          语法          |
+| :------------------: | :--------------------: |
+| Ingestion【预处理】  |     ctx.field_name     |
+|        Update        | ctx._source.field_name |
+| Search & Aggregation |   doc[“field_name”]    |
 
 
 
