@@ -8141,11 +8141,1092 @@ GET tech_blogs/_search
 
 
 
+## 56 | 集群身份认证与用户鉴权
+
+用户数据泄漏原因分析：
+
+1. Elasticsearch 在默认安装后，不提供任何形式的安全防护
+2. 错误的配置信息导致公网可以访问 ES 集群 ，在 elasticsearch.yml 文件中， server.host 被错误的配置为 0.0.0.0
+
+数据安全性的基本需求
+
+- 身份认证: 鉴定用户是否合法
+- 用户鉴权: 指定那个用户可以访问哪个索引
+- 传输加密
+- 日志审计
+
+一些免费的方案
+
+1. 设置 Nginx 反向代理
+2. 安装免费的 Security 插件
+   - Search Guard - https://search-guard.com/
+   - ReadOnly REST - https://github.com/sscarduzio/elasticsearch-readonlyrest-plugin
+3. X-Pack 的 Basic 版
+   - 从 ES 6.8 & ES 7.0 开始，Security 纳入 x-pack 的 Basic 版本中，免费使用一些基本的功能
+   - https://www.elastic.co/what-is/elastic-stack-security
+
+Authentication - 身份认证
+
+认证体系的几种类型
+
+- 提供用户名和密码
+- 提供秘钥或 Kerberos 票据
+
+Realms：X-Pack 中的认证服务
+
+- 内置 Realms （免费） ：File / Native（用户名密码保存在 Elasticsearch）
+- 外部 Realms （收费） ：LDAP / Active Directory / PKI / SAML / Kerberos
+
+RBAC - 用户鉴权
+
+什么是 RBAC：Role Based Access Control， 定义一个角色，并分配一组权限。权限包括索引
+
+级，字段级，集群级的不同的操作。然后通过将角色分配给用户，使得用户拥有这些权限
+
+- User：The authenticated User
+
+- Role：A named set of permissions
+
+- Permission – A set of one or more privileges against a secured resource
+
+- Privilege – A named group of 1 or more actions that user may execute against a secured
+
+  resource
+
+Privilege
+
+Cluster Privileges ：all / monitor / manager / manage_index / manage_index_template / manage_rollup
+
+Indices Privileges ：all / create / create_index / delete / delete_index / index / manage / read /write
+
+view_index_metadata
+
+创建内置的用户和角色
+
+内置的角色与用户
+
+| 用户                   | 角色                                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| elastic                | Supper User                                                  |
+| kibana                 | The user that is used by Kibana to connect and communicate with Elasticsearch. |
+| logstash_system        | The user that is used by Logstash when storing monitoring information in Elasticsearch. |
+| beats_system           | The user that the different Beats use when storing monitoring information in Elasticsearch. |
+| apm_system             | The user that the APM server uses when storing monitoring information in Elasticsearch. |
+| Remote_monitoring_user | The user that is used by Metricbeat when collecting and storing monitoring information in Elasticsearch. |
+
+使用 Security API 创建用户
+
+| User | • Create user • Update user • Delete user • Enable / disable users • Get users • Change password |
+| ---- | ------------------------------------------------------------ |
+| Role | • Create Role • Update Role • Delete Role • Get roles        |
+
+### 开启并配置 X-Pack 的认证与鉴权
+
+1. 修改配置文件，打开认证与授权
 
 
 
+Code
 
 
+
+```
+$ bin/elasticsearch -E node.name=node0 -E cluster.name=geektime -E path.data=node0_data -E http.port=9200 -E xpack.security.enabled=true -d
+$ curl http://localhost:9200/_cat/nodes?pretty
+# 返回401 错误
+```
+
+1. 创建默认的用户和分组
+
+运行密码设定的命令，设置ES内置用户及其初始密码。密码最少6位
+
+
+
+Code
+
+
+
+```
+$ bin/elasticsearch-setup-passwords interactive
+Initiating the setup of passwords for reserved users elastic,apm_system,kibana,logstash_system,beats_system,remote_monitoring_user.
+You will be prompted to enter passwords as the process progresses.
+Please confirm that you would like to continue [y/N]y
+Enter password for [elastic]:
+```
+
+修改密码命令如下
+
+
+
+Code
+
+
+
+```
+curl -H "Content-Type:application/json" -XPOST -u elastic:123456 'http://127.0.0.1:9200/_xpack/security/user/kibana/_password' -d '{ "password" : "123456" }'
+```
+
+#### 忘记密码
+
+创建一个临时的超级用户 RyanMiao用这个用户去修改elastic用户的密码：
+
+
+
+Code
+
+
+
+```
+bin/elasticsearch-users useradd my_admin -p my_password -r superuser
+curl -XPUT -u my_admin:my_password https://localhost:9200/_xpack/security/user/elastic/_password -H "Content-Type: application/json" -d '{ "password": "123456" }'
+```
+
+1. 当集群开启身份认证之后，配置 Kibana
+
+修改 kibana.yml
+
+
+
+Code
+
+
+
+```
+elasticsearch.username: "kibana"
+elasticsearch.password: "123456"
+```
+
+1. Demo: 创建一个 Role，配置为对某个索引只读权限 / 创建一个用户，把用户加入 Role
+
+使用用户 elastic 登陆kibana http://192.168.70.13:5601/login
+
+写入两条测试数据
+
+
+
+Code
+
+
+
+```
+POST /orders/_bulk
+{"index":{}}
+{"product" : "1","price" : 18,"payment" : "master","card" : "9876543210123456","name" : "jack"}
+{"index":{}}
+{"product" : "2","price" : 99,"payment" : "visa","card" : "1234567890123456","name" : "bob"}
+```
+
+
+
+Code
+
+
+
+```
+#create a new role named read_only_orders, that satisfies the following criteria:
+#The role has no cluster privileges
+#The role only has access to indices that match the pattern sales_record
+#The index privileges are read, and view_index_metadata
+
+#create sales_user that satisfies the following criteria:
+# Use your own email address
+# Assign the user to two roles: read_only_orders and kibana_user
+```
+
+创建 Role
+
+management - Roles - Create role
+
+角色:read_orders； es权限： kibana_user 索引 orders 权限 read； kibana权限：read
+
+[![image-20210114204724612](http://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210114204724612.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210114204724612.png)
+
+
+
+创建用户
+
+management - Users - Create user - New user
+
+用户名: demo； 密码: 123456; 角色: read_orders；
+
+[![image-20210114204749768](http://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210114204749768.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210114204749768.png)
+
+image-20210114204749768
+
+我们通过 demo用户 登陆 kibana
+
+删除索引失败
+
+
+
+Code
+
+
+
+```
+#验证读权限,可以执行
+POST /orders/_search
+{}
+
+#验证写权限,报错
+POST /orders/_bulk
+{"index":{}}
+{"product" : "1","price" : 18,"payment" : "master","card" : "9876543210123456","name" : "jack"}
+{"index":{}}
+{"product" : "2","price" : 99,"payment" : "visa","card" : "1234567890123456","name" : "bob"}
+```
+
+本节知识点
+
+- 为什么需要保护 ES 中的数据
+- 如何使用 X-Pack Security 保护你的数据
+- Elasticsearch 中 RBAC 的机制和默认创建的用户和角色
+- 配置 Elasticsearch 和 Kibana 开启 身份认证和用户鉴权
+- 使用 Native Realm，通过 API 和 Kibana 管理用户分组和权限
+
+### 集群身份认证与用户鉴权
+
+- 如何为集群启用X-Pack Security
+- 如何为内置用户设置密码
+- 设置 Kibana与ElasticSearch通信鉴权
+- 使用安全API创建对特定索引具有有限访问权限的用户
+
+This tutorial involves a single node cluster, but if you had multiple nodes, you would enable Elasticsearch security features on every node in the cluster and configure Transport Layer Security (TLS) for internode-communication, which is beyond the scope of this tutorial. By enabling single-node discovery, we are postponing the configuration of TLS. For example, add the following setting:
+
+discovery.type: single-node
+
+本教程涉及单节点群集，但如果您有多个节点，则需要在群集中的每个节点上启用Elasticsearch安全功能，并为节点间通信配置传输层安全（TLS），这超出了本教程的范围。通过启用单节点发现，我们推迟了TLS的配置。例如，添加以下设置：
+
+发现.类型：单节点
+
+相关阅读
+
+- https://www.elastic.co/guide/en/elasticsearch/reference/7.1/configuring-security.html
+
+## 57 | 集群内部间的安全通信
+
+为什么要加密通讯
+
+- 加密数据 – 避免数据抓包，敏感信息泄漏
+- 验证身份 – 避免 Impostor Node; 例如 Data / Cluster State
+
+为节点创建证书
+
+TLS：TLS 协议要求 Trusted Certificate Authority（CA）签发的 X.509的证书
+
+证书认证的不同级别
+
+- Certificate – 节点加入需要使用相同 CA 签发的证书
+- Full Verification – 节点加入集群需要相同 CA 签发的证书，还需要验证 Host name 或 IP 地址
+- No Verification – 任何节点都可以加入，开发环境中用于诊断目的
+
+生成节点证书
+
+1. 为您的es集群创建一个证书颁发机构 ca默认名称 elastic-stack-ca.p12
+
+
+
+Code
+
+
+
+```shell
+bin/elasticsearch-certutil ca
+```
+
+1. 为群集中的每个节点生成证书和私钥, 证书默认名称 elastic-certificates.p12
+
+
+
+Code
+
+
+
+```shell
+bin/elasticsearch-certutil cert --ca elastic-stack-ca.p12
+```
+
+1. 将证书拷贝到 config/certs目录下
+
+
+
+Code
+
+
+
+```shell
+mkdir config/certs
+mv elastic-certificates.p12 config/certs
+```
+
+1. 启动es集群
+
+
+
+Code
+
+
+
+```shell
+bin/elasticsearch -E node.name=node0 -E cluster.name=geektime -E path.data=node0_data -E http.port=9200 -E xpack.security.enabled=true -E xpack.security.transport.ssl.enabled=true -E xpack.security.transport.ssl.verification_mode=certificate -E xpack.security.transport.ssl.keystore.path=certs/elastic-certificates.p12 -E xpack.security.transport.ssl.truststore.path=certs/elastic-certificates.p12
+
+bin/elasticsearch -E node.name=node1 -E cluster.name=geektime -E path.data=node1_data -E http.port=9201 -E xpack.security.enabled=true -E xpack.security.transport.ssl.enabled=true -E xpack.security.transport.ssl.verification_mode=certificate -E xpack.security.transport.ssl.keystore.path=certs/elastic-certificates.p12 -E xpack.security.transport.ssl.truststore.path=certs/elastic-certificates.p12
+
+curl -XPOST -u elastic:123456 http://localhost:9200/_cat/nodes
+
+#不提供证书的节点，无法加入
+bin/elasticsearch -E node.name=node2 -E cluster.name=geektime -E path.data=node2_data -E http.port=9202 -E xpack.security.enabled=true -E xpack.security.transport.ssl.enabled=true -E xpack.security.transport.ssl.verification_mode=certificate
+```
+
+配置节点间通讯
+
+elasticsearch.yml 配置
+
+
+
+Code
+
+
+
+```shell
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+
+xpack.security.transport.ssl.keystore.path: certs/elastic-certificates.p12
+xpack.security.transport.ssl.truststore.path: certs/elastic-certificates.p12
+```
+
+本节知识点
+
+- 为什么内部通信需要加密
+- 创建 Certificate Authority （CA）和节点的 Certificates
+- 配置 Elasticsearch节点间通信加密
+
+## 58 | 集群与外部间的安全通信
+
+本节知识点
+
+- 使用 HTTPS 的重要性
+- 配置 Elasticsearch
+- 配置 Kibana
+  - Kibana to Elasticsearch
+  - Browser to Kibana
+
+为什么需要 HTTPS
+
+数据在传输的过程中，有可能被窃取
+
+[![image-20210115210031649](http://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210115210031649.png)](https://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210115210031649.png)
+
+image-20210115210031649
+
+
+
+### 配置 Elasticsearch for HTTPS
+
+
+
+Code
+
+
+
+```shell
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.keystore.path: certs/elastic-certificates.p12
+xpack.security.http.ssl.truststore.path: certs/elastic-certificates.p12
+```
+
+修改es 配置文件
+
+
+
+Code
+
+
+
+```shell
+# ES 启用 https
+bin/elasticsearch -E node.name=node0 -E cluster.name=geektime -E path.data=node0_data -E http.port=9200 -E xpack.security.enabled=true -E xpack.security.transport.ssl.enabled=true -E xpack.security.transport.ssl.verification_mode=certificate -E xpack.security.transport.ssl.keystore.path=certs/elastic-certificates.p12 -E xpack.security.http.ssl.enabled=true -E xpack.security.http.ssl.keystore.path=certs/elastic-certificates.p12 -E xpack.security.http.ssl.truststore.path=certs/elastic-certificates.p12
+
+curl -u elastic:123456 --insecure https://127.0.0.1:9200/_cat
+```
+
+### 配置 Kibana 连接 ES HTTPS
+
+为kibana生成pem
+
+Code
+
+```shell
+openssl pkcs12 -in elastic-certificates.p12 -cacerts -nokeys -out elastic-ca.pem
+mkdir /opt/kibana/config/certs/
+mv elastic-ca.pem /opt/kibana/config/certs/
+```
+
+修改kibana配置文件 kibana.yml
+
+
+
+Code
+
+
+
+```
+elasticsearch.hosts: ["https://localhost:9200"]
+elasticsearch.ssl.certificateAuthorities: [ "/opt/kibana/config/certs/elastic-ca.pem" ]
+elasticsearch.ssl.verificationMode: certificate
+```
+
+访问http地址 [https://192.168.70.13:5601](https://192.168.70.13:5601/) 测试kibana可用
+
+### 配置使用 HTTPS 访问 Kibana
+
+生成后解压，包含了instance.crt 和 instance.key
+
+Code
+
+```
+bin/elasticsearch-certutil ca --pem
+unzip elastic-stack-ca.zip -d /opt/kibana/config/certs/
+```
+
+修改 kibana配置文件 kibana.yml
+
+Code
+
+```
+server.ssl.enabled: true
+server.ssl.certificate: config/certs/instance.crt
+server.ssl.key: config/certs/instance.key
+```
+
+启动kibana服务 `bin/kibana`
+
+访问https地址 [https://192.168.70.13:5601](https://192.168.70.13:5601/) 测试kibana可用
+
+## 59 | 常见的集群部署方式
+
+节点类型
+
+- 不同角色的节点 ：Master eligible / Data / Ingest / Coordinating / Machine Learning
+- 在开发环境中，一个节点可承担多种角色
+- 在生产环境中， 根据数据量，写入和查询的吞吐量，选择合适的部署方式 ；建议设置单一角色的节点（dedicated node）
+
+节点参数配置
+
+一个节点在默认情况会下同时扮演：master eligible，data node 和 ingest node
+
+| 节点类型          | 配置参数    | 默认值                      |
+| ----------------- | ----------- | --------------------------- |
+| Master eligible   | node.master | true                        |
+| data              | node.data   | true                        |
+| ingest            | node.ingest | ture                        |
+| coordinating only | 无          | 设置上面三个参数全部为false |
+| machine learning  | node.ml     | true (需要enable x-pack)    |
+
+单一职责的节点
+
+一个节点只承担一个角色
+
+Master 节点
+
+Code
+
+```
+node.master: true 
+node.ingest: false 
+node.data: false
+```
+
+Data 节点
+
+Code
+
+```
+node.master: false 
+node.ingest: false 
+node.data: true
+```
+
+Ingest 节点
+
+
+
+Code
+
+
+
+```
+node.master: false 
+node.ingest: true 
+node.data: false
+```
+
+Coordinate 节点
+
+
+
+Code
+
+
+
+```
+node.master: false 
+node.ingest: false 
+node.data: false
+```
+
+![image-20220308104559868](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220308104559868.png)
+
+单一角色：职责分离的好处
+
+Dedicated master eligible nodes：负责集群状态(cluster state)的管理； 使用低配置的 CPU，RAM 和磁盘
+
+Dedicated data nodes：负责数据存储及处理客户端请求；使用高配置的 CPU, RAM 和磁盘
+
+Dedicated ingest nodes：负责数据处理 ；使用高配置 CPU；中等配置的RAM； 低配置的磁盘
+
+Dedicate Coordinating Only Node (Client Node)
+
+配置：将 Master，Data，Ingest 都配置成 False ；Medium/High CUP；Medium/High RAM；Low Disk
+
+生产环境中，建议为一些大的集群配置 Coordinating Only Nodes
+
+- 扮演 Load Balancers。降低 Master 和 Data Nodes 的负载
+- 负责搜索结果的 Gather/Reduce
+- 有时候无法预知客户端会发送怎么样的请求；大量占用内存的结合操作，一个深度聚合可能会引发 OOM
+
+### Dedicate Master Node
+
+> 从高可用 & 避免脑裂的角度出发
+
+1. 一般在生产环境中配置 3 台
+2. 一个集群只有 1 台活跃的主节点；负责分片管理，索引创建，集群管理等操作
+
+> 如果和数据节点或者 Coordinate 节点混合部署
+
+1. 数据节点相对有比较大的内存占用
+2. Coordinate 节点有时候可能会有开销很高的查询，导致 OOM
+3. 这些都有可能影响 Master 节点，导致集群的不稳定
+
+> 基本部署：增加节点，水平扩展
+
+当磁盘容量无法满足需求时，可以增加数据节点； 磁盘读写压力大时，增加数据节点
+
+![image-20220308104809183](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220308104809183.png)
+
+> 水平扩展：Coordinating Only Node
+
+![image-20220308104839369](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220308104839369.png)
+
+当系统中有大量的复杂查询及聚合时候，增加 Coordinating 节点，增加查询的性能
+
+> 读写分离
+
+![image-20220308105107568](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220308105107568.png)
+
+在集群中部署 Kibana；将 Kibana 部署在 Coordinating 节点
+
+异地多活的部署
+
+集群处在三个数据中心；数据三写；GTM 分发读请求
+
+## 60 | Hot & Warm 架构与 Shard Filtering
+
+日志类应用的部署架构
+
+什么是 Hot & Warm Architecture
+
+Hot & Warm Architecture
+
+- 数据通常不会有 Update 操作；适用于 Time based 索引数据（生命周期管理），同时数据量比较大的 场景。
+- 引入 Warm 节点，低配置大容量的机器存放老数据，以降低部署成本
+
+两类数据节点, 不同的硬件配置
+
+- Hot 节点（通常使用 SSD）：索引有不断有新文档写入。通常使用 SSD
+- Warm 节点（通常使用 HDD）：索引不存在新数据的写入；同时也不存在大量的数据查询
+
+Hot Nodes
+
+用于数据的写入
+
+- Indexing 对 CPU 和 IO 都有很高的要求。所以需要使用高配置的机器
+- 存储的性能要好。建议使用 SSD
+
+Warm Nodes
+
+用于保存只读的索引，比较旧的数据；
+
+通常使用大容量的磁盘（通常是 Spinning Disks）
+
+配置 Hot & Warm Architecture
+
+使用 Shard Filtering，步骤分为以下几步
+
+1. 标记节点 （Tagging）
+2. 配置索引到 Hot Node
+3. 配置索引到 Warm 节点
+
+标记节点
+
+需要通过 “node.attr” 来标记一个节点
+
+- 节点的 attribute可以是任何的 key/value
+- 可以通过 elasticsearch.yml 或者通过 –E 命令指定
+
+
+
+Code
+
+
+
+```
+# 标记一个 Hot 节点
+bin/elasticsearch  -E node.name=hotnode -E cluster.name=geektime -E path.data=hot_data -E node.attr.my_node_type=hot
+
+# 标记一个 warm 节点
+bin/elasticsearch  -E node.name=warmnode -E cluster.name=geektime -E path.data=warm_data -E node.attr.my_node_type=warm
+
+# 查看节点
+curl http://127.0.0.1:9200/_cat/nodeattrs?v
+```
+
+配置 Hot 数据
+
+创建索引时候，指定将其创建在 hot 节点上
+
+
+
+Code
+
+
+
+```
+# 配置到 Hot节点
+PUT logs-2019-06-27
+{
+  "settings":{
+    "number_of_shards":2,
+    "number_of_replicas":0,
+    "index.routing.allocation.require.my_node_type":"hot"
+  }
+}
+
+PUT my_index1/_doc/1
+{ "key":"value" }
+
+GET _cat/shards?v
+```
+
+旧数据移动到 Warm 节点
+
+Index.routing.allocation 是一个索引级的 dynamic setting，可以通过 API 在后期进行设定
+
+- Curator / Index Life Cycle Management Tool
+
+
+
+Code
+
+
+
+```
+# 配置到 warm 节点
+PUT logs-2019-06-27/_settings
+{  
+  "index.routing.allocation.require.my_node_type":"warm"
+}
+
+GET _cat/shards?v
+```
+
+Rack Awareness
+
+ES 的节点可能分布在不同的机架
+
+- 当一个机架断电，可能会同时丢 失几个节点
+- 如果一个索引相同的主分片和副 本分片，同时在这个机架上，就 有可能导致数据的丢失
+- 通过 Rack Awareness 的机制， 就可以尽可能避免将同一个索引 的主副分片同时分配在一个机架 的节点上
+
+标记 Rack 节点 + 配置集群
+
+
+
+Code
+
+
+
+```
+# 标记一个 rack 1
+bin/elasticsearch  -E node.name=node1 -E cluster.name=geektime -E path.data=node1_data -E node.attr.my_rack_id=rack1
+
+# 标记一个 rack 2
+bin/elasticsearch  -E node.name=node2 -E cluster.name=geektime -E path.data=node2_data -E node.attr.my_rack_id=rack2
+
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster.routing.allocation.awareness.attributes": "my_rack_id"
+  }
+}
+
+PUT my_index1
+{
+  "settings":{
+    "number_of_shards":2,
+    "number_of_replicas":1
+  }
+}
+
+PUT my_index1/_doc/1
+{ "key":"value" }
+
+GET _cat/shards?v
+```
+
+Rack Awareness
+
+ES 的节点可能分布在不同的机架；一个机架断电，数据可以恢复
+
+Forced Awareness
+
+
+
+Code
+
+
+
+```
+# 标记一个 rack 1
+bin/elasticsearch  -E node.name=node1 -E cluster.name=geektime -E path.data=node1_data -E node.attr.my_rack_id=rack1
+
+# 标记一个 rack 2
+bin/elasticsearch  -E node.name=node2 -E cluster.name=geektime -E path.data=node2_data -E node.attr.my_rack_id=rack1
+
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster.routing.allocation.awareness.attributes": "my_rack_id",
+    "cluster.routing.allocation.awareness.force.my_rack_id.values": "rack1,rack2"
+  }
+}
+
+GET _cluster/settings
+
+PUT my_index1/_doc/1
+{ "key":"value" }
+
+# 集群黄色
+GET _cluster/health
+
+# 副本无法分配
+GET _cat/shards?v
+
+GET _cluster/allocation/explain?pretty
+```
+
+Shard Filtering
+
+- “node.attr” - 标记节点
+- “index.routing.allocation” – 分配索引到节点
+
+| 设置                                    | 分配索引到节点，节点的属性规则 |
+| --------------------------------------- | ------------------------------ |
+| Index.routing.allocation.include.{attr} | 至少包含一个值                 |
+| Index.routing.allocation.exclude.{attr} | 不能包含任何一个值             |
+| Index.routing.allocation.require.{attr} | 所有值都需要包含               |
+
+相关阅读
+
+- https://www.elastic.co/cn/blog/sizing-hot-warm-architectures-for-logging-and-metrics-in-the-elasticsearch-service-on-elastic-cloud
+- https://www.elastic.co/cn/blog/deploying-a-hot-warm-logging-cluster-on-the-elasticsearch-service
+
+## 61 | 分片设定及管理
+
+单个分片
+
+7.0 开始，新创建一个索引时，默认只有一个主分片
+
+- 优点：单个分片，查询算分，聚合不准的问题都可以得以避免
+- 缺点：单个索引，单个分片时候，集群无法实现水平扩展，即使增加新的节点
+
+两个分片
+
+集群增加一个节点后，Elasticsearch 会自动进行分片的移动，也叫 Shard Rebalancing
+
+如何设计分片数
+
+当分片数 > 节点数时
+
+- 一旦集群中有新的数据节点加入，分片就可以自动进行分配
+- 分片在重新分配时，系统不会有 downtime
+
+多分片的好处：一个索引如果分布在不同的节点，多个节点可以并行执行
+
+- 查询可以并行执行
+- 数据写入可以分散到多个机器
+
+一些例子
+
+案例 1：每天 1 GB 的数据，一个索引一个主分片，一个副本分片 ；需保留半年的数据，接近 360 GB 的数据量
+
+案例 2：5 个不同的日志，每天创建一个日志索引。每个日志索引创建 10 个主分片 ；保留半年的数据 ；5 * 10 * 30 * 6 = 9000 个分片
+
+分片过多所带来的副作用
+
+Shard 是 Elasticsearch 实现集群水平扩展的最小单位
+
+过多设置分片数会带来一些潜在的问题；每个分片是一个 Lucene 的 索引，会使用机器的资源。过多的分片会导致额外的性能开销
+
+- Lucene Indices / File descriptors / RAM / CPU
+- 每次搜索的请求，需要从每个分片上获取数据
+- 分片的 Meta 信息由 Master 节点维护。过多，会增加管理的负担。经验值，控制分片总数在 10 W 以内
+
+如何确定主分片数
+
+从存储的物理角度看 ：
+
+- 日志类应用，单个分片不要大于 50 GB
+- 搜索类应用，单个分片不要超过20 GB
+
+为什么要控制分片存储大小
+
+- 提高 Update 的性能
+- Merge 时，减少所需的资源
+- 丢失节点后，具备更快的恢复速度 / 便于分片在集群内 Rebalancing
+
+如何确定副本分片数
+
+副本是主分片的拷贝
+
+- 提高系统可用性：相应查询请求，防止数据丢失
+- 需要占用和主分片一样的资源
+
+对性能的影响
+
+- 副本会降低数据的索引速度：有几份副本就会有几倍的 CPU 资源消耗在索引上
+- 会减缓对主分片的查询压力，但是会消耗同样的内存资源 ；如果机器资源充分，提高副本数，可以提高整体的查询 QPS
+
+调整分片总数设定，避免分配不均衡
+
+ES 的分片策略会尽量保证节点上的分片数大致相同
+
+- 扩容的新节点没有数据，导致新索引集中在新的节点
+- 热点数据过于集中，可能会产生新能问题
+
+相关阅读
+
+- https://www.elastic.co/guide/en/elasticsearch/reference/7.1/cluster-reroute.html
+- https://www.elastic.co/guide/en/elasticsearch/reference/7.1/indices-forcemerge.html
+- https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-total-shards.html
+
+## 62 | 如何对集群进行容量规划
+
+容量规划
+
+一个集群总共需要多少个节点？ 一个索引需要设置几个分片？
+
+规划上需要保持一定的余量，当负载出现波动，节点出现丢失时，还能正常运行
+
+做容量规划时，一些需要考虑的因素
+
+- 机器的软硬件配置
+- 单条文档的尺寸 / 文档的总数据量 / 索引的总数据量（Time base 数据保留的时间）/ 副本分片数
+- 文档是如何写入的（Bulk的尺寸）
+- 文档的复杂度，文档是如何进行读取的（怎么样的查询和聚合）、
+
+评估业务的性能需求
+
+数据吞吐及性能需求
+
+- 数据写入的吞吐量，每秒要求写入多少数据？
+- 查询的吞吐量？
+- 单条查询可接受的最大返回时间？
+
+了解你的数据
+
+- 数据的格式和数据的 Mapping
+- 实际的查询和聚合长的是什么样的
+
+常见用例
+
+搜索：固定大小的数据集；搜索的数据集增长相对比较缓慢
+
+日志：基于时间序列的数据；
+
+- 使用 ES 存放日志与性能指标。数据每天不断写入，增长速度较快
+- 结合 Warm Node 做数据的老化处理
+
+硬件配置
+
+- 选择合理的硬件，**数据节点尽可能使用 SSD**
+- 搜索等性能要求高的场景，建议 SSD；按照 1 ：10 的比例配置内存和硬盘
+- 日志类和查询并发低的场景，可以考虑使用机械硬盘存储；按照 1：50 的比例配置内存和硬盘
+- 单节点数据建议控制在 2 TB 以内，最大不建议超过 5 TB
+- JVM 配置机器内存的一半，JVM 内存配置不建议超过 32 G
+
+部署方式
+
+- 按需选择合理的部署方式
+- 如果需要考虑可靠性高可用，建议部署 3 台 dedicated 的 Master 节点
+- 如果有复杂的查询和聚合，建议设置 Coordinating 节点
+
+容量规划案例 1: 固定大小的数据集
+
+- 一些案例：唱片信息库 / 产品信息
+- 一些特性 ：被搜索的数据集很大，但是增长相对比较慢（不会有大量的写入）。更关心搜索和聚合的读取性能；数据的重要性与时间范围无关。关注的是搜索的相关度
+- 估算索引的的数据量，然后确定分片的大小：单个分片的数据不要超过 20 GB ；可以通过增加副本分片，提高查询的吞吐量
+
+拆分索引
+
+如果业务上有大量的查询是基于一个字段进行 Filter，该字段又是一个数量有限的枚举值；例如订单所在的地区
+
+如果在单个索引有大量的数据，可以考虑将索引拆分成多个索引；
+
+- 查询性能可以得到提高
+- 如果要对多个索引进行查询，还是可以在查询中指定多个索引得以实现
+
+如果业务上有大量的查询是基于一个字段进行 Filter，该字段数值并不固定 ；可以启用 Routing 功能，按照 filter 字段的值分布到集群中不同的 shard，降低查询时相关的 shard， 提高 CPU 利用率
+
+容量规划案例 2: 基于时间序列的数据
+
+相关的用案 ：例如 日志 / 指标 / 安全相关的 Events；舆情分析 ；
+
+一些特性 ：
+
+- 每条数据都有时间戳；文档基本不会被更新（日志和指标数据）
+- 用户更多的会查询近期的数据；对旧的数据查询相对较少
+- 对数据的写入性能要求比较高
+
+创建基于时间序列的索引
+
+创建 time-based 索引
+
+- 在索引的名字中增加时间信息
+- 按照 每天 / 每周 / 每月 的方式进行划分
+
+带来的好处
+
+- 更加合理的组织索引，例如随着时间推移，便于对索引做的老化处理
+- 利用 Hot & Warm Architecture
+- 备份和删除以及删除的效率高。（ Delete By Query 执行速度慢，底层不也不会立刻释放空间，而 Merge 时又很消耗资源）
+
+写入时间序列的数据：基于 Date Math 的方式
+
+- 优点：容易使用
+- 缺点：如果时间发生变化，需要重新部署代码
+
+2019-08-01T00:00:00
+
+| <logs-{now/d}>        | logs-2019.08.01 |
+| --------------------- | --------------- |
+| <logs-{now{YYYY.MM}}> | logs-2019.08    |
+| <logs-{now/w}>        | logs-2019..7.29 |
+
+
+
+Code
+
+
+
+```
+# POST /<logs-{now/d}/_search 
+POST /%3Clogs-%7Bnow%2Fd%7D%3E/_search
+```
+
+写入时间序列的数据 – 基于 Index Alias
+
+Time-based 索引
+
+- 创建索引，每天 / 每周 / 每月
+- 在索引的名字中增加时间信息
+
+集群扩容
+
+- 增加 Coordinating / Ingest Node ;解决 CPU 和 内存开销的问题
+- 增加数据节点; 解决存储的容量的问题 ;为避免分片分布不均的问题，要提前监控磁盘空间，提前清理数据或增加节点（70%）
+
+本节知识点
+
+- 根据 ES 的使用场景，建议将搜索类和日志类的应用部署在不同的 ES 群上; 可以针对写入和读取做优化
+- 根据场景选择合适的部署方式
+- 硬件配置，数据节点推荐使用 SSD ; 对于日志类的应用，可以选择使用冷热架构
+- 索引的设计，分片的设计也至关重要; 时间序列的索引 / 单个分片的尺寸，搜索类保持在 20G 以内，日志类保持在 50 G以内
+
+## 63 | 在私有云上管理 Elasticsearch 的一些方法
+
+管理单个集群
+
+- 集群容量不够时，需手工增加节点
+- 有节点丢失时，手工修复或更换节点; 确保 Rack Awareness
+- 集群版本升级；数据备份；滚动升级; 完全手动，管理成本高; 无法统一管理，例如整合变更管理等
+
+ECE，帮助你管理多个 Elasticsearch 集群
+
+ECE – Elastic Cloud Enterprise; 地址：https://www.elastic.co/cn/products/ece
+
+通过单个控制台，管理多个集群
+
+- 支持不同方式的集群部署（支持各类部署） / 跨数据中心 / 部署 Anti Affinity
+- 统一监控所有集群的状态
+- 图形化操作 。例如 增加删除节点 ；升级集群 / 滚动更新 / 自动数据备份
+
+ecs 部署
+
+
+
+Code
+
+
+
+```
+bash <(curl -fsSL https://download.elastic.co/cloud/elastic-cloud-enterprise.sh) install
+```
+
+基于 Kubernetes 的方案
+
+- 基于容器技术，使用 Operator 模式进行编排管理
+- 配置，管理监控多个集群
+- 支持 Hot & Warm
+- 数据快照和恢复
+
+Kubernetes CRD
+
+构建自己的管理系统
+
+基于虚拟机的编排管理方式
+
+- Puppet Infrastructure （Puppet / Elasticsearch Puppet Module / Foreman）
+- Workflow based Provision & Management
+
+基于 Kubernetes 的容器化编排管理方式
+
+- 基于 Operator 模式
+- Kubernetes - Customer Resource Definition
+
+将 Elasticsearch 部署在 Kubernetes
+
+[![image-20210116164906187](http://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210116164906187.png)](http://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210116164906187.png)
+
+image-20210116164906187
+
+什么是 Kubernetes Operator 模式
+
+[![image-20210116164945719](http://wangzhangtao.com/img/body/Elasticsearch%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/image-20210116164945719.png)](http://wangzhangtao.com/img/body/Elasticsearch核心技术与实战/image-20210116164945719.png)
+
+image-20210116164945719
+
+Operator SDK
+
+地址：https://github.com/operator-framework/operator-sdk
+
+相关阅读
+
+- https://www.elastic.co/cn/blog/introducing-elastic-cloud-on-kubernetes-the-elasticsearch-operator-and-beyond?elektra=products&storm=sub1
+- https://www.elastic.co/blog/introducing-elastic-cloud-on-kubernetes-the-elasticsearch-operator-and-beyond
+- https://github.com/operator-framework
+- https://github.com/upmc-enterprises/elasticsearch-operator
 
 
 
