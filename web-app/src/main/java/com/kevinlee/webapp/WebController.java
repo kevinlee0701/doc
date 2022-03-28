@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class WebController {
     @RequestMapping("/test")
     public String test(){
-        return "test";
+        if(1==1){
+            throw new RuntimeException("WebController is error");
+        }
+        return "index";
     }
 }
