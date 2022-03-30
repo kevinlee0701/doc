@@ -1,0 +1,19 @@
+server:
+  port: 8123
+#app.id ：AppId是应用的身份信息，是配置中心获取配置的一个重要信息。
+#apollo.bootstrap.enabled：在应用启动阶段，向Spring容器注入被托管的application.properties文件的配置信
+#apollo.bootstrap.eagerLoad.enabled：将Apollo配置加载提到初始化日志系统之前。
+app:
+  id: springboot
+apollo:
+  meta: http://127.0.0.1:8080
+  bootstrap:
+    enabled: true
+    eagerLoad:
+      enabled: true
+
+#这里说明在将该项目 com目录下的日志，都采用info模式输出
+logging:
+  level:
+    com: info
+
