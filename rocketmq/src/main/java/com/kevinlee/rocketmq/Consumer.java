@@ -20,7 +20,7 @@ public class Consumer {
     public static void main(String[] args) throws InterruptedException, MQClientException {
 
         // 实例化消费者
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("test2-group");
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("ceshi-01-group");
 
 
 
@@ -28,7 +28,7 @@ public class Consumer {
         consumer.setNamesrvAddr("172.16.95.138:9876");
 
         // 订阅一个或者多个Topic，以及Tag来过滤需要消费的消息
-        consumer.subscribe("test2","*");
+        consumer.subscribe("ceshi-01","*");
         // 注册回调实现类来处理从broker拉取回来的消息
         consumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
