@@ -15,6 +15,7 @@ import java.util.Map;
  * @Version 1.0
  **/
 public class TestWord {
+
     @Test
     public void testWord() throws IOException {
         Map<String, Object> data = new HashMap<>();
