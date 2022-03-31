@@ -5,7 +5,8 @@ server:
 #apollo.bootstrap.eagerLoad.enabled：将Apollo配置加载提到初始化日志系统之前。
 app:
   id: springboot
-apollo:
+
+  id":apollo:
   meta: http://127.0.0.1:8080
   bootstrap:
     enabled: true
@@ -16,4 +17,24 @@ apollo:
 logging:
   level:
     com: info
+
+
+spring:
+  application:
+    name:apollo-test
+
+---
+
+spring:
+  profiles: test
+
+server:
+  port: 8000
+
+---
+spring:
+  profiles: dev
+
+server:
+  port: 8888
 
