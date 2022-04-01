@@ -1,4 +1,4 @@
-package com.kevinlee.apollo;
+package com.kevinlee.apollo.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;

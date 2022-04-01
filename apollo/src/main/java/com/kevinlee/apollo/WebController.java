@@ -1,5 +1,7 @@
 package com.kevinlee.apollo;
 
+import com.kevinlee.apollo.config.SailfishProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -11,6 +13,7 @@ import javax.annotation.Resource;
  * @Date 2022/3/25 15:32
  * @Version 1.0
  **/
+@Slf4j
 @Controller
 public class WebController {
     @Resource
@@ -18,7 +21,8 @@ public class WebController {
 
     @RequestMapping("/test")
     public String test(){
-        sailfishProperties.getAppName();
+        String appName = sailfishProperties.getAppName();
+        log.info("http://localhost:8888/test,appName={}",appName);
         return "index";
     }
 }

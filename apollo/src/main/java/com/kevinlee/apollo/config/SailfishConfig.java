@@ -1,4 +1,4 @@
-package com.kevinlee.apollo;
+package com.kevinlee.apollo.config;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -11,5 +11,5 @@ import org.springframework.context.annotation.Configuration;
  **/
 @Configuration
 @EnableConfigurationProperties({SailfishProperties.class})
-public class ApolloConfig {
+public class SailfishConfig {
 }

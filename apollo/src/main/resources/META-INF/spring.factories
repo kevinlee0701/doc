@@ -1,3 +1,3 @@
 
 org.springframework.boot.SpringApplicationRunListener=\
-com.kevinlee.apollo.ApplicationListener
+com.kevinlee.apollo.listener.ApplicationListener

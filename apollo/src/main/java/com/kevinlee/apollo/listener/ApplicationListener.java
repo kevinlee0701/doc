@@ -1,4 +1,4 @@
-package com.kevinlee.apollo;
+package com.kevinlee.apollo.listener;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ConfigurableBootstrapContext;
