@@ -25,4 +25,9 @@ public class WebController {
         log.info("http://localhost:8888/test,appName={}",appName);
         return "index";
     }
+
+    @RequestMapping("")
+    public String defaultPage(){
+        return "defaultPage";
+    }
 }
