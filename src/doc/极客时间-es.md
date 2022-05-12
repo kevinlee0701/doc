@@ -9419,7 +9419,7 @@ public List<String> scrollSearchAll(String indexName, String utime) throws IOExc
 
 # logstash-es集群迁移-知识插播
 
-## 1.下载logstash
+## 下载logstash
 
 ```http
 https://www.elastic.co/cn/downloads/past-releases#logstash
@@ -9469,4 +9469,13 @@ output{
 ```shell
 /Users/kevinlee/Desktop/logstash/bin/logstash -f /Users/kevinlee/Desktop/logstash/qianyi.conf  --config.reload.automatic --http.port 23153 --path.data /Users/kevinlee/Desktop/logstash/data/23153 --path.logs /Users/kevinlee/Desktop/logstash/logs/23153
 ```
+
+### 4.启动logstash命令
+
+```shell
+#指定配置文件启动
+./bin/logstash -f ./config/logstash-sample.conf  -w 2
+```
+
+
 
