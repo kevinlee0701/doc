@@ -1253,3 +1253,126 @@ res = es.get(index="testpy", id=2)
 #es.search(index = "test", doc_type = "_doc", body = query)
 print(res['_source'])
 ```
+
+## docker安装es和kibana
+
+### 2.1docker安装es
+
+要使用es肯定是需要安装的，由于用惯了docker，所以也想在docker上尝试一下，主要是因为我的好多软件都以及选择了docker。docker安装其实是很简单的，至于要一行命令即可。这里我选择的是es的7.2.0版本镜像镜像安装，具体安装命令如下:
+
+```bash
+docker pull elasticsearch:7.2.0
+```
+
+敲完命令以后回车，只需要等带镜像下载完成就可以了。
+
+### 2.2 es
+
+安装完成以后当然需要去启动我们的es了，这里启动也是很方便的只需要一行命令即可。如下:
+
+```bash
+docker run --name elasticsearch -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -d elasticsearch:7.2.0
+```
+
+这样es就启动好了。我们可以去检查es是否安装完成，可以输入命令：
+
+```bash
+curl http://localhost:9200
+```
+
+或者在浏览器中打开[http://localhost:9200](https://link.segmentfault.com/?enc=B9AKH88vyWsc5PKMZUfKCQ%3D%3D.ETkfZzypXABFVKHxcBQF4h0RsS%2BlZglSSncjNnFEYh0%3D)这个网址，如果能看到以下信息则说明我们的es是已经安装好了的。
+
+```bash
+{
+  "name" : "530dd7820315",
+  "cluster_name" : "docker-cluster",
+  "cluster_uuid" : "7O0fjpBJTkmn_axwmZX0RQ",
+  "version" : {
+    "number" : "7.2.0",
+    "build_flavor" : "default",
+    "build_type" : "docker",
+    "build_hash" : "508c38a",
+    "build_date" : "2019-06-20T15:54:18.811730Z",
+    "build_snapshot" : false,
+    "lucene_version" : "8.0.0",
+    "minimum_wire_compatibility_version" : "6.8.0",
+    "minimum_index_compatibility_version" : "6.0.0-beta1"
+  },
+  "tagline" : "You Know, for Search"
+}
+```
+
+如果你是在服务器上安装，想要对外访问还必须打开你服务器的9200端口，然后将localhost换成你服务器的ip地址即可。
+
+### 2.3 修改配置，解决跨域访问问题
+
+首先进入到容器中，然后进入到指定目录修改`elasticsearch.yml`文件。
+
+```bash
+docker exec -it elasticsearch /bin/bash
+cd /usr/share/elasticsearch/config/
+vi elasticsearch.yml
+```
+
+在elasticsearch.yml的文件末尾加上:
+
+```bash
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+```
+
+修改配置后重启容器即可。
+
+```bash
+docker restart elasticsearch
+```
+
+### 2.4 安装ik分词器
+
+es自带的分词器对中文分词不是很友好，所以我们下载开源的IK分词器来解决这个问题。首先进入到plugins目录中下载分词器，下载完成后然后解压，再重启es即可。具体步骤如下:
+**注意：**elasticsearch的版本和ik分词器的版本需要保持一致，不然在重启的时候会失败。可以在这查看所有版本，选择合适自己版本的右键复制链接地址即可。[点击这里](https://link.segmentfault.com/?enc=uqr2JZVfdj0i4LXYSjl3Uw%3D%3D.ap7SepPPdaRo0ube8UHfhPU7U2kyyMQLXZx544wE%2FteuwAHejPvVRwePBUkVJQGVc7dYWqCxiOEGfGlniy3o5w%3D%3D)
+
+```bash
+cd /usr/share/elasticsearch/plugins/
+elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v7.2.0/elasticsearch-analysis-ik-7.2.0.zip
+exit
+docker restart elasticsearch 
+```
+
+然后可以在kibana界面的`dev tools`中验证是否安装成功；
+
+```bash
+POST test/_analyze
+{
+  "analyzer": "ik_max_word",
+  "text": "你好我是东邪Jiafly"
+}
+```
+
+不添加`"analyzer": "ik_max_word",`则是每个字分词，可以在下面kibana安装完成以后尝试一下。
+
+### 3.1 docker安装kibana
+
+同样适用docker安装kibana命令如下:
+
+```bash
+docker pull kibana:7.2.0
+```
+
+等待所有镜像下载完成即可。
+
+### 3.2 启动kibana
+
+安装完成以后需要启动kibana容器，使用`--link`连接到elasticsearch容器，命令如下:
+
+```bash
+docker run --name kibana --link=elasticsearch:test  -p 5601:5601 -d kibana:7.2.0
+docker start kibana
+```
+
+启动以后可以打开浏览器输入[http://localhost:5601](https://link.segmentfault.com/?enc=EukB7ibrm%2BnK4ONZHB4HJA%3D%3D.9oKCWOgtIYhn4cmynxhpEeu3zochwseeQ%2FTdYtpX1rg%3D)就可以打开kibana的界面了。
+
+
+
+
+

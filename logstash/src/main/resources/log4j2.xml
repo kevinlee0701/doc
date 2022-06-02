@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="OFF" monitorInterval="60">
+<Configuration>
+    <Properties>
+        <Property name="LOG_PATTERN">{"logger": "%logger", "level": "%level", "msg": "%message"}%n</Property>
+    </Properties>
     <Appenders>
-        <!-- Console 日志，只输出 level 及以上级别的信息，并配置各级别日志输出颜色 -->
-        <Console name="Console" target="SYSTEM_OUT">
-            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
-            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
-            <PatternLayout pattern="%highlight{%d{yyyy.MM.dd 'at' HH:mm:ss z} %-5level %class{36} %M() @%L - %msg%n}{FATAL=Bright Red, ERROR=Bright Magenta, WARN=Bright Yellow, INFO=Bright Green, DEBUG=Bright Cyan, TRACE=Bright White}"/>
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
         </Console>
-        <!-- socket 日志，输出日志到 Logstash 中做日志收集 -->
-        <Socket name="Socket" host="172.16.95.138" port="9001" protocol="TCP">
-            <JsonLayout properties="true" compact="true" eventEol="true" />
-            <PatternLayout pattern="%d{yyyy.MM.dd 'at' HH:mm:ss z} %-5level %class{36} %M() @%L - %msg%n"/>
+        <Socket name="logstash-tcp" host="127.0.0.1" port="9001" protocol="TCP">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
         </Socket>
     </Appenders>
     <Loggers>
         <Root level="INFO">
-            <appender-ref ref="Socket"/>
-            <appender-ref ref="Console"/>
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="logstash-tcp" />
         </Root>
     </Loggers>
 </Configuration>
