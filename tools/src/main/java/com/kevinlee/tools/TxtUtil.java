@@ -44,7 +44,7 @@ public class TxtUtil {
                 InputStreamReader read = new InputStreamReader(
                         new FileInputStream(file),encoding);//考虑到编码格式
                 BufferedReader bufferedReader = new BufferedReader(read);
-                String lineTxt = null;
+                String lineTxt;
                 while((lineTxt = bufferedReader.readLine()) != null){
                     String s = handle.doSomething(lineTxt);
                     result.add(s);
