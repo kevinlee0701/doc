@@ -36,7 +36,7 @@ public class TxtUtil {
      * @param  handle  获取文件后处理类
      */
     public static List<String > readTxtFile(String filePath,TxthandleInterface handle){
-        List result =  new ArrayList<String>();
+        List<String> result =  new ArrayList<String>();
         try {
             String encoding="UTF8";
             File file=new File(filePath);
@@ -64,7 +64,10 @@ public class TxtUtil {
         File file = new File(filePath + "/result.txt");
         //if file doesnt exists, then create it
         if (!file.exists()) {
-            file.createNewFile();
+            boolean newFile = file.createNewFile();
+            if(!newFile){
+                throw  new RuntimeException("创建文件失败");
+            }
         }
         FileUtils.writeLines(file,"UTF-8",data,true);
     }
