@@ -6,7 +6,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-/**
+/**辅导辅导发的
  * @ClassName CustomProducer
  * @Author kevinlee
  * @Date 2022/7/6 15:02
