@@ -13,7 +13,7 @@ chsh -s /bin/zsh
 #### 3.重启服务器让修改的配置生效
 
 ```shell
-shutdow r now
+shutdown now
 ```
 
 #### 4.安装on my zsh

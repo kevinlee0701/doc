@@ -13,6 +13,7 @@
 
 ```shell
 [root@root ~] yum install java-1.8.0-openjdk.x86_64
+ yum install java-1.8.0-openjdk.aarch64
 #一直y确定
 
 # 检验安装
@@ -1364,6 +1365,12 @@ docker pull kibana:7.2.0
 ### 3.2 启动kibana
 
 安装完成以后需要启动kibana容器，使用`--link`连接到elasticsearch容器，命令如下:
+
+```shell
+docker run --name kibana -e ELASTICSEARCH_HOSTS=http://10.155.63.118:9200 -p 5601:5601 -d kibana:7.16.2
+```
+
+
 
 ```bash
 docker run --name kibana --link=elasticsearch:test  -p 5601:5601 -d kibana:7.2.0
