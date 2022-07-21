@@ -1,6 +1,8 @@
+https://blog.csdn.net/wei198621/article/details/110677918
+
 ### String类型
 
-![image-20220113163034230](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220113163034230.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201206110948232.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaTE5ODYyMQ==,size_16,color_FFFFFF,t_70)
 
 #### 常用操作命令
 
@@ -32,7 +34,7 @@ list 列表 相当于java中list 集合 特点 元素有序 且 可以重复
 
 #### 内存存储模型
 
-![image-20220113163240679](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220113163240679.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2020120611101855.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaTE5ODYyMQ==,size_16,color_FFFFFF,t_70)
 
 #### 常用操作指令
 
@@ -58,7 +60,7 @@ list 列表 相当于java中list 集合 特点 元素有序 且 可以重复
 
 #### 内存存储模型
 
-![image-20220117104545866](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117104545866.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201206111037992.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaTE5ODYyMQ==,size_16,color_FFFFFF,t_70)
 
 #### 常用命令
 
@@ -85,7 +87,7 @@ Redis 有序集合和集合一样也是 string 类型元素的集合,且不允�
 
 不同的是每个元素都会关联一个 double 类型的分数。redis 正是通过分数来为集合中的成员进行从小到大的排序。
 
-有序集合的成员是唯一的,但分数(score)却可以重复。
+ wp有序集合的成员是唯一的,但分数(score)却可以重复。
 
 #### 内存模型
 
@@ -140,7 +142,7 @@ Redis 有序集合和集合一样也是 string 类型元素的集合,且不允�
 
 这种方式可以将某一时刻的所有数据都写入硬盘中,当然这也是**redis的默认开启持久化方式**,保存的文件是以.rdb形式结尾的文件因此这种方式也称之为RDB方式。
 
-![image-20220117105612061](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117105612061.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201206111349991.png)
 
 ##### 快照生成方式
 
@@ -153,14 +155,14 @@ Redis 有序集合和集合一样也是 string 类型元素的集合,且不允�
 `名词解释: fork当一个进程创建子进程的时候,底层的操作系统会创建该进程的一个副本,在类unix系统中创建子进程的操作会进行优化:在刚开始的时候,父子进程共享相同内存,直到父进程或子进程对内存进行了写之后,对被写入的内存的共享才会
 ```
 
-![image-20220117110716929](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117110716929.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2020120611251948.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaTE5ODYyMQ==,size_16,color_FFFFFF,t_70)
 
 ```shell
 # 2.客户端方式之SAVE
 - b.客户端还可以使用SAVE命令来创建一个快照,接收到SAVE命令的redis服务器在快照创建完毕之前将不再响应任何其他的命令
 ```
 
-![image-20220117110812804](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117110812804.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2020120611254457.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaTE5ODYyMQ==,size_16,color_FFFFFF,t_70)
 
 - **注意: SAVE命令并不常用,使用SAVE命令在快照创建完毕之前,redis处于阻塞状态,无法对外服务**
 
@@ -169,7 +171,7 @@ Redis 有序集合和集合一样也是 string 类型元素的集合,且不允�
 如果用户在redis.conf中设置了save配置选项,redis会在save选项条件满足之后自动触发一次BGSAVE命令,如果设置多个save配置选项,当任意一个save配置选项条件满足,redis也会触发一次BGSAVE命令
 ```
 
-![image-20220117111257163](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117111257163.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2020120611262042.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaTE5ODYyMQ==,size_16,color_FFFFFF,t_70)
 
 ```shell
 # 4.服务器接收客户端shutdown指令
@@ -186,9 +188,7 @@ Redis 有序集合和集合一样也是 string 类型元素的集合,且不允�
 - dir ./
 ```
 
-![image-20220117111954934](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117111954934.png)
-
-
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201206112647725.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaTE5ODYyMQ==,size_16,color_FFFFFF,t_70)
 
 ### AOF 只追加日志文件
 
@@ -196,9 +196,7 @@ Redis 有序集合和集合一样也是 string 类型元素的集合,且不允�
 
 这种方式可以将所有客户端执行的写命令记录到日志文件中,AOF持久化会将被执行的写命令写到AOF的文件末尾,以此来记录数据发生的变化,因此只要redis从头到尾执行一次AOF文件所包含的所有写命令,就可以恢复AOF文件的记录的数据集.
 
-![image-20220117162620925](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117162620925.png)
-
-
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201206132023521.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaTE5ODYyMQ==,size_16,color_FFFFFF,t_70)
 
 #### 开启AOF持久化
 
@@ -210,7 +208,7 @@ Redis 有序集合和集合一样也是 string 类型元素的集合,且不允�
 - b.修改 appendfilename "appendonly.aof" 指定生成文件名称
 ```
 
-![image-20220117162712312](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117162712312.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201206132040814.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaTE5ODYyMQ==,size_16,color_FFFFFF,t_70)
 
 #### 日志追加频率
 
@@ -238,7 +236,7 @@ Redis 有序集合和集合一样也是 string 类型元素的集合,且不允�
 - 修改appendfsync everysec|always|no 指定
 ```
 
-![image-20220117162919955](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117162919955.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201206132112528.png)
 
 ### AOF文件的重写
 
@@ -261,7 +259,7 @@ AOF的方式也同时带来了另一个问题。持久化文件会变的越来�
 - 如果设置auto-aof-rewrite-percentage值为100和auto-aof-rewrite-min-size 64mb,并且启用的AOF持久化时,那么当AOF文件体积大于64M,并且AOF文件的体积比上一次重写之后体积大了至少一倍(100%)时,会自动触发,如果重写过于频繁,用户可以考虑将auto-aof-rewrite-percentage设置为更大
 ```
 
-![image-20220117163258728](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117163258728.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201206132131411.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaTE5ODYyMQ==,size_16,color_FFFFFF,t_70)
 
 #### 重写原理
 
@@ -274,8 +272,6 @@ AOF的方式也同时带来了另一个问题。持久化文件会变的越来�
 - 3. 当子进程把快照内容写入已命令方式写到临时文件中后，子进程发信号通知父进程。然后父进程把缓存的写命令也写入到临时文件。
 - 4. 现在父进程可以使用临时文件替换老的aof文件，并重命名，后面收到的写命令也开始往新的aof文件中追加。
 ```
-
-![image-20220117163509971](/Users/kevinlee/Library/Application Support/typora-user-images/image-20220117163509971.png)
 
 ### 持久化总结
 

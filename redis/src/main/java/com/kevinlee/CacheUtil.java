@@ -22,9 +22,7 @@ public class CacheUtil {
      */
     @SuppressWarnings("unchecked")
     public static <T> void addCache(String key,T ot){
-
         redisTemplate.opsForValue().set(key,ot);
-
     }
     /**
      * 获取缓存

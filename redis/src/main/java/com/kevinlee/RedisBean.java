@@ -19,4 +19,6 @@ public class RedisBean implements Serializable  {
     private String name;
 
     private List list;
+
+    private String add;
 }

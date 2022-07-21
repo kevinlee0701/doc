@@ -23,7 +23,7 @@ public class Test {
         RedisBean user = new RedisBean();
         user.setId(1);
         user.setName("测试中文");
-        user.setList(Lists.newCopyOnWriteArrayList());
+        user.setList(Lists.newArrayList(1,2,3,4));
 
         CacheUtil.addCache("beantest",user);
     }
