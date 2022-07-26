@@ -20,6 +20,9 @@ public class FixSizeLinkedList<T> extends LinkedList<T> {
 
     @Override
     public boolean add(T e) {
+        if(this.contains(e)){
+            return true;
+        }
         // 超过长度，移除最后一个
         if (size() + 1 > capacity) {
             super.removeFirst();
