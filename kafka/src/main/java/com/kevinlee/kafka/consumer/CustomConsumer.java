@@ -1,5 +1,6 @@
 package com.kevinlee.kafka.consumer;
 
+import lombok.extern.log4j.Log4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -10,6 +11,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Properties;
 
+/**
+ * 消费者
+ */
+@Log4j
 public class CustomConsumer {
 
     public static void main(String[] args) {
@@ -32,9 +37,9 @@ public class CustomConsumer {
         while (true){
             ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
             for (ConsumerRecord<String, String> consumerRecord : consumerRecords) {
-                System.out.println(consumerRecord);
+                log.info("数据结果："+consumerRecord);
             }
-            kafkaConsumer.commitAsync();
+          //  kafkaConsumer.commitAsync();
         }
     }
 }

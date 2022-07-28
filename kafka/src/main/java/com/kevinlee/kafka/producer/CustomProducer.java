@@ -1,6 +1,8 @@
 package com.kevinlee.kafka.producer;
 
 import java.util.Properties;
+
+import lombok.extern.log4j.Log4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -13,6 +15,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
  * @Date 2022/7/6 15:02
  * @Version 1.0
  **/
+@Log4j
 public class CustomProducer {
 
     public static void main(String[] args) {
@@ -33,7 +36,8 @@ public class CustomProducer {
 
         // 2 发送数据
         for (int i = 0; i < 1; i++) {
-            kafkaProducer.send(new ProducerRecord<>("first","atguigu"+i));
+            log.info("发送数据："+i);
+            kafkaProducer.send(new ProducerRecord<>("first","atguigu========="+i));
         }
 
         // 3 关闭资源
