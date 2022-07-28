@@ -35,6 +35,7 @@ public class FixSizeLinkedList<T> extends LinkedList<T> {
         list.add("1234");
         list.add("234");
         list.add("34");
+        list.add("34");
         list.add("4");
         System.out.println(JSON.toJSONString(list));
     }

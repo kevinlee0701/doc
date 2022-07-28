@@ -1,4 +1,4 @@
-package com.kevinlee.kafka;
+package com.kevinlee.kafka.producer;
 
 import java.util.Properties;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -6,7 +6,8 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-/**辅导辅导发的
+/**
+ * kafka 发送端
  * @ClassName CustomProducer
  * @Author kevinlee
  * @Date 2022/7/6 15:02
