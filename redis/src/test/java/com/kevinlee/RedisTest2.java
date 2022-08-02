@@ -1,6 +1,5 @@
 package com.kevinlee;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,7 @@ public class RedisTest2 {
 
     private static final String GOODS_CACHE = "seckill:goodsStock:";
 
-    private String  id="kevin";
+    private String id = "kevin";
 
     /**
      * @author binghe
@@ -37,26 +36,21 @@ public class RedisTest2 {
         ListOperations<String, List<Object>> listOperations = redisTemplate.opsForList();
         List<Object> list = new CopyOnWriteArrayList<>();
         list.add(1);
-        listOperations.leftPush("test",list);
+        listOperations.leftPush("test", list);
         List<Object> test = listOperations.leftPop("test");
         System.out.println(test instanceof CopyOnWriteArrayList);
         System.out.println(test instanceof List);
     }
-
-
-
 
     @Test
     public void test2() {
         HashOperations<String, Object, Object> redis = redisTemplate.opsForHash();
         List<Object> list = new CopyOnWriteArrayList<>();
         list.add(1);
-        redis.put("test2","name","name-value");
-        redis.put("test2","age","age-value");
-        redis.put("test2","city","city-value");
+        redis.put("test2", "name", "name-value");
+        redis.put("test2", "age", "age-value");
+        redis.put("test2", "city", "city-value");
     }
-
-
 
     @Test
     public void test3() {
@@ -64,15 +58,14 @@ public class RedisTest2 {
         user.setId(1);
         user.setName("kevin");
         user.setList(Lists.newCopyOnWriteArrayList());
-        redisTemplate.opsForValue().set(user.getId()+"-RedisBean",user);
-        RedisBean o = (RedisBean)redisTemplate.opsForValue().get(user.getId()+"-RedisBean");
+        redisTemplate.opsForValue().set(user.getId() + "-RedisBean", user);
+        RedisBean o = (RedisBean) redisTemplate.opsForValue().get(user.getId() + "-RedisBean");
         System.out.println(o.getList() instanceof CopyOnWriteArrayList);
 
     }
 
-
     @Data
-    class User{
+    class User {
         private Integer id;
 
         private String name;
@@ -81,11 +74,7 @@ public class RedisTest2 {
 
         @Override
         public String toString() {
-            return "User{" +
-                    "id=" + id +
-                    ", name='" + name + '\'' +
-                    ", list=" + list +
-                    '}';
+            return "User{" + "id=" + id + ", name='" + name + '\'' + ", list=" + list + '}';
         }
     }
 }
