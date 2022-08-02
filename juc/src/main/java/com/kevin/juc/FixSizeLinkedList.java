@@ -19,6 +19,18 @@ public class FixSizeLinkedList<T> extends LinkedList<T> {
     }
 
     @Override
+    public void addFirst(T e) {
+        if(this.contains(e)){
+           super.remove(e);
+        }
+        // 超过长度，移除最后一个
+        if (size() + 1 > capacity) {
+            super.removeLast();
+        }
+        super.addFirst(e);
+    }
+
+    @Override
     public boolean add(T e) {
         if(this.contains(e)){
             return true;
@@ -32,11 +44,11 @@ public class FixSizeLinkedList<T> extends LinkedList<T> {
 
     public static void main(String[] args) {
         FixSizeLinkedList<String> list = new FixSizeLinkedList<>(3);
-        list.add("1234");
-        list.add("234");
-        list.add("34");
-        list.add("34");
-        list.add("4");
+        list.addFirst("1");
+        list.addFirst("2");
+        list.addFirst("3");
+        list.addFirst("1");
+        list.addFirst("4");
         System.out.println(JSON.toJSONString(list));
     }
 }
