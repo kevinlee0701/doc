@@ -11,9 +11,7 @@ import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,6 +39,17 @@ public class RedisTest {
         goods.put("initStatus", 0);
         goods.put("Booked", 0);
         redisTemplate.opsForHash().putAll(key, goods);
+    }
+
+    @Test
+    public void test3(){
+        List list = CacheUtil.getCache("list", List.class);
+        if(list == null){
+            list = new ArrayList();
+        }
+        list.add("lifeng");
+        CacheUtil.addCache("list",list);
+        System.out.println(CacheUtil.getCache("list",List.class));
     }
 
     /**
