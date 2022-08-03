@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -40,6 +41,17 @@ public class RedisTest2 {
         List<Object> test = listOperations.leftPop("test");
         System.out.println(test instanceof CopyOnWriteArrayList);
         System.out.println(test instanceof List);
+    }
+    @Test
+    public void test6() {
+        FixSizeLinkedListCache list = new FixSizeLinkedListCache<>();
+        list.setCapacity(2);
+        list.setLinkedList(new LinkedList<>());
+        list.add("test1");
+        CacheUtil.addCache("testtest",list);
+        FixSizeLinkedListCache testtest = CacheUtil.getCache("testtest", FixSizeLinkedListCache.class);
+        System.out.println(testtest.toString());
+
     }
 
     @Test
