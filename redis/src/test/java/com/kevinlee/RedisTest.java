@@ -11,9 +11,13 @@ import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 
 @Slf4j
 @SpringBootTest
@@ -39,6 +43,14 @@ public class RedisTest {
         goods.put("initStatus", 0);
         goods.put("Booked", 0);
         redisTemplate.opsForHash().putAll(key, goods);
+    }
+    @Test
+    public void test23(){
+        String dateTimeStr = "2022-08-05";
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr, df);
+        Date from = Date.from(dateTime.toInstant(ZoneOffset.of("+8")));
+        System.out.println(from);
     }
 
     @Test
