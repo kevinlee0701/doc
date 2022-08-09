@@ -1,0 +1,9 @@
+server:
+    port: 8090
+spring:
+    kafka:
+        bootstrap-servers: localhost:9092
+        consumer:
+            auto-offset-reset: earliest
+            enable-auto-commit: true
+            group-id: kafka-springboot
