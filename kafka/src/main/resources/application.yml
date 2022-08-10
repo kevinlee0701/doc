@@ -1,9 +1,29 @@
 server:
     port: 8090
-spring:
+#spring:
+#    kafka:
+#        bootstrap-servers: localhost:9092
+#        consumer:
+#            auto-offset-reset: earliest
+#            enable-auto-commit: true
+#            group-id: kafka-springboot
+#            key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#            value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#        producer:
+#            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#            value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+app-name:
     kafka:
-        bootstrap-servers: localhost:9092
-        consumer:
-            auto-offset-reset: earliest
-            enable-auto-commit: true
-            group-id: kafka-springboot
+        k2:
+            consumer:
+                bootstrap-servers: localhost:9092
+                group-id: my-app
+                auto-offset-reset: earliest
+                key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+                value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+                enable-auto-commit: true
+            producer:
+                bootstrap-servers: localhost:9092
+                key-serializer: org.apache.kafka.common.serialization.StringSerializer
+                value-serializer: org.apache.kafka.common.serialization.StringSerializer

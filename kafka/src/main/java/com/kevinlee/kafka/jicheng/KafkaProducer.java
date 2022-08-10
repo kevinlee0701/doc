@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * 集成提供者
  */
@@ -12,11 +15,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaProducer {
 
+
     @Autowired
-    private KafkaTemplate kafkaTemplate;
+    private KafkaTemplate kafkaTemplateK2;
 
     public void send(){
-        log.info("send data");
-        kafkaTemplate.send("first","kafka-springboot data");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String message = "kafka-springboot data ["+sdf.format(new Date())+"]";
+        log.info("send data first :{}",message);
+        kafkaTemplateK2.send("first",message);
     }
 }

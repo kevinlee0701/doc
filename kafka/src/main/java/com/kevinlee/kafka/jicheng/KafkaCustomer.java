@@ -10,9 +10,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class KafkaCustomer {
-    @KafkaListener(topics = {"first"})
+    @KafkaListener(topics = {"first"},containerFactory = "kafkaListenerContainerFactoryK2" )
     public void receive(String message){
-        log.info("KafkaCustomer========first");
-        System.out.println(message);
+        log.info("KafkaCustomer========first,message={}",message);
     }
 }
