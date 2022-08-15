@@ -5,10 +5,12 @@ import org.junit.Test;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
+ * 通用测试类
  * @ClassName TestWord
  * @Author kevinlee
  * @Date 2022/3/24 16:44
@@ -32,4 +34,92 @@ public class TestWord {
         out.close();
         template.close();
     }
+
+    /**
+     * flatMap 与 map
+     */
+    @Test
+    public void testJava8() {
+      List<KlassGroup> list = Arrays.asList(
+              new KlassGroup(new Klass(1), new Klass(2), new Klass(3)),
+              new KlassGroup(new Klass(4), new Klass(5), new Klass(6)),
+              new KlassGroup(new Klass(7), new Klass(8), new Klass(9)),
+              new KlassGroup(new Klass(10))
+      );
+        List<Klass> collect1 = list.stream().flatMap(s -> s.getKlassList().stream()).collect(Collectors.toList());
+        List<Stream<Klass>> collect = list.stream().map(s -> s.getKlassList().stream()).collect(Collectors.toList());
+    }
+
+    private static class Klass {
+        private int field;
+        public Klass(int field) {
+            this.field = field;
+        }
+        @Override
+        public String toString() {
+            return "field=" + field;
+        }
+    }
+    private static class KlassGroup {
+        private List<Klass> group = new ArrayList<>();
+        public KlassGroup(Klass... objList) {
+            for (Klass item : objList) {
+                this.group.add(item);
+            }
+        }
+        public List<Klass> getKlassList() {
+            return group;
+        }
+    }
+
+    public enum Status {
+        FREE, BUSY, VOCATION;
+    }
+
+    /**
+     * 查找 / 匹配
+     */
+    @Test
+    public void test01(){
+        List<Status> list = Arrays.asList(Status.FREE, Status.BUSY, Status.VOCATION);
+        //allMatch：检查是否匹配所有元素
+        boolean flag1 = list.stream()
+                .allMatch((s) -> s.equals(Status.BUSY));
+        System.out.println(flag1);
+        //anyMatch：检查是否至少匹配一个元素
+        boolean flag2 = list.stream()
+                .anyMatch((s) -> s.equals(Status.BUSY));
+        System.out.println(flag2);
+        //noneMatch：检查是否没有匹配所有元素
+        boolean flag3 = list.stream()
+                .noneMatch((s) -> s.equals(Status.BUSY));
+        System.out.println(flag3);
+
+        // 避免空指针异常 findFirst：返回第一个元素
+        Optional<Status> op1 = list.stream()
+                .findFirst();
+        // 如果Optional为空 找一个替代的对象
+        Status s1 = op1.orElse(Status.BUSY);
+        System.out.println(s1);
+        //findAny：返回当前流中的任意元素
+        Optional<Status> op2 = list.stream()
+                .findAny();
+        System.out.println(op2);
+
+        long count = list.stream()
+                .count();
+        System.out.println(count);
+    }
+
+    /**
+     * reduce
+     */
+    @Test
+    public void test02(){
+        List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        Integer integer = list.stream()
+                .reduce(0, (x, y) -> x + y);
+        System.out.println(integer);
+    }
+
 }
