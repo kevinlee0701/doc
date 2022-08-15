@@ -52,6 +52,8 @@ public class TestWord {
       );
         List<Klass> collect1 = list.stream().flatMap(s -> s.getKlassList().stream()).collect(Collectors.toList());
         List<Stream<Klass>> collect = list.stream().map(s -> s.getKlassList().stream()).collect(Collectors.toList());
+
+        list.stream().flatMap(s -> s.getKlassList().stream()).collect(Collectors.toList()).forEach(System.out::println);
     }
 
     private static class Klass {
@@ -125,5 +127,24 @@ public class TestWord {
                 .reduce(0, BinaryOperator.maxBy(Integer::compareTo));
         System.out.println(integer);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
