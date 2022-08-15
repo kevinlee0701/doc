@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,7 +18,10 @@ import java.util.stream.Stream;
  * @Version 1.0
  **/
 public class TestWord {
-
+    /**
+     * 测试word插件
+     * @throws IOException
+     */
     @Test
     public void testWord() throws IOException {
         Map<String, Object> data = new HashMap<>();
@@ -39,7 +43,7 @@ public class TestWord {
      * flatMap 与 map
      */
     @Test
-    public void testJava8() {
+    public void testFlatMap() {
       List<KlassGroup> list = Arrays.asList(
               new KlassGroup(new Klass(1), new Klass(2), new Klass(3)),
               new KlassGroup(new Klass(4), new Klass(5), new Klass(6)),
@@ -80,7 +84,7 @@ public class TestWord {
      * 查找 / 匹配
      */
     @Test
-    public void test01(){
+    public void testMatch(){
         List<Status> list = Arrays.asList(Status.FREE, Status.BUSY, Status.VOCATION);
         //allMatch：检查是否匹配所有元素
         boolean flag1 = list.stream()
@@ -115,10 +119,10 @@ public class TestWord {
      * reduce
      */
     @Test
-    public void test02(){
+    public void testReduce(){
         List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9);
         Integer integer = list.stream()
-                .reduce(0, (x, y) -> x + y);
+                .reduce(0, BinaryOperator.maxBy(Integer::compareTo));
         System.out.println(integer);
     }
 
