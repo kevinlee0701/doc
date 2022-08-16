@@ -5,6 +5,10 @@ import org.junit.Test;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
@@ -13,8 +17,8 @@ import java.util.stream.Stream;
 /**
  * 通用测试类
  * @ClassName TestWord
- * @Author kevinlee
- * @Date 2022/3/24 16:44
+ * @author kevinlee
+ * @date 2022/3/24 16:44
  * @Version 1.0
  **/
 public class TestWord {
@@ -127,6 +131,11 @@ public class TestWord {
                 .reduce(0, BinaryOperator.maxBy(Integer::compareTo));
         System.out.println(integer);
     }
+
+
+
+
+
 
 
 
