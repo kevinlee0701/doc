@@ -1,7 +1,11 @@
 package com.kevin.juc.Thread.JUC;
 
+import lombok.SneakyThrows;
+
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -52,5 +56,24 @@ public class ReentrantLockAndConditionTest {
         } finally {
             lock.unlock();
         }
+    }
+
+    public static void main(String[] args) {
+        //线程池
+        ExecutorService exec = Executors.newCachedThreadPool();
+        ReentrantLockAndConditionTest test = new ReentrantLockAndConditionTest();
+        Runnable r1 = () -> {
+            try {
+                test.getTask();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        Runnable r2 = () -> {
+            test.addTask("1");
+            test.addTask("2");
+        };
+        exec.execute(r1);
+        exec.execute(r2);
     }
 }

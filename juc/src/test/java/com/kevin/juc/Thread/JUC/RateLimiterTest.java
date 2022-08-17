@@ -61,24 +61,21 @@ public class RateLimiterTest {
     public void test1() throws InterruptedException {
         //线程池
         ExecutorService exec = Executors.newCachedThreadPool();
-        //速率是每秒只有3个许可
-        final RateLimiter rateLimiter = RateLimiter.create(1.0); //速率是每秒只有3个许可
+        //速率是每秒只有1个许可，1代表一秒最多有多少个令牌
+        final RateLimiter rateLimiter = RateLimiter.create(1.0); //速率是每秒只有1个许可
 
         for (int i = 0; i < 10; i++) {
             final int no = i;
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        rateLimiter.acquire(3);//拿取令牌个数3
-                        System.out.println("Accessing: " + no + ",time:"
-                                + new SimpleDateFormat("yy-MM-dd HH:mm:ss").format(new Date()));
+            Runnable runnable = () -> {
+                try {
+                    rateLimiter.acquire(3);//拿取令牌个数3
+                    System.out.println("Accessing: " + no + ",time:"
+                            + new SimpleDateFormat("yy-MM-dd HH:mm:ss").format(new Date()));
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+
             };
             //执行线程
             exec.execute(runnable);
@@ -92,15 +89,13 @@ public class RateLimiterTest {
         final CountDownLatch latch = new CountDownLatch(1);
 
         for (int i = 0; i < 7; i++) {
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        latch.await();
-                        Thread.sleep(1000);
-                        System.out.println("请求是否被执行: "+System.currentTimeMillis());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            new Thread(() -> {
+                try {
+                    latch.await();
+                    Thread.sleep(1000);
+                    System.out.println("请求是否被执行: "+System.currentTimeMillis());
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }).start();
 
