@@ -56,11 +56,9 @@ public class zkClient {
 
     public void getChildren() throws KeeperException, InterruptedException {
         List<String> children = zkClient.getChildren("/", true);
-
         for (String child : children) {
             System.out.println(child);
         }
-
         // 延时
         Thread.sleep(Long.MAX_VALUE);
     }
