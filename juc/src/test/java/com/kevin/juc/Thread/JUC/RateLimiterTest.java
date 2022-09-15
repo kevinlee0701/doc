@@ -68,7 +68,8 @@ public class RateLimiterTest {
             final int no = i;
             Runnable runnable = () -> {
                 try {
-                    rateLimiter.acquire(3);//拿取令牌个数3
+                      rateLimiter.acquire(3);//拿取令牌个数3
+//                    System.out.println("b="+b);
                     System.out.println("Accessing: " + no + ",time:"
                             + new SimpleDateFormat("yy-MM-dd HH:mm:ss").format(new Date()));
 
