@@ -8,4 +8,5 @@ package com.kevin.zookeeper;
 public class ZookeeperUtil {
     // 注意：逗号左右不能有空格
     public static final String hostname = "172.16.202.128:2181";
+    public static final int sessionTimeout = 2000;
 }

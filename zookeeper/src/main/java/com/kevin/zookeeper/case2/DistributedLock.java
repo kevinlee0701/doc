@@ -15,7 +15,7 @@ import java.util.concurrent.CountDownLatch;
 public class DistributedLock {
 
     private final String connectString = ZookeeperUtil.hostname;
-    private final int sessionTimeout = 2000;
+    private final int sessionTimeout = ZookeeperUtil.sessionTimeout;
     private final ZooKeeper zk;
 
     private CountDownLatch connectLatch = new CountDownLatch(1);
@@ -27,20 +27,17 @@ public class DistributedLock {
     public DistributedLock() throws IOException, InterruptedException, KeeperException {
 
         // 获取连接
-        zk = new ZooKeeper(connectString, sessionTimeout, new Watcher() {
-            @Override
-            public void process(WatchedEvent watchedEvent) {
-                // connectLatch  如果连接上zk  可以释放
-                if (watchedEvent.getState() == Event.KeeperState.SyncConnected){
-                    connectLatch.countDown();
-                }
-
-                // waitLatch  需要释放
-                if (watchedEvent.getType()== Event.EventType.NodeDeleted && watchedEvent.getPath().equals(waitPath)){
-                    waitLatch.countDown();
-                }
+        zk = new ZooKeeper(connectString, sessionTimeout, watchedEvent -> {
+            // connectLatch  如果连接上zk  可以释放
+            if (watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected){
+                connectLatch.countDown();
+            }
+            // waitLatch  需要释放
+            if (watchedEvent.getType()== Watcher.Event.EventType.NodeDeleted && watchedEvent.getPath().equals(waitPath)){
+                waitLatch.countDown();
             }
         });
+
 
         // 等待zk正常连接后，往下走程序
         connectLatch.await();

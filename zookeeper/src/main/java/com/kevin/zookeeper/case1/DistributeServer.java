@@ -11,7 +11,7 @@ import java.io.IOException;
 public class DistributeServer {
 
     private String connectString = ZookeeperUtil.hostname;
-    private int sessionTimeout = 2000;
+    private int sessionTimeout = ZookeeperUtil.sessionTimeout;
     private ZooKeeper zk;
 
     public static void main(String[] args) throws IOException, KeeperException, InterruptedException {
