@@ -25,6 +25,27 @@ cd redis-4.0
 make
 ```
 
+如果没有make命令，安装make命令
+
+```shell
+CentOS 中无法使用make,make install 命令
+ 
+提示错误：make: command not found
+ 
+make是gcc的编译器，一定要安装
+ 
+     1、安装：
+ 
+yum -y install gcc automake autoconf libtool make
+ 
+2、安装g++:
+ 
+yum install gcc gcc-c++
+　　
+```
+
+
+
 可以看到在src目录下生成了几个新的文件。
 
 #### 安装
