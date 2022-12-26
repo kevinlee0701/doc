@@ -6,9 +6,9 @@ package com.kevinlee.xiangsidu;
  * 创 建 人：lifeng
  */
 public class Similarity {
-    public static final  String content1="bushiba 1";
+    public static final  String content1="wo ai koolearn test,bu dui";
 
-    public static final  String content2="bushiba";
+    public static final  String content2="wo ai koolearn test,bu dui,ni shi";
 
 
     public static void main(String[] args) {
