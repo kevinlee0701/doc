@@ -51,7 +51,7 @@ class ShardingJdbcApplicationTests {
             UserOrder userOrder = new UserOrder();
             userOrder.setCreateTime(new Date());
             userOrder.setOrdernumber("133455678");
-            userOrder.setYear("2019");
+            userOrder.setYear("2021");
             userOrder.setUserid(1L);
             userOrderMapper.addUserOrder(userOrder);
         }
