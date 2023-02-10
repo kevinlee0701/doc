@@ -3,6 +3,9 @@ package com.kevin.juc;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Scanner;
 
 public class FinalShellTest2 {
@@ -15,6 +18,15 @@ public class FinalShellTest2 {
         // String machineCode = "FinalShell的离线机器码";
 
         generateKey(machineCode);
+
+
+        Integer[][] arr = new Integer[][]{{1,3},{2,4}, {2,6},{8,10},{8,18}, {15,18}};
+        Arrays.sort(arr, new Comparator<Integer[]>() {
+            @Override
+            public int compare(Integer[] o1, Integer[] o2) {
+                return o2[1] - o1[1];
+            }
+        });
     }
 
     public static void generateKey(String hardwareId) throws NoSuchAlgorithmException {
