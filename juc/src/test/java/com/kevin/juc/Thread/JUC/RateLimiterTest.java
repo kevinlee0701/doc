@@ -1,6 +1,9 @@
 package com.kevin.juc.Thread.JUC;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.util.concurrent.RateLimiter;
+import com.kevin.juc.CircleLinkedList;
+import com.kevin.juc.Node;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
@@ -9,7 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -104,6 +109,22 @@ public class RateLimiterTest {
 
         latch.countDown();
     }
+
+    @Test
+    public void test2() throws InterruptedException {
+        CircleLinkedList circleLinkedList = new CircleLinkedList();
+        List<Integer> sysNums = new ArrayList<Integer>();
+        sysNums.add(1);
+        sysNums.add(2);
+        sysNums.add(3);
+        for(int i=0;i<sysNums.size();i++){
+            Node node = new Node(sysNums.get(i));
+            circleLinkedList.add(node);
+            System.out.println(JSON.toJSONString(node));
+        }
+        System.out.println(JSON.toJSONString(circleLinkedList));
+    }
+
 
 
 }
