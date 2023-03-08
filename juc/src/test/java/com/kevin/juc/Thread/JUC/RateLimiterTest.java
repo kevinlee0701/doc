@@ -1,6 +1,8 @@
 package com.kevin.juc.Thread.JUC;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.RateLimiter;
 import com.kevin.juc.CircleLinkedList;
 import com.kevin.juc.Node;
@@ -111,9 +113,15 @@ public class RateLimiterTest {
     }
 
     @Test
-    public void test2() throws InterruptedException {
+    public void test2() throws InterruptedException, JsonProcessingException {
         CircleLinkedList circleLinkedList = new CircleLinkedList();
         List<Integer> sysNums = new ArrayList<Integer>();
+        sysNums.add(1);
+        sysNums.add(2);
+        sysNums.add(3);
+        sysNums.add(1);
+        sysNums.add(2);
+        sysNums.add(3);
         sysNums.add(1);
         sysNums.add(2);
         sysNums.add(3);
@@ -123,6 +131,12 @@ public class RateLimiterTest {
             System.out.println(JSON.toJSONString(node));
         }
         System.out.println(JSON.toJSONString(circleLinkedList));
+
+
+//        ObjectMapper mapper = new ObjectMapper();
+
+//        String json = mapper.writeValueAsString(circleLinkedList);
+
     }
 
 
