@@ -14,6 +14,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * 使用BlockingQueue 实现多线程处理流程
  * @author lifeng
  */
 @Service("JobAccountingTest")
