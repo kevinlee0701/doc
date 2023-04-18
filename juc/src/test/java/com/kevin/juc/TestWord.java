@@ -64,6 +64,8 @@ public class TestWord {
         List<Stream<Klass>> collect = list.stream().map(s -> s.getKlassList().stream()).collect(Collectors.toList());
 
         list.stream().flatMap(s -> s.getKlassList().stream()).collect(Collectors.toList()).forEach(System.out::println);
+
+
     }
 
     private static class Klass {
@@ -71,6 +73,11 @@ public class TestWord {
         public Klass(int field) {
             this.field = field;
         }
+
+        public int getField() {
+            return field;
+        }
+
         @Override
         public String toString() {
             return "field=" + field;
