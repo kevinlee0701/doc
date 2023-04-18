@@ -1,6 +1,7 @@
 package com.kevin.juc;
 
 import com.deepoove.poi.XWPFTemplate;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 import java.io.FileOutputStream;
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
  * @date 2022/3/24 16:44
  * @Version 1.0
  **/
+@Slf4j
 public class TestWord {
     /**
      *
@@ -29,6 +31,9 @@ public class TestWord {
      */
     @Test
     public void testWord() throws IOException {
+        log.info("===info");
+        log.warn("===warn");
+        log.error("===error");
         Map<String, Object> data = new HashMap<>();
         data.put("name", "lee");
         data.put("courseName", "服务名字");
