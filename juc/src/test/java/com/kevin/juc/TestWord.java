@@ -65,7 +65,9 @@ public class TestWord {
 
         list.stream().flatMap(s -> s.getKlassList().stream()).collect(Collectors.toList()).forEach(System.out::println);
 
-
+        List<Integer> list2 = new ArrayList<>();
+        list2.add(1);
+        list2.add(2);
     }
 
     private static class Klass {
