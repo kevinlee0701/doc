@@ -60,14 +60,19 @@ public class TestWord {
               new KlassGroup(new Klass(7), new Klass(8), new Klass(9)),
               new KlassGroup(new Klass(10))
       );
-        List<Klass> collect1 = list.stream().flatMap(s -> s.getKlassList().stream()).collect(Collectors.toList());
+        List<Klass> collect1 = list.stream().
+                flatMap(s -> s.getKlassList().stream())
+                .filter(s -> s.getField()!=1)
+                .collect(Collectors.toList());
         List<Stream<Klass>> collect = list.stream().map(s -> s.getKlassList().stream()).collect(Collectors.toList());
 
         list.stream().flatMap(s -> s.getKlassList().stream()).collect(Collectors.toList()).forEach(System.out::println);
-
+//
         List<Integer> list2 = new ArrayList<>();
         list2.add(1);
         list2.add(2);
+
+        List<String> collect4 = list2.stream().map(String::valueOf).collect(Collectors.toList());
     }
 
     private static class Klass {
