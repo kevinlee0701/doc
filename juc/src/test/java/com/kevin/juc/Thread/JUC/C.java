@@ -18,7 +18,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class C {
     public static void main(String[] args) throws InterruptedException {
-        extracted();
+       // extracted();
+        StringBuilder sb = new StringBuilder();
+        sb.append("第一行").append("\n");
+        sb.append("第二行").append("\r\n");
+        sb.append("第三行").append(System.lineSeparator()).append("第四行");
+        System.out.println(sb.toString());
+
 
 
     }
