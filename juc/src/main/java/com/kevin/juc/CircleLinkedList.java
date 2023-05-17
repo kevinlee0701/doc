@@ -3,7 +3,7 @@ package com.kevin.juc;
 import java.io.Serializable;
 
 /**
- * @ClassName CircleLinkedList
+ * CircleLinkedList
  * @Description
  * @Author panhaicheng@koolearn-inc.com
  * @Date 2023/3/1 11:33 上午
