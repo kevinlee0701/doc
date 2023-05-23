@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * @ClassName CopyOnWriteListTest
+ * CopyOnWriteListTest
  * @Author kevinlee
  * @Date 2021/12/24 17:19
  * @Version 1.0
