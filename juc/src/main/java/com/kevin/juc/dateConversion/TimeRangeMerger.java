@@ -1,11 +1,11 @@
 package com.kevin.juc.dateConversion;
 
+import org.apache.commons.compress.utils.Lists;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class TimeRangeMerger {
 
@@ -33,8 +33,11 @@ public class TimeRangeMerger {
                 mergedRanges.add(currentRange);
                 currentRange = nextRange;
             } else {
+                List<String> otherId = currentRange.getOtherId();
+                otherId.addAll(nextRange.getOtherId());
                 // 当前时间段与下一个时间段连续，更新当前时间段的结束时间
-                currentRange = new TimeRange(currentRange.getStart(), nextRange.getEnd());
+                currentRange = new TimeRange(currentRange.getStart(), nextRange.getEnd(),otherId);
+
             }
         }
 
@@ -67,8 +70,11 @@ public class TimeRangeMerger {
                 mergedRanges.add(currentRange);
                 currentRange = nextRange;
             } else {
+                List<String> otherId = currentRange.getOtherId();
+                otherId.addAll(nextRange.getOtherId());
                 // 当前时间段与下一个时间段连续，更新当前时间段的结束时间
-                currentRange = new TimeRange(currentRange.getStart(), nextRange.getEnd());
+                currentRange = new TimeRange(currentRange.getStart(), nextRange.getEnd(),otherId);
+
             }
         }
 
@@ -79,17 +85,18 @@ public class TimeRangeMerger {
     }
 
     public static void main(String[] args) {
+
         LocalDateTime range1Start = LocalDateTime.of(2023, 6, 1, 8, 0);
         LocalDateTime range1End = LocalDateTime.of(2023, 6, 1, 12, 0);
-        TimeRange range1 = new TimeRange(range1Start, range1End);
+        TimeRange range1 = new TimeRange(range1Start,range1End, new ArrayList<>(Arrays.asList("1","2")));
 
         LocalDateTime range2Start = LocalDateTime.of(2023, 6, 1, 12, 0);
         LocalDateTime range2End = LocalDateTime.of(2023, 6, 1, 16, 0);
-        TimeRange range2 = new TimeRange(range2Start, range2End);
+        TimeRange range2 = new TimeRange(range2Start, range2End,new ArrayList<>(Arrays.asList("3","4")));
 
         LocalDateTime range3Start = LocalDateTime.of(2023, 6, 1, 16, 0);
         LocalDateTime range3End = LocalDateTime.of(2023, 6, 1, 21, 0);
-        TimeRange range3 = new TimeRange(range3Start, range3End);
+        TimeRange range3 = new TimeRange(range3Start, range3End,new ArrayList<>(Arrays.asList("5","6")));
 
         LocalDateTime range4Start = LocalDateTime.of(2023, 6, 1, 22, 0);
         LocalDateTime range4End = LocalDateTime.of(2023, 6, 1, 23, 59);
@@ -105,7 +112,7 @@ public class TimeRangeMerger {
 
         System.out.println("Merged Ranges:");
         for (TimeRange range : mergedRanges) {
-            System.out.println(range.getStart() + " - " + range.getEnd());
+            System.out.println(range.getStart() + " - " + range.getEnd()+"===="+range.getOtherId());
         }
     }
 }

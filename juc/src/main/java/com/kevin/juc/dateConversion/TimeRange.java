@@ -8,11 +8,23 @@ package com.kevin.juc.dateConversion;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class TimeRange {
     private LocalDateTime start;
     private LocalDateTime end;
+
+    public void setOtherId(List<String> otherId) {
+        this.otherId = otherId;
+    }
+
+    public List<String> getOtherId() {
+        return otherId;
+    }
+
+    private List<String> otherId;
 
     public LocalDateTime getStart() {
         return start;
@@ -25,11 +37,18 @@ public class TimeRange {
     public TimeRange(LocalDateTime start, LocalDateTime end) {
         this.start = start;
         this.end = end;
+        otherId = new ArrayList<>();
+    }
+    public TimeRange(LocalDateTime start, LocalDateTime end, List<String> otherId) {
+        this.start = start;
+        this.end = end;
+        this.otherId = otherId==null ? new ArrayList<>():otherId;
     }
 
     public TimeRange(Date start, Date end) {
         this.start =  LocalDateTime.ofInstant(start.toInstant(), ZoneId.of("Asia/Shanghai"));
         this.end = LocalDateTime.ofInstant(end.toInstant(), ZoneId.of("Asia/Shanghai"));
+        otherId = new ArrayList<>();
     }
 
     public boolean isContinuous(TimeRange other) {
