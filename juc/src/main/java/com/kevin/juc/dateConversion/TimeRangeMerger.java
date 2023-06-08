@@ -1,11 +1,15 @@
 package com.kevin.juc.dateConversion;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 public class TimeRangeMerger {
+
+
     /**
      * 合并时间，时间交叉认为 不连续 eg：8：00-10:00 与9：00—12：00 结果为：8：00-10:00 ，9：00—12：00
      * @param ranges

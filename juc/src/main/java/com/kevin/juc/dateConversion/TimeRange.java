@@ -7,6 +7,8 @@ package com.kevin.juc.dateConversion;
  */
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 public class TimeRange {
     private LocalDateTime start;
@@ -23,6 +25,11 @@ public class TimeRange {
     public TimeRange(LocalDateTime start, LocalDateTime end) {
         this.start = start;
         this.end = end;
+    }
+
+    public TimeRange(Date start, Date end) {
+        this.start =  LocalDateTime.ofInstant(start.toInstant(), ZoneId.of("Asia/Shanghai"));
+        this.end = LocalDateTime.ofInstant(end.toInstant(), ZoneId.of("Asia/Shanghai"));
     }
 
     public boolean isContinuous(TimeRange other) {
