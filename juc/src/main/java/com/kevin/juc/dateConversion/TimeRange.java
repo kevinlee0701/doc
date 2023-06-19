@@ -64,7 +64,7 @@ public class TimeRange {
         TimeRange range1 = new TimeRange(range1Start, range1End);
 
         LocalDateTime range2Start = LocalDateTime.of(2023, 6, 1, 12, 41);
-        LocalDateTime range2End = LocalDateTime.of(2023, 6, 1, 16, 0);
+        LocalDateTime range2End =   LocalDateTime.of(2023, 6, 1, 16, 0);
         TimeRange range2 = new TimeRange(range2Start, range2End);
 
         LocalDateTime range3Start = LocalDateTime.of(2023, 6, 1, 17, 0);
