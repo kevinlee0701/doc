@@ -3,6 +3,7 @@ package com.kevinlele.elasticsearch;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@ComponentScan(basePackages = {"com.kevinlee"})
 @SpringBootApplication
 public class ElasticsearchApplication {
 

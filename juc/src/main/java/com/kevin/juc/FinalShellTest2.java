@@ -9,51 +9,41 @@ import java.util.Comparator;
 import java.util.Scanner;
 
 public class FinalShellTest2 {
-    public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-        System.out.print("请输入FinalShell的离线机器码：");
-        Scanner reader = new Scanner(System.in);
-
-        // 如果是在线运行java，这行可以写死
-        String machineCode = reader.nextLine();
-        // String machineCode = "FinalShell的离线机器码";
-
-        generateKey(machineCode);
-
-
-        Integer[][] arr = new Integer[][]{{1,3},{2,4}, {2,6},{8,10},{8,18}, {15,18}};
-        Arrays.sort(arr, new Comparator<Integer[]>() {
-            @Override
-            public int compare(Integer[] o1, Integer[] o2) {
-                return o2[1] - o1[1];
-            }
-        });
-    }
-
-    public static void generateKey(String hardwareId) throws NoSuchAlgorithmException {
-        String proKey = transform(61305 + hardwareId + 8552);
-        String pfKey = transform(2356 + hardwareId + 13593);
-        System.out.println("请将此行复制到离线激活中："+proKey);
-        System.out.println(pfKey);
-    }
-
-    public static String transform(String str) throws NoSuchAlgorithmException {
-
-        String md5 = hashMD5(str);
-
-        return hashMD5(str).substring(8, 24);
-    }
-
-    public static String hashMD5(String str) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("MD5");
-        byte[] hashed = digest.digest(str.getBytes());
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hashed) {
-            int len = b & 0xFF;
-            if (len < 16) {
-                sb.append("0");
-            }
-            sb.append(Integer.toHexString(len));
+        public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
+            System.out.print("请输入FinalShell的离线机器码：");
+            @SuppressWarnings("resource")
+            Scanner reader = new Scanner(System.in);
+            String machineCode = reader.nextLine();
+            generateKey(machineCode);
         }
-        return sb.toString();
-    }
+
+        public static void generateKey(String hardwareId) throws NoSuchAlgorithmException {
+            String proKey = transform(61305 + hardwareId + 8552);
+            String pfKey = transform(2356 + hardwareId + 13593);
+            System.out.println("请将此行复制到离线激活中-高级版：" + proKey);
+            System.out.println("请将此行复制到离线激活中-专业版：" + pfKey);
+        }
+
+        public static String transform(String str) throws NoSuchAlgorithmException {
+
+            @SuppressWarnings("unused")
+            String md5 = hashMD5(str);
+
+            return hashMD5(str).substring(8, 24);
+        }
+
+        public static String hashMD5(String str) throws NoSuchAlgorithmException {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] hashed = digest.digest(str.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashed) {
+                int len = b & 0xFF;
+                if (len < 16) {
+                    sb.append("0");
+                }
+                sb.append(Integer.toHexString(len));
+            }
+            return sb.toString();
+        }
+
 }

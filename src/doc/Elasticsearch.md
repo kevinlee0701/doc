@@ -247,6 +247,7 @@ elasticsearch.hosts: ["http://172.0.0.1:9200/"] #es地址
 ##### 基础命令
 
 ```shell
+./bin/kibana
 sudo service kibana start #
 sudo service kibana stop
 ```
