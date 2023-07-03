@@ -1,7 +1,7 @@
 package com.kevinlee.elasticsearch.baozhuang;
 
 /**
- * 类 描 述：TODO
+ * 类 描 述：user索引实体类
  * 创建时间：2023/7/3 15:43
  * 创 建 人：lifeng
  */
