@@ -152,6 +152,13 @@ public class TestWord {
         System.out.println(integer);
     }
 
+    @Test
+    public void ofNullable(){
+        String tt = null;
+        String s = Optional.ofNullable(tt).orElse("12345");
+        System.out.println("返回结果："+s);
+    }
+
 
 
 
