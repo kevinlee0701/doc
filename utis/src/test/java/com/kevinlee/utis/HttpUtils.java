@@ -28,7 +28,7 @@ public class HttpUtils {
        String application="jiaofu-dubbo-coach";
        int pageSize =5;
        int page=1;
-       String url= "http://basa.koolearn.com/api/dev/service?pattern=application&filter="+application+"&page="+0+"&size="+pageSize;
+       String url= "http://basa..com/api/dev/service?pattern=application&filter="+application+"&page="+0+"&size="+pageSize;
         String s = HttpUtil.get(url, null);
         Set<String> result = new HashSet<>();
         if(!s.isEmpty()){
