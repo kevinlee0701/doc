@@ -25,10 +25,11 @@ public class HttpUtils {
 
     @Test
     public void testHttp(){
+        String domain="http://basa..com";
        String application="jiaofu-dubbo-coach";
        int pageSize =5;
        int page=1;
-       String url= "http://basa..com/api/dev/service?pattern=application&filter="+application+"&page="+0+"&size="+pageSize;
+       String url= domain+"/api/dev/service?pattern=application&filter="+application+"&page="+0+"&size="+pageSize;
         String s = HttpUtil.get(url, null);
         Set<String> result = new HashSet<>();
         if(!s.isEmpty()){
@@ -45,7 +46,7 @@ public class HttpUtils {
             while (page<totalpage){
                 log.info("==========={}",page);
                 page++;
-                url= "http://basa.koolearn.com/api/dev/service?pattern=application&filter="+application+"&page="+(page-1)+"&size="+pageSize;
+                url= domain+"/api/dev/service?pattern=application&filter="+application+"&page="+(page-1)+"&size="+pageSize;
                 String s1 = HttpUtil.get(url, null);
                 if(!s1.isEmpty()){
                     JSONObject jsonObject1 = JSON.parseObject(s1);
@@ -62,7 +63,7 @@ public class HttpUtils {
         HashSet<String> consumerList = new HashSet<>();
         Map<String,HashSet<String>>  serviceToAppliaction = new HashMap<>();
         for (String service : result) {
-            String fuwu = HttpUtil.get("http://basa.koolearn.com/api/dev/service/" + service, null);
+            String fuwu = HttpUtil.get(domain+"/api/dev/service/" + service, null);
             if(!fuwu.isEmpty()){
                 HashSet<String> serviceToApplicationMap = new HashSet<>();
                 serviceToAppliaction.put(service,serviceToApplicationMap);
