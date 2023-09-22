@@ -3,6 +3,7 @@ package com.kevinlee.utis;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -15,7 +16,12 @@ import java.util.Set;
  * 创建时间：2023/9/21 17:26
  * 创 建 人：lifeng
  */
+@Slf4j
 public class HttpUtils {
+    @Test
+    public void test1(){
+        log.info("111111");
+    }
 
     @Test
     public void testHttp(){
@@ -37,7 +43,7 @@ public class HttpUtils {
                 result.add(service);
             }
             while (page<totalpage){
-                System.out.println("==========="+page);
+                log.info("==========={}",page);
                 page++;
                 url= "http://basa.koolearn.com/api/dev/service?pattern=application&filter="+application+"&page="+(page-1)+"&size="+pageSize;
                 String s1 = HttpUtil.get(url, null);
@@ -52,7 +58,7 @@ public class HttpUtils {
                 }
             }
         }
-        System.out.println("result+++++++++++++++++++"+result);
+        log.info("result+++++++++++++++++++"+result);
         HashSet<String> consumerList = new HashSet<>();
         Map<String,HashSet<String>>  serviceToAppliaction = new HashMap<>();
         for (String service : result) {
@@ -72,20 +78,20 @@ public class HttpUtils {
                 }
             }
         }
-        System.out.println("=========="+application+"==========");
+        log.info("=========="+application+"==========");
         for (String s1 : consumerList) {
-            System.out.println(s1);
+            log.info(s1);
         }
-        System.out.println("========== end ==========");
-        System.out.println("========== 方法对应的应用 =========");
+        log.info("========== end ==========");
+        log.info("========== 方法对应的应用 =========");
         if(!serviceToAppliaction.isEmpty()){
             for (String key : serviceToAppliaction.keySet()) {
                 HashSet<String> value = serviceToAppliaction.get(key);
                 if(!value.isEmpty())
-                    System.out.println(key+"="+value);
+                    log.info(key+"="+value);
             }
         }
-        System.out.println("========== end ==========");
+        log.info("========== end ==========");
 
     }
 }
