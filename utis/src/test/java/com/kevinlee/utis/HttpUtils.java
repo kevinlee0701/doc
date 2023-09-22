@@ -5,7 +5,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -52,9 +54,12 @@ public class HttpUtils {
         }
         System.out.println("result+++++++++++++++++++"+result);
         HashSet<String> consumerList = new HashSet<>();
+        Map<String,HashSet<String>>  serviceToAppliaction = new HashMap<>();
         for (String service : result) {
             String fuwu = HttpUtil.get("http://basa.koolearn.com/api/dev/service/" + service, null);
             if(!fuwu.isEmpty()){
+                HashSet<String> serviceToApplicationMap = new HashSet<>();
+                serviceToAppliaction.put(service,serviceToApplicationMap);
                 JSONObject jsonObject = JSON.parseObject(fuwu);
                 Object consumers = jsonObject.get("consumers");
                 if (consumers!=null){
@@ -62,11 +67,25 @@ public class HttpUtils {
                     for (Object o : List) {
                         JSONObject json = (JSONObject) o;
                         consumerList.add(json.get("application").toString());
+                        serviceToApplicationMap.add(json.get("application").toString());
                     }
                 }
             }
         }
-        System.out.println("consumerList+++++++++++++++++++++++++++++++++"+consumerList);
+        System.out.println("=========="+application+"==========");
+        for (String s1 : consumerList) {
+            System.out.println(s1);
+        }
+        System.out.println("========== end ==========");
+        System.out.println("========== 方法对应的应用 =========");
+        if(!serviceToAppliaction.isEmpty()){
+            for (String key : serviceToAppliaction.keySet()) {
+                HashSet<String> value = serviceToAppliaction.get(key);
+                if(!value.isEmpty())
+                    System.out.println(key+"="+value);
+            }
+        }
+        System.out.println("========== end ==========");
 
     }
 }
