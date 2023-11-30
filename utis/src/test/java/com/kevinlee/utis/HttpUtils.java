@@ -20,7 +20,7 @@ import java.util.Set;
 public class HttpUtils {
     @Test
     public void test1(){
-        log.info("111111");
+        System.out.println("/api/login/index".contains("/login/index"));
     }
 
     @Test
