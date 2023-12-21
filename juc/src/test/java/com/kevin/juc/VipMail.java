@@ -40,7 +40,6 @@ public class VipMail {
                 sqlList.add(sql.toString());
                 System.out.println(sql.toString());
             }
-
         }
     }
 }
