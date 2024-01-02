@@ -1,4 +1,4 @@
-package com.kevinlee.demo.es;
+package kevinlee.demo.es;
 
 import lombok.Data;
 import lombok.ToString;

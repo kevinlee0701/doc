@@ -1,4 +1,4 @@
-package com.kevinlee.demo.es;
+package kevinlee.demo.es;
 
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
  * @Date  2021/11/22
  **/
 @Repository
-public interface LianJiaDao extends ElasticsearchRepository<LianJia,String> {
+public interface LianJiaDao extends ElasticsearchRepository<com.kevinlee.demo.es.LianJia,String> {
 }

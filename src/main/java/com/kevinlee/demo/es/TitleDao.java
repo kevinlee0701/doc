@@ -1,4 +1,4 @@
-package com.kevinlee.demo.es;
+package kevinlee.demo.es;
 
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;

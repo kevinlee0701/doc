@@ -1,4 +1,4 @@
-package com.kevinlee.demo;
+package kevinlee.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

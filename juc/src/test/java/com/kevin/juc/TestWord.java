@@ -1,5 +1,6 @@
 package com.kevin.juc;
 
+import com.alibaba.fastjson.JSONObject;
 import com.deepoove.poi.XWPFTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -29,6 +30,11 @@ public class TestWord {
      * 测试word插件
      * @throws IOException
      */
+    @Test
+    public void test1(){
+
+
+    }
     @Test
     public void testWord() throws IOException {
         log.info("===info");

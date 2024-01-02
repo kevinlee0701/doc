@@ -1,4 +1,4 @@
-package com.kevinlee.demo;
+package kevinlee.demo;
 
 public interface Animal {
 
