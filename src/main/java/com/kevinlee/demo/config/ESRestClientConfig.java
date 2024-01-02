@@ -1,4 +1,4 @@
-package com.kevinlee.demo.config;
+package kevinlee.demo.config;
 
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +13,7 @@ public class ESRestClientConfig extends AbstractElasticsearchConfiguration {
     public RestHighLevelClient elasticsearchClient() {
 
         final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
-                .connectedTo("172.16.95.138:9200")
+                .connectedTo("localhost:9200")
                 .build();
 
         return RestClients.create(clientConfiguration).rest();

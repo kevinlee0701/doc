@@ -1,9 +1,9 @@
-package com.kevinlee.demo.jsoup;
+package kevinlee.demo.jsoup;
 
-import com.kevinlee.demo.es.JDProduct;
-import com.kevinlee.demo.es.LianJia;
-import com.kevinlee.demo.es.LianJiaDao;
-import com.kevinlee.demo.es.ProductDao;
+import kevinlee.demo.es.JDProduct;
+import kevinlee.demo.es.LianJia;
+import kevinlee.demo.es.LianJiaDao;
+import kevinlee.demo.es.ProductDao;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

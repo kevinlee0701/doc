@@ -1,6 +1,6 @@
-package com.kevinlee.demo.config;
+package kevinlee.demo.config;
 
-import com.kevinlee.demo.Animal;
+import kevinlee.demo.Animal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Bean;

@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
  * @Date  2021/11/22
  **/
 @Repository
-public interface LianJiaDao extends ElasticsearchRepository<com.kevinlee.demo.es.LianJia,String> {
+public interface LianJiaDao extends ElasticsearchRepository<kevinlee.demo.es.LianJia,String> {
 }

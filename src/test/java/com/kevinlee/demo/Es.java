@@ -1,12 +1,12 @@
-package com.kevinlee.demo;
+package kevinlee.demo;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import com.alibaba.fastjson.JSONObject;
-import com.kevinlee.demo.es.LianJia;
-import com.kevinlee.demo.es.LianJiaDao;
-import com.kevinlee.demo.es.Title;
-import com.kevinlee.demo.es.TitleDao;
+import kevinlee.demo.es.LianJia;
+import kevinlee.demo.es.LianJiaDao;
+import kevinlee.demo.es.Title;
+import kevinlee.demo.es.TitleDao;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;

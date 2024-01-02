@@ -1,4 +1,4 @@
-package com.kevinlee.demo;
+package kevinlee.demo;
 
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
