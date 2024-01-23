@@ -8,7 +8,7 @@ package com.kevinlee.xiangsidu;
 public class Similarity {
     public static final  String content1="wo ai koolearn test,bu dui";
 
-    public static final  String content2="wo ai koolearn test,bu dui,ni shi";
+    public static final  String content2=" ceshi yixia ,1`23,44555,55y565rfefdfds,dfdsfgbbb,dfdfwewtegre,";
 
 
     public static void main(String[] args) {
