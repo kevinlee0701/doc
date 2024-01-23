@@ -4,7 +4,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 import org.springframework.stereotype.Repository;
 
 /**
- * @description: 京东产品
+ * @description: 龙华园索引
  * @Author kevinlee
  * @Date  2021/11/22
  **/

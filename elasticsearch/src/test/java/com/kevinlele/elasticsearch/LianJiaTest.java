@@ -1,6 +1,6 @@
 package com.kevinlele.elasticsearch;
 
-import com.alibaba.fastjson.JSON;
+
 import com.alibaba.fastjson.JSONObject;
 import com.kevinlee.elasticsearch.ElasticsearchApplication;
 import com.kevinlee.elasticsearch.config.JsoupWhitelistUntil;
