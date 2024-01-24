@@ -81,6 +81,7 @@ public class LianJiaTest {
             //读-文件
             File readFile = new File("/Users/kevinlee/Desktop/手动—题目内容（2003）.xls");
             HSSFWorkbook readWorkbook = new HSSFWorkbook(FileUtils.openInputStream(readFile));
+
             HSSFSheet readSheet = readWorkbook.getSheetAt(0);
             int lastRowNum = readSheet.getLastRowNum();
             List<String> error=new ArrayList<>();
@@ -378,6 +379,7 @@ public class LianJiaTest {
         searchHits.forEach(personSearchHit -> {
             System.out.println(personSearchHit.getContent());
         });
+
     }
     @Test
     public void testLianjia3(){
@@ -385,5 +387,6 @@ public class LianJiaTest {
         jiaByAddress.forEach(lianJia -> {
             System.out.println(lianJia);
         });
+
     }
 }
