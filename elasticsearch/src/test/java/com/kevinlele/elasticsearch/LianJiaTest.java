@@ -18,6 +18,8 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -27,6 +29,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Repository;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -354,5 +362,28 @@ public class LianJiaTest {
         lianJiaDao.deleteAll();
         lianJiaDao.saveAll(lianJias);
 
+    }
+
+    @Resource
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
+    @Test
+    public void testLianjia2(){
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.must(QueryBuilders.matchQuery("address","龙华园"));
+        NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder()
+                .withQuery(boolQueryBuilder);
+        NativeSearchQuery nativeSearchQuery = nativeSearchQueryBuilder.build();
+        SearchHits<LianJia> searchHits = elasticsearchRestTemplate.search(nativeSearchQuery, LianJia.class);
+
+        searchHits.forEach(personSearchHit -> {
+            System.out.println(personSearchHit.getContent());
+        });
+    }
+    @Test
+    public void testLianjia3(){
+        List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("龙华园");
+        jiaByAddress.forEach(lianJia -> {
+            System.out.println(lianJia);
+        });
     }
 }
