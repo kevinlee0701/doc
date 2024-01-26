@@ -1,6 +1,7 @@
 package com.kevinlele.elasticsearch;
 
 
+import com.kevinlee.elasticsearch.ElasticsearchApplication;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -21,7 +22,7 @@ import java.util.Iterator;
 
 
 @Slf4j
-@SpringBootTest
+@SpringBootTest(classes = ElasticsearchApplication.class)
 @RunWith(SpringRunner.class)
 public class EsTest {
 
@@ -54,5 +55,8 @@ public class EsTest {
         }
 
     }
+    @Test
+    public void test2(){
+        System.out.println(Runtime.getRuntime().availableProcessors());    }
 
 }
