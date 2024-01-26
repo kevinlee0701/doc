@@ -57,6 +57,7 @@ public class EsTest {
     }
     @Test
     public void test2(){
-        System.out.println(Runtime.getRuntime().availableProcessors());    }
+        System.out.println(Runtime.getRuntime().availableProcessors());
+    }
 
 }
