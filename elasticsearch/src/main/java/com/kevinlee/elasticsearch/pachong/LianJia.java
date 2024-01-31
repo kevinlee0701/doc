@@ -7,6 +7,8 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.util.Date;
+
 /**
  * @ClassName LianJIa
  * @Author kevinlee
@@ -43,6 +45,10 @@ public class LianJia {
     //备注
     @Field(type = FieldType.Auto)
     private String remark;
+    //创建时间
+    @Field(type = FieldType.Auto)
+    private Date createTime;
+
 
 
 }

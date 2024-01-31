@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.rmi.server.ExportException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -318,6 +319,7 @@ public class LianJiaTest {
     @Test
     public void testLianjia() throws Exception {
         ArrayList<LianJia> lianJias = new ArrayList<>();
+        Date createDate = new Date();
         for (int i = 1; i < 1000; i++) {
             String url = "https://bj.lianjia.com/ershoufang/pg" + i + "rs%E9%BE%99%E5%8D%8E%E5%9B%AD/";
             if (i == 1) {
@@ -332,6 +334,7 @@ public class LianJiaTest {
             if (sellListContent == null || sellListContent.isEmpty()) {
                 break;
             }
+
             for (Element element : sellListContent) {
                 Elements els = element.getElementsByTag("li");
                 if (els != null && els.size() > 0) {
@@ -354,6 +357,7 @@ public class LianJiaTest {
                         lianJia.setUnitPrice(Double.parseDouble(unitPrice));
                         lianJia.setImg(img);
                         lianJia.setHtml(html);
+                        lianJia.setCreateTime(createDate);
                         lianJias.add(lianJia);
                     }
                 }
@@ -370,7 +374,7 @@ public class LianJiaTest {
     @Test
     public void testLianjia2(){
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        boolQueryBuilder.must(QueryBuilders.matchQuery("address","龙华园"));
+        boolQueryBuilder.must(QueryBuilders.matchQuery("address","龙跃苑"));
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder()
                 .withQuery(boolQueryBuilder);
         NativeSearchQuery nativeSearchQuery = nativeSearchQueryBuilder.build();
