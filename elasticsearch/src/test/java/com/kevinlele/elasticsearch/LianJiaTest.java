@@ -374,7 +374,8 @@ public class LianJiaTest {
     @Test
     public void testLianjia2(){
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        boolQueryBuilder.must(QueryBuilders.matchQuery("address","龙跃苑"));
+        boolQueryBuilder.must(QueryBuilders.prefixQuery("address.keyword","龙华苑"));
+        boolQueryBuilder.must(QueryBuilders.rangeQuery("totalPrice").gte(500).lte(600));
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder()
                 .withQuery(boolQueryBuilder);
         NativeSearchQuery nativeSearchQuery = nativeSearchQueryBuilder.build();
@@ -391,6 +392,8 @@ public class LianJiaTest {
         jiaByAddress.forEach(lianJia -> {
             System.out.println(lianJia);
         });
-
+    }
+    @Test
+    public void testLianjia4(){
     }
 }
