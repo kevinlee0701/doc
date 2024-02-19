@@ -65,12 +65,16 @@ public class LianJiaTest {
 
     @Test
     public void test11(){
-        String ss = "mstj@koolearn-inc.com";
-        if (!ss.contains("@")){
-            log.error("邮件格式不合法，employee：{}");
-        }else {
-
-        }
+        String baseContent = "<p></p>\n" +
+                "<div id=\"ai-assist-root-text\" data-v-app=\"\">\n" +
+                "<p><span>The construction  of the Erie Canal, which is a famous waterway, faced and overcame three challenges. </span></p>\r\n" +
+                "<p><span>The first challenge was that the canal had to be built through forest, however, useful devices had been invited and animals helped to pull the devices which reduce the difficulty of digging in the forest; Additionally, considering that the canal had to pass through wetlands where the workers could easily get malaria, the work were done in winter so the mosquitoes that cause the disease were not active.</span></p>\n" +
+                "<p><span>The second challenge was a lack of workers. Nevertheless, the European immigration brought sufficient number of workers who had urgent needs for jobs.</span></p>\n" +
+                "<p><span>Finally, the facility of the canal cut down the time and money cost for travelling to the Midwest to a large extent, thus a lot of people moved there and generated enough commerce that covered the cost of construction.</span></p>\n" +
+                "</div>";
+        baseContent = Jsoup.clean(baseContent, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+        // baseContent = baseContent.replaceAll("\\s{2,}", "\n");
+        System.out.println(baseContent);
     }
     @Test
     public void readW() throws Exception {
