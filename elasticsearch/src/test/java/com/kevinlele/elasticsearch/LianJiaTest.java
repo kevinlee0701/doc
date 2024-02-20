@@ -63,6 +63,13 @@ public class LianJiaTest {
     String tt = "";
 
     @Test
+    public void test1(){
+        List list = new ArrayList();
+        list.add(1);
+        list.clear();
+        System.out.println(list.size());
+    }
+    @Test
     public void test11(){
         String baseContent = "<p></p>\n" +
                 "<div id=\"ai-assist-root-text\" data-v-app=\"\">\n" +
@@ -323,10 +330,8 @@ public class LianJiaTest {
     public void testLianjia() throws Exception {
         ArrayList<LianJia> lianJias = new ArrayList<>();
         longhuayuan(lianJias);
+        longtengyuan(lianJias);
         log.info("list={}", lianJias.size());
-        if(!lianJias.isEmpty()){
-            lianJiaDao.saveAll(lianJias);
-        }
 
     }
 
@@ -389,6 +394,70 @@ public class LianJiaTest {
             }
         }
         List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("龙华园");
+        lianJiaDao.deleteAll(jiaByAddress);
+        lianJiaDao.saveAll(lianJias);
+        lianJias.clear();
+    }
+
+    /**
+     * 龙腾苑数据
+     * @param lianJias
+     * @throws IOException
+     */
+    private  void longtengyuan(ArrayList<LianJia> lianJias) throws IOException {
+        Date createDate = new Date();
+        for (int i = 1; i < 1000; i++) {
+            String url = "https://bj.lianjia.com/ershoufang/pg" + i + "rs龙腾苑/";
+            if (i == 1) {
+                url = "https://bj.lianjia.com/ershoufang/rs%E9%BE%99%E8%85%BE%E8%8B%91/";
+            }
+
+            Document document = Jsoup.parse(new URL(url), 30000);
+            if (document == null) {
+                break;
+            }
+            Elements sellListContent = document.getElementsByClass("sellListContent");
+            if (sellListContent == null || sellListContent.isEmpty()) {
+                break;
+            }
+
+            for (Element element : sellListContent) {
+                Elements els = element.getElementsByTag("li");
+                if (els != null && els.size() > 0) {
+                    for (Element el : els) {
+                        String title = el.getElementsByClass("title").eq(0).text();
+                        String fang_url = el.getElementsByClass("title").select("a").first().attr("abs:href");
+                        Map<String, String> fang = fang(fang_url);
+                        String houseInfo = el.getElementsByClass("houseInfo").eq(0).text();
+                        String address = el.getElementsByClass("positionInfo").eq(0).text();
+                        String totalPrice = el.getElementsByClass("totalPrice").eq(0).text().replace("万", "");
+                        String unitPrice = el.getElementsByClass("unitPrice").attr("data-price");
+                        String img = el.getElementsByClass("lj-lazy").attr("src");
+                        String html = el.getElementsByClass("title").get(0).getElementsByTag("a").attr("href");
+                        String area = houseInfo.split("\\|")[1].replace("平米", "");
+                        log.info("url={},address={},totalPrice={}，unitPrice={},img={}", url, address, totalPrice, unitPrice, img);
+                        LianJia lianJia = new LianJia();
+                        lianJia.setId(address + "-" + totalPrice + "-" + unitPrice + "-" + html);
+                        if(fang!=null){
+                            String remake = fang.get("guapai")+" ## "+fang.get("shangci")+" ## "+fang.get("nianxian")+" ## "+fang.get("louceng")+" ## "+fang.get("mianji");
+                            lianJia.setRemark(remake);
+                        }else{
+                            lianJia.setRemark(title);
+                        }
+                        lianJia.setHouseInfo(houseInfo);
+                        lianJia.setArea(Double.parseDouble(area));
+                        lianJia.setAddress(address);
+                        lianJia.setTotalPrice(Double.parseDouble(totalPrice));
+                        lianJia.setUnitPrice(Double.parseDouble(unitPrice));
+                        lianJia.setImg(img);
+                        lianJia.setHtml(html);
+                        lianJia.setCreateTime(createDate);
+                        lianJias.add(lianJia);
+                    }
+                }
+            }
+        }
+        List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("龙腾苑");
         lianJiaDao.deleteAll(jiaByAddress);
         lianJiaDao.saveAll(lianJias);
         lianJias.clear();
