@@ -42,11 +42,10 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.server.ExportException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -323,6 +322,20 @@ public class LianJiaTest {
     @Test
     public void testLianjia() throws Exception {
         ArrayList<LianJia> lianJias = new ArrayList<>();
+        longhuayuan(lianJias);
+        log.info("list={}", lianJias.size());
+        if(!lianJias.isEmpty()){
+            lianJiaDao.saveAll(lianJias);
+        }
+
+    }
+
+    /**
+     * 龙华园数据
+     * @param lianJias
+     * @throws IOException
+     */
+    private  void longhuayuan(ArrayList<LianJia> lianJias) throws IOException {
         Date createDate = new Date();
         for (int i = 1; i < 1000; i++) {
             String url = "https://bj.lianjia.com/ershoufang/pg" + i + "rs%E9%BE%99%E5%8D%8E%E5%9B%AD/";
@@ -343,6 +356,9 @@ public class LianJiaTest {
                 Elements els = element.getElementsByTag("li");
                 if (els != null && els.size() > 0) {
                     for (Element el : els) {
+                        String title = el.getElementsByClass("title").eq(0).text();
+                        String fang_url = el.getElementsByClass("title").select("a").first().attr("abs:href");
+                        Map<String, String> fang = fang(fang_url);
                         String houseInfo = el.getElementsByClass("houseInfo").eq(0).text();
                         String address = el.getElementsByClass("positionInfo").eq(0).text();
                         String totalPrice = el.getElementsByClass("totalPrice").eq(0).text().replace("万", "");
@@ -353,7 +369,12 @@ public class LianJiaTest {
                         log.info("url={},address={},totalPrice={}，unitPrice={},img={}", url, address, totalPrice, unitPrice, img);
                         LianJia lianJia = new LianJia();
                         lianJia.setId(address + "-" + totalPrice + "-" + unitPrice + "-" + html);
-                        lianJia.setRemark("昌平-两室-200-200:250");
+                        if(fang!=null){
+                            String remake = fang.get("guapai")+" ## "+fang.get("shangci")+" ## "+fang.get("nianxian")+" ## "+fang.get("louceng")+" ## "+fang.get("mianji");
+                            lianJia.setRemark(remake);
+                        }else{
+                            lianJia.setRemark(title);
+                        }
                         lianJia.setHouseInfo(houseInfo);
                         lianJia.setArea(Double.parseDouble(area));
                         lianJia.setAddress(address);
@@ -367,11 +388,69 @@ public class LianJiaTest {
                 }
             }
         }
-        log.info("list={}", lianJias.size());
-        lianJiaDao.deleteAll();
+        List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("龙华园");
+        lianJiaDao.deleteAll(jiaByAddress);
         lianJiaDao.saveAll(lianJias);
+        lianJias.clear();
+    }
+
+    @Test
+    public void test111(){
+      String url ="https://bj.lianjia.com/ershoufang/101122002334.html";
+      Map<String, String> fang = fang(url);
 
     }
+    public static Map<String, String> fang(String url)  {
+        Map<String,String> result= new HashMap<>();
+        if(StringUtils.isBlank(url)){
+            return null;
+        }
+        Document document = null;
+        try {
+            document = Jsoup.parse(new URL(url), 30000);
+            if (document == null) {
+                return null;
+            }
+            base(document, result);
+            transaction(document,result);
+        } catch (IOException e) {
+           log.error("获取明细数据出错,url={}",url,e);
+        }
+
+        return result;
+    }
+
+    private static void transaction(Document document, Map<String, String> result) {
+        Elements transaction = document.getElementsByClass("transaction").eq(0);
+        for (Element element : transaction) {
+            Elements content = element.getElementsByClass("content");
+            for (Element element1 : content) {
+                Elements li = element1.getElementsByTag("li");
+                String guapai = li.get(0).text();//挂牌时间
+                String shangci= li.get(2).text();//上次交易时间
+                String nianxian= li.get(4).text();//年限
+                result.put("guapai",guapai);
+                result.put("shangci",shangci);
+                result.put("nianxian",nianxian);
+            }
+
+        }
+    }
+    private static void base(Document document, Map<String, String> result) {
+        Elements transaction = document.getElementsByClass("base").eq(0);
+        for (Element element : transaction) {
+            Elements content = element.getElementsByClass("content");
+            for (Element element1 : content) {
+                Elements li = element1.getElementsByTag("li");
+                String louceng = li.get(1).text();
+                String mianji= li.get(2).text();
+                result.put("louceng",louceng);//楼层
+                result.put("mianji",mianji);//面积
+            }
+
+        }
+    }
+
 
     @Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
@@ -392,10 +471,8 @@ public class LianJiaTest {
     }
     @Test
     public void testLianjia3(){
-        List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("龙华园");
-        jiaByAddress.forEach(lianJia -> {
-            System.out.println(lianJia);
-        });
+        List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("龙华苑");
+        lianJiaDao.deleteAll(jiaByAddress);
     }
     @Test
     public void testLianjia4(){
