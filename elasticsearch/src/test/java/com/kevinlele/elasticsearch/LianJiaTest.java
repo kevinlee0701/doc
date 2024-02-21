@@ -348,6 +348,11 @@ public class LianJiaTest {
             lianjia(court,city);
         }
     }
+
+    /**
+     * 西安房价
+     * @throws Exception
+     */
     @Test
     public void xian() throws Exception {
         String[] luoyangCourts=new String[]{"群星汇"};
