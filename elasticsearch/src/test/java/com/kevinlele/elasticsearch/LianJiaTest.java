@@ -364,7 +364,7 @@ public class LianJiaTest {
      */
     @Test
     public void zhengzhou() throws Exception {
-        String[] luoyangCourts=new String[]{"金科城"};
+        String[] luoyangCourts=new String[]{""};
         String city="zz";
         for (String court : luoyangCourts) {
             lianjia(court,city);
