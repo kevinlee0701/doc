@@ -348,6 +348,15 @@ public class LianJiaTest {
             lianjia(court,city);
         }
     }
+    @Test
+    public void xian() throws Exception {
+        String[] luoyangCourts=new String[]{"群星汇"};
+        String city="xa";
+        for (String court : luoyangCourts) {
+            lianjia(court,city);
+        }
+    }
+
 
     /**
      * 郑州房价
@@ -365,6 +374,7 @@ public class LianJiaTest {
     /**
      * 查询链家小区报价
      * @param court 小区名称
+     * @param court 城市
      * @throws IOException
      */
     private  void lianjia(String court,String city) throws IOException {
@@ -490,10 +500,13 @@ public class LianJiaTest {
                 Elements li = element1.getElementsByTag("li");
                 String louceng = li.get(1).text();
                 String mianji= li.get(2).text();
-                String taonei= li.get(4).text();
+                if(li.size()>4){
+                    String taonei= li.get(4).text();
+                    result.put("taonei",taonei);
+                }
                 result.put("louceng",louceng);//楼层
                 result.put("mianji",mianji);//面积
-                result.put("taonei",taonei);
+
             }
 
         }
