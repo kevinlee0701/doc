@@ -326,33 +326,54 @@ public class LianJiaTest {
         return str;
     }
 
+
     @Test
     public void testLianjia() throws Exception {
-
-//        longhuayuan();
-//        longtengyuan();
-//        xinlongcheng();
-        String[] courts=new String[]{"龙华园","龙腾苑","新龙城"};
-
-        for (String court : courts) {
-            lianjia(court);
+        String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
+        String city="bj";
+        for (String court : bjCourts) {
+            lianjia(court,city);
         }
-
-
     }
 
     /**
-     * 查询北京链家小区报价
+     * 洛阳房价
+     * @throws Exception
+     */
+    @Test
+    public void luoyang() throws Exception {
+        String[] luoyangCourts=new String[]{"钰泰九龙苑"};
+        String city="luoyang";
+        for (String court : luoyangCourts) {
+            lianjia(court,city);
+        }
+    }
+
+    /**
+     * 郑州房价
+     * @throws Exception
+     */
+    @Test
+    public void zhengzhou() throws Exception {
+        String[] luoyangCourts=new String[]{"金科城"};
+        String city="zz";
+        for (String court : luoyangCourts) {
+            lianjia(court,city);
+        }
+    }
+
+    /**
+     * 查询链家小区报价
      * @param court 小区名称
      * @throws IOException
      */
-    private  void lianjia(String court) throws IOException {
+    private  void lianjia(String court,String city) throws IOException {
         ArrayList<LianJia> lianJias = new ArrayList<>();
         Date createDate = new Date();
         for (int i = 1; i < 1000; i++) {
-            String url = "https://bj.lianjia.com/ershoufang/pg" + i + "rs"+court+"/";
+            String url = "https://"+city+".lianjia.com/ershoufang/pg" + i + "rs"+court+"/";
             if (i == 1) {
-                url = "https://bj.lianjia.com/ershoufang/rs"+court+"/";
+                url = "https://"+city+".lianjia.com/ershoufang/rs"+court+"/";
             }
             boolean xinxi = xinxi(lianJias, url, createDate);
             if(xinxi){
@@ -364,53 +385,8 @@ public class LianJiaTest {
         lianJiaDao.saveAll(lianJias);
         lianJias.clear();
     }
-    /**
-     * 龙华园数据
-     * @throws IOException
-     */
-    private  void longhuayuan() throws IOException {
-        ArrayList<LianJia> lianJias = new ArrayList<>();
-        Date createDate = new Date();
-        for (int i = 1; i < 1000; i++) {
 
-            String url = "https://bj.lianjia.com/ershoufang/pg" + i + "rs%E9%BE%99%E5%8D%8E%E5%9B%AD/";
-            if (i == 1) {
-                url = "https://bj.lianjia.com/ershoufang/rs%E9%BE%99%E5%8D%8E%E5%9B%AD/";
-            }
-            boolean xinxi = xinxi(lianJias, url, createDate);
-            if(xinxi){
-                break;
-            }
-        }
-        List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("龙华园");
-        lianJiaDao.deleteAll(jiaByAddress);
-        lianJiaDao.saveAll(lianJias);
-        lianJias.clear();
-    }
 
-    /**
-     * 新龙城
-     *
-     * @throws IOException
-     */
-    private  void xinlongcheng() throws IOException {
-        ArrayList<LianJia> lianJias = new ArrayList<>();
-        Date createDate = new Date();
-        for (int i = 1; i < 1000; i++) {
-            String url = "https://bj.lianjia.com/ershoufang/pg" + i + "rs新龙城/";
-            if (i == 1) {
-                url = "https://bj.lianjia.com/ershoufang/rs新龙城/";
-            }
-
-            if (xinxi(lianJias, url, createDate)) {
-                break;
-            }
-        }
-        List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("新龙城");
-        lianJiaDao.deleteAll(jiaByAddress);
-        lianJiaDao.saveAll(lianJias);
-        lianJias.clear();
-    }
 
     private  boolean xinxi(ArrayList<LianJia> lianJias, String url, Date createDate) throws IOException {
         Document document = Jsoup.parse(new URL(url), 30000);
@@ -458,37 +434,6 @@ public class LianJiaTest {
             }
         }
         return false;
-    }
-
-    /**
-     * 龙腾苑数据
-     *
-     * @throws IOException
-     */
-    private  void longtengyuan() throws IOException {
-        ArrayList<LianJia> lianJias = new ArrayList<>();
-        Date createDate = new Date();
-        for (int i = 1; i < 1000; i++) {
-            String url = "https://bj.lianjia.com/ershoufang/pg" + i + "rs龙腾苑/";
-            if (i == 1) {
-                url = "https://bj.lianjia.com/ershoufang/rs%E9%BE%99%E8%85%BE%E8%8B%91/";
-            }
-            boolean xinxi = xinxi(lianJias, url, createDate);
-            if(xinxi){
-                break;
-            }
-        }
-        List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("龙腾苑");
-        lianJiaDao.deleteAll(jiaByAddress);
-        lianJiaDao.saveAll(lianJias);
-        lianJias.clear();
-    }
-
-    @Test
-    public void test111(){
-      String url ="https://bj.lianjia.com/ershoufang/101122002334.html";
-      Map<String, String> fang = fang(url);
-
     }
     public static Map<String, String> fang(String url)  {
         Map<String,String> result= new HashMap<>();
