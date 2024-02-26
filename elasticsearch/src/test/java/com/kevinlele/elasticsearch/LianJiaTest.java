@@ -329,8 +329,8 @@ public class LianJiaTest {
 
     @Test
     public void beijing() throws Exception {
-        String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
-
+       // String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
+        String[] bjCourts=new String[]{"龙腾苑"};
         String city="bj";
         for (String court : bjCourts) {
             lianjia(court,city);
@@ -401,8 +401,13 @@ public class LianJiaTest {
         lianJiaDao.saveAll(lianJias);
         lianJias.clear();
     }
-
-
+@Test
+public void deleteAll() throws IOException {
+    List<LianJia> list = lianJiaDao.findLianJiaByAddress("龙华苑");
+    System.out.println(list);
+    if(!list.isEmpty())
+        lianJiaDao.deleteAll(list);
+}
 
     private  boolean xinxi(ArrayList<LianJia> lianJias, String url, Date createDate) throws IOException {
         Document document = Jsoup.parse(new URL(url), 30000);
