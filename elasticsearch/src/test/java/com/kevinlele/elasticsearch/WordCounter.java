@@ -24,7 +24,7 @@ public class WordCounter {
 
     // 测试方法
     public static void main(String[] args) {
-        String text = "This is a 测试  test  How            many words are there?";
+        String text = "This is a 测试  test  How            many words are there?.";
         int wordCount = countWords(text);
         System.out.println("Number of words: " + wordCount);
     }
