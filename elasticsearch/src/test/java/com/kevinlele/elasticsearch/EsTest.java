@@ -1,8 +1,12 @@
 package com.kevinlele.elasticsearch;
 
 
+import com.ctrip.framework.foundation.Foundation;
 import com.kevinlee.elasticsearch.ElasticsearchApplication;
+import com.kevinlee.elasticsearch.MDCExample;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -58,6 +62,22 @@ public class EsTest {
     @Test
     public void test2(){
         System.out.println(Runtime.getRuntime().availableProcessors());
+    }
+
+
+    @Test
+    public void test3(){
+        MDC.put("userId", "123456");
+        MDC.put("requestId", "987654");
+
+        // 记录日志
+        log.info("This is a log message with MDC context.");
+    }
+
+    @Test
+    public void test4(){
+        String appName = Foundation.app().getAppId();
+        System.out.println("Current application name: " + appName);
     }
 
 }
