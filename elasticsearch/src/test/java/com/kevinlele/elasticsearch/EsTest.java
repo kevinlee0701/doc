@@ -71,7 +71,7 @@ public class EsTest {
         MDC.put("requestId", "987654");
 
         // 记录日志
-        log.info("This is a log message with MDC context.");
+        log.info("This is a log message with MDC context. userId={},requestId={}",MDC.get("userId"),MDC.get("requestId"));
     }
 
     @Test

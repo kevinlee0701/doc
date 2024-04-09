@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -45,6 +46,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.server.ExportException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -348,6 +351,19 @@ public class LianJiaTest {
         for (String court : luoyangCourts) {
             lianjia(court,city);
         }
+    }
+    @Test
+    public void jtest() throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date parse = sdf.parse("2024-04-10 15:00:00");
+        Date now = new Date();
+        long diff = parse.getTime() - now.getTime();
+        long min1 = diff /60/1000;
+        double min = (double)min1;
+        //long min = diff / (1000 * 60);
+        System.out.println(Math.abs(min));
+
+        System.out.println(min/60);
     }
 
     /**
