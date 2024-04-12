@@ -563,6 +563,9 @@ public void deleteAll() throws IOException {
         lianJiaDao.deleteAll(jiaByAddress);
     }
     @Test
-    public void testLianjia4(){
+    public void addDays() throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date parse = sdf.parse("2024-4-17");
+        System.out.println( TimeUtils.addBusinessDays(parse,16));
     }
 }
