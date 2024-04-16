@@ -26,7 +26,7 @@ public class HttpUtils {
     @Test
     public void testHttp(){
         String domain="http://basa.koolearn.com";
-       String application="jiaofu-dubbo-chuguoshuati";
+       String application="jiaofu-dubbo-z";
        int pageSize =5;
        int page=1;
        String url= domain+"/api/dev/service?pattern=application&filter="+application+"&page="+0+"&size="+pageSize;
