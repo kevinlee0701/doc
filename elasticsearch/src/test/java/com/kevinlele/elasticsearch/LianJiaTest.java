@@ -6,10 +6,6 @@ import com.kevinlee.elasticsearch.ElasticsearchApplication;
 import com.kevinlee.elasticsearch.config.JsoupWhitelistUntil;
 import com.kevinlee.elasticsearch.pachong.LianJia;
 import com.kevinlee.elasticsearch.pachong.LianJiaDao;
-//import com.koolearn.qti.ExtensionManager;
-//import com.koolearn.qti.SimpleQtiFacade;
-//import com.koolearn.qti.custom.KooExtensionPackage;
-//import com.koolearn.qti.delivery.SimpleDeliveryFacade;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -231,103 +227,7 @@ public class LianJiaTest {
      * @author TanFenHui
      * @date 2021/1/11 4:15 下午
      */
-//    private String setDomainNameByUrl(String url, String platform) {
-//        if (StringUtils.isEmpty(url)) {
-//            return url;
-//        }
-//        //前缀
-//        String prefix = "http://ti.koolearn.com";
-//        //判断是出国站还是app,是oss还是题库
-//        if (null != platform && platform.equals("web")) {
-//            if (url.contains("upload/ti/sardine")) {
-//                prefix = "https://daxue-cos.koocdn.com";
-//            } else {
-//                prefix = "https://ti.koocdn.com";
-//            }
-//        } else {
-//            if (url.contains("upload/ti/sardine")) {
-//                prefix = "https://daxue-cos.koocdn.com";
-//            } else {
-//                prefix = "http://ti.koolearn.com";
-//            }
-//        }
-//        return prefix + url;
-//    }
 
-
-//    @Test
-//    public void test2() {
-//
-//        KooExtensionPackage kooExtensionPackage = new KooExtensionPackage();
-//        ExtensionManager extensionManager = new ExtensionManager(kooExtensionPackage);
-//        com.koolearn.qti.SimpleQtiFacade simpleQtiFacade = new SimpleQtiFacade(extensionManager);
-//        com.koolearn.qti.delivery.SimpleDeliveryFacade simpleDeliveryFacade = new SimpleDeliveryFacade(simpleQtiFacade);
-//        String json = simpleDeliveryFacade.unmarshall(tt, 123);
-//        System.out.println(json);
-//    }
-
-//    @Test
-//    public void test() {
-//        String s = " \"<?xml version=\"\"1.0\"\" encoding=\"\"UTF-8\"\" ?>\n" +
-//                "<assessmentItem xmlns=\"\"http://www.imsglobal.org/xsd/imsqti_v2p1\"\"\n" +
-//                "                xmlns:xsi=\"\"http://www.w3.org/2001/XMLSchema-instance\"\"\n" +
-//                "                xmlns:k=\"\"http://www.koolearn.com/xsd/koo_extensions\"\"\n" +
-//                "                xsi:schemaLocation=\"\"http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd\n" +
-//                "                                    http://www.koolearn.com/xsd/koo_extensions http://www.koolearn.com/xsd/koo_extensions.xsd\"\"\n" +
-//                "                identifier=\"\"ITEM_2173477\"\" title=\"\"\"\" adaptive=\"\"false\"\" timeDependent=\"\"false\"\">\n" +
-//                "        <responseDeclaration identifier=\"\"RESPONSE\"\" cardinality=\"\"single\"\" baseType=\"\"string\"\">\n" +
-//                "            <correctResponse>\n" +
-//                "                <value>&amp;amp;nbsp;</value>\n" +
-//                "            </correctResponse>\n" +
-//                "        </responseDeclaration>\n" +
-//                "        <outcomeDeclaration identifier=\"\"KEYWORDS\"\" cardinality=\"\"single\"\" baseType=\"\"string\"\">\n" +
-//                "            <defaultValue>\n" +
-//                "                <value>[]</value>\n" +
-//                "            </defaultValue>\n" +
-//                "        </outcomeDeclaration>\n" +
-//                "    <outcomeDeclaration identifier=\"\"PASSED\"\" cardinality=\"\"single\"\" baseType=\"\"boolean\"\">\n" +
-//                "        <defaultValue>\n" +
-//                "            <value>false</value>\n" +
-//                "        </defaultValue>\n" +
-//                "    </outcomeDeclaration>\n" +
-//                "    <outcomeDeclaration identifier=\"\"SCORE\"\" cardinality=\"\"single\"\" baseType=\"\"float\"\">\n" +
-//                "        <defaultValue>\n" +
-//                "            <value>0.0</value>\n" +
-//                "        </defaultValue>\n" +
-//                "    </outcomeDeclaration>\n" +
-//                "    <itemBody>\n" +
-//                "        <div label=\"\"SUBITEM_0;writing;SUBJECTIVE\"\">\n" +
-//                "            &amp;lt;p class=&amp;quot;MsoNormal&amp;quot; style=&amp;quot;font-size: 12px; font-family: Simsun; line-height: 13.5pt;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-size: larger;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Arial;&amp;quot;&amp;gt;&amp;lt;b&amp;gt;&amp;lt;span lang=&amp;quot;EN-US&amp;quot;&amp;gt;WRITING TASK 1&amp;lt;/span&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;span lang=&amp;quot;EN-US&amp;quot; style=&amp;quot;font-size: 12pt; font-family: Simsun, serif;&amp;quot;&amp;gt;&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/p&amp;gt;\n" +
-//                "&amp;lt;p class=&amp;quot;MsoNormal&amp;quot; style=&amp;quot;font-size: 12px; font-family: Simsun; line-height: 13.5pt;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-size: larger;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Arial;&amp;quot;&amp;gt;&amp;lt;span lang=&amp;quot;EN-US&amp;quot;&amp;gt;You should spend about 20 minutes on this task.&amp;lt;/span&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;span lang=&amp;quot;EN-US&amp;quot; style=&amp;quot;font-size: 12pt; font-family: Simsun, serif;&amp;quot;&amp;gt;&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/p&amp;gt;\n" +
-//                "&amp;lt;p class=&amp;quot;MsoNormal&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-size: larger;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Arial;&amp;quot;&amp;gt;&amp;lt;b&amp;gt;&amp;lt;span lang=&amp;quot;EN-US&amp;quot;&amp;gt;The table below gives information about the underground railway systems in six cities.&amp;lt;/span&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;b&amp;gt;&amp;lt;span lang=&amp;quot;EN-US&amp;quot; /&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;b&amp;gt;&amp;lt;span lang=&amp;quot;EN-US&amp;quot;&amp;gt;&amp;lt;font size=&amp;quot;4&amp;quot;&amp;gt;&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;/p&amp;gt;\n" +
-//                "&amp;lt;p class=&amp;quot;MsoNormal&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-size: larger;&amp;quot;&amp;gt; &amp;lt;/span&amp;gt;&amp;lt;span style=&amp;quot;font-size: larger;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Arial;&amp;quot;&amp;gt;&amp;lt;span lang=&amp;quot;EN-US&amp;quot;&amp;gt;Write at least 150 words.&amp;lt;/span&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;span style=&amp;quot;font-family: Arial;&amp;quot; /&amp;gt;&amp;lt;/p&amp;gt;\n" +
-//                "&amp;lt;span style=&amp;quot;font-family: Arial;&amp;quot;&amp;gt;&amp;lt;img src=&amp;quot;http://images.koolearn.com/uploadimage/images/admin/postil/proposition/picture/1394090728204.jpg&amp;quot; width=&amp;quot;500&amp;quot; height=&amp;quot;350&amp;quot; alt=&amp;quot;&amp;quot; /&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;br/&amp;gt;\n" +
-//                "&amp;amp;nbsp;&amp;lt;br/&amp;gt;{{answer}}&amp;amp;nbsp;{{/answer}}\n" +
-//                "            <extendedTextInteraction responseIdentifier=\"\"RESPONSE\"\" expectedLength=\"\"5000\"\"/>\n" +
-//                "        </div>\n" +
-//                "            <rubricBlock view=\"\"scorer\"\" use=\"\"analysis\"\" label=\"\"SUBITEM_0\"\">\n" +
-//                "                <div label=\"\"wrap\"\">{{grading}}&amp;amp;nbsp;{{/grading}}</div>\n" +
-//                "            </rubricBlock>\n" +
-//                "    </itemBody>\n" +
-//                "    <responseProcessing>\n" +
-//                "    </responseProcessing>\n" +
-//                "</assessmentItem>\"";
-//
-//        s = StringEscapeUtils.unescapeHtml3(oldDataHandler(s));
-//        s = StringEscapeUtils.unescapeHtml3(oldDataHandler(s));
-//        System.out.println("+++++++++++++" + s);
-//        String clean = Jsoup.clean(s, Whitelist.none());
-//        System.out.println("=======" + clean);
-//    }
-
-//    private String oldDataHandler(String xml) {
-//        String str = null;
-//        str = xml.replaceAll("\\b", "")
-//                .replaceAll("\b", "")
-//                .replaceAll("&lt;/u&gt;", "")
-//                .replaceAll("&lt;u&gt;", "");
-//        return str;
-//    }
 
 
     @Test
