@@ -6,7 +6,7 @@ package com.kevinlee.xiangsidu;
  * 创 建 人：lifeng
  */
 public class Similarity {
-    public static final  String content1="wo ai koolearn test,bu dui";
+    public static final  String content1="wo ai  test,bu dui";
 
     public static final  String content2=" ceshi yixia ,1`23,44555,55y565rfefdfds,dfdsfgbbb,dfdfwewtegre,";
 

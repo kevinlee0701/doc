@@ -64,11 +64,6 @@
 			<version>3.14.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.koolearn</groupId>
-			<artifactId>koo-qti-delivery</artifactId>
-			<version>0.0.34</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml-schemas</artifactId>
 			<version>4.0.0</version>

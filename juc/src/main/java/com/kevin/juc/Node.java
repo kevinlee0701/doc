@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  *  Node
  * @Description
- * @Author panhaicheng@koolearn-inc.com
+ * @Author
  * @Date 2023/3/1 11:21 上午
  */
 public class Node implements Serializable {
