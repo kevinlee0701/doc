@@ -3,6 +3,7 @@ package com.kevinlele.elasticsearch;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kevinlee.elasticsearch.ElasticsearchApplication;
+import com.kevinlee.elasticsearch.ResultData;
 import com.kevinlee.elasticsearch.config.JsoupWhitelistUntil;
 import com.kevinlee.elasticsearch.pachong.LianJia;
 import com.kevinlee.elasticsearch.pachong.LianJiaDao;
@@ -320,5 +321,14 @@ public void deleteAll() throws IOException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date parse = sdf.parse("2024-4-17");
         System.out.println( TimeUtils.addBusinessDays(parse,16));
+    }
+
+    @Test
+    public void testResultDate() throws ParseException {
+        ResultData<String> result = ResultData.of(200, "成功");
+        System.out.println(result);
+
+        ResultData<Integer> resultWithData = new ResultData<>(200, "成功", 123);
+        System.out.println(resultWithData);
     }
 }
