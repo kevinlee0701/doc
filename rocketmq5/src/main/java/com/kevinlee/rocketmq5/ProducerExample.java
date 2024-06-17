@@ -41,6 +41,7 @@ public class ProducerExample {
             SendReceipt sendReceipt = producer.send(message);
             logger.info("Send message successfully, messageId={}", sendReceipt.getMessageId());
         } catch (ClientException e) {
+
             logger.error("Failed to send message", e);
         }
         // producer.close();
