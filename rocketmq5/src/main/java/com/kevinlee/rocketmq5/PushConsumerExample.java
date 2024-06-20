@@ -12,6 +12,9 @@ import org.apache.rocketmq.client.apis.consumer.PushConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 消费者
+ */
 public class PushConsumerExample {
     private static final Logger logger = LoggerFactory.getLogger(PushConsumerExample.class);
 
