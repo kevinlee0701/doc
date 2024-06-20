@@ -10,6 +10,10 @@ import org.apache.rocketmq.client.apis.producer.SendReceipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** rocketmq 发送端
+ * @ClassName ProducerExample
+ * @Version 1.0
+ **/
 public class ProducerExample {
     private static final Logger logger = LoggerFactory.getLogger(ProducerExample.class);
 
