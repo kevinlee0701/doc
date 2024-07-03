@@ -1,7 +1,7 @@
 
 
 ## 项目概述
-本项目主要针对各种中间件的学习和使用例子，目前包括了以下中间件：es，apollo，freemarker，rocketmq，sharingjdbc，zk
+本项目主要针对各种中间件的学习和使用例子，目前包括了以下中间件：es，apollo，freemarker，rocketmq，sharingjdbc，zk。
 同时我这边还整理了一些学习资料，目前有mqsql,redis,sharingjdbc
 
 
