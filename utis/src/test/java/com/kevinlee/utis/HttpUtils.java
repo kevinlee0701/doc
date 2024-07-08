@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,9 +21,24 @@ import java.util.Set;
 public class HttpUtils {
     @Test
     public void test1(){
-        System.out.println("/api/login/index".contains("/login/index"));
+       String url="https://daxue-cos.koocdn.com/shark/attachment/2144d34096be480bbd1f427811a24301/音频(纯单词版)Unit 01.mp3";
+       url = url.replace(" ", "%20");
+       System.out.println(url);
+       URI uri = URI.create(url);
     }
 
+
+
+
+    private static String getEnCodeUrl(String url){
+        try {
+            URI uri = URI.create(url);
+            return uri.toASCIIString();
+        } catch (Exception e) {
+            log.error("编码异常：url={}", url, e);
+        }
+        return url;
+    }
     @Test
     public void testHttp(){
         String domain="http://basa..com";
