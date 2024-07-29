@@ -86,8 +86,8 @@ public class LianJiaTest {
 
     @Test
     public void beijing() throws Exception {
- //       String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
-       String[] bjCourts=new String[]{"龙华园"};
+        String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
+//       String[] bjCourts=new String[]{"龙华园"};
         String city="bj";
         for (String court : bjCourts) {
             lianjia(court,city);
@@ -150,13 +150,13 @@ public class LianJiaTest {
     /**
      * 查询链家小区报价
      * @param court 小区名称
-     * @param court 城市
+     * @param city 城市代码
      * @throws IOException
      */
     private  void lianjia(String court,String city) throws IOException {
         ArrayList<LianJia> lianJias = new ArrayList<>();
         Date createDate = new Date();
-        for (int i = 1; i < 1000; i++) {
+        for (int i = 1; i < 10; i++) {
             String url = "https://"+city+".lianjia.com/ershoufang/pg" + i + "rs"+court+"/";
             if (i == 1) {
                 url = "https://"+city+".lianjia.com/ershoufang/rs"+court+"/";
