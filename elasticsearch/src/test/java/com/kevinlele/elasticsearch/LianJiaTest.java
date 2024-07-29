@@ -156,7 +156,7 @@ public class LianJiaTest {
     private  void lianjia(String court,String city) throws IOException {
         ArrayList<LianJia> lianJias = new ArrayList<>();
         Date createDate = new Date();
-        for (int i = 1; i < 10; i++) {
+        for (int i = 1; i < 6; i++) {
             String url = "https://"+city+".lianjia.com/ershoufang/pg" + i + "rs"+court+"/";
             if (i == 1) {
                 url = "https://"+city+".lianjia.com/ershoufang/rs"+court+"/";
