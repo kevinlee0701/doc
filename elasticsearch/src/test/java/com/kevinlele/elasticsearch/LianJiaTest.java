@@ -87,7 +87,7 @@ public class LianJiaTest {
     @Test
     public void beijing() throws Exception {
 //        String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
-       String[] bjCourts=new String[]{"龙华园"};
+       String[] bjCourts=new String[]{"新龙城"};
         String city="bj";
         for (String court : bjCourts) {
             lianjia(court,city);
@@ -157,6 +157,7 @@ public class LianJiaTest {
         ArrayList<LianJia> lianJias = new ArrayList<>();
         Date createDate = new Date();
         for (int i = 1; i < 6; i++) {
+
             String url = "https://"+city+".lianjia.com/ershoufang/pg" + i + "rs"+court+"/";
             if (i == 1) {
                 url = "https://"+city+".lianjia.com/ershoufang/rs"+court+"/";
@@ -180,10 +181,23 @@ public void deleteAll() throws IOException {
 }
 
     private  boolean xinxi(ArrayList<LianJia> lianJias, String url, Date createDate) throws IOException {
-        Document document = Jsoup.parse(new URL(url), 30000);
+        Map<String, String> cookies = new HashMap<>();
+        cookies.put("hip", "-joY80KVl4McP6vbn3Z4obzoZTmGlnA7edcGsPfi1nHOCm_Rl8dwH1xuUAMEOfYSt8RkbkpfiymphKzqzR_FuUayIQyalOOWJ4N6vyXU64Hq-7diGksyzMYYMDfvh3Ys-hE1d_BehSMz7LO1E17ZlcfAWOIdbawoXlGyNjGp3lmULX-rM_pT4EP51g%3D%3D");
+        cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1726223797");
+        cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298");
+        cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298");
+        cookies.put("HMACCOUNT", "FE28DC61974B5298");
+        cookies.put("lianjia_uuid","dff2e6e4-132f-4c5a-bd0b-8b809e4f1025");
+        cookies.put("select_city","110000");
+        cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiZTQ1ODlmYzNkMDM1MTE4OTA1ZmFhMGZmYzMyYjU2OTEyNDYyZTFmOTI2Njg2MzdmZTliMDUxMmVjZmEwZTJlY2EyOTEwMjQxYTVlYjdkNzAyZTVhYWVjNzEyNWFjMWQ4ZGYxNDQzZWU0YmI3YzJiOWNhYjk1NDUyMmM3ZTE1MzkxMGNlNDA4YjQ4ZGQyOGY5MjIxZjdiYzM3YmVkYjA5ZGUxMmU4ZTlhNjEwOTZkZjNjNTU3ZWJiMTY4NmQxMWQyYzEyNDc3NDU5ZTBkNjk2M2RmOTMxMDc1M2QzM2ExMDNkMzE3M2JlNWQ1YjA3ZTMyOTFjZDExNTMxODE0MjU2NlwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCJiZjhmNDZlMVwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvcnMlRTklQkUlOTklRTUlOEQlOEUlRTUlOUIlQUQvIiwib3MiOiJ3ZWIiLCJ2IjoiMC4xIn0=");
+        Document document =null;
+        document = Jsoup.connect(url).cookies(cookies).timeout(30000).get();
+
+//        document = Jsoup.parse(new URL(url), 30000);
         if (document == null) {
             return true;
         }
+
         Elements sellListContent = document.getElementsByClass("sellListContent");
         if (sellListContent == null || sellListContent.isEmpty()) {
             return true;
@@ -227,6 +241,15 @@ public void deleteAll() throws IOException {
         return false;
     }
     public static Map<String, String> fang(String url)  {
+        try {
+            Random random = new Random();
+            int num = random.nextInt(9)+1;
+            log.info("====== 睡眠时间【{}】秒",num);
+            Thread.sleep(num*1000);
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         Map<String,String> result= new HashMap<>();
         if(StringUtils.isBlank(url)){
             return null;
