@@ -162,7 +162,7 @@ public class LianJiaTest {
             if (i == 1) {
                 url = "https://"+city+".lianjia.com/ershoufang/rs"+court+"/";
             }
-            boolean xinxi = xinxi(lianJias, url, createDate);
+            boolean xinxi = xinxi(lianJias, url, createDate,city);
             if(xinxi){
                 break;
             }
@@ -180,20 +180,45 @@ public void deleteAll() throws IOException {
         lianJiaDao.deleteAll(list);
 }
 
-    private  boolean xinxi(ArrayList<LianJia> lianJias, String url, Date createDate) throws IOException {
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("hip", "-joY80KVl4McP6vbn3Z4obzoZTmGlnA7edcGsPfi1nHOCm_Rl8dwH1xuUAMEOfYSt8RkbkpfiymphKzqzR_FuUayIQyalOOWJ4N6vyXU64Hq-7diGksyzMYYMDfvh3Ys-hE1d_BehSMz7LO1E17ZlcfAWOIdbawoXlGyNjGp3lmULX-rM_pT4EP51g%3D%3D");
-        cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1726223797");
-        cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298");
-        cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298");
-        cookies.put("HMACCOUNT", "FE28DC61974B5298");
-        cookies.put("lianjia_uuid","dff2e6e4-132f-4c5a-bd0b-8b809e4f1025");
-        cookies.put("select_city","110000");
-        cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiZTQ1ODlmYzNkMDM1MTE4OTA1ZmFhMGZmYzMyYjU2OTEyNDYyZTFmOTI2Njg2MzdmZTliMDUxMmVjZmEwZTJlY2EyOTEwMjQxYTVlYjdkNzAyZTVhYWVjNzEyNWFjMWQ4ZGYxNDQzZWU0YmI3YzJiOWNhYjk1NDUyMmM3ZTE1MzkxMGNlNDA4YjQ4ZGQyOGY5MjIxZjdiYzM3YmVkYjA5ZGUxMmU4ZTlhNjEwOTZkZjNjNTU3ZWJiMTY4NmQxMWQyYzEyNDc3NDU5ZTBkNjk2M2RmOTMxMDc1M2QzM2ExMDNkMzE3M2JlNWQ1YjA3ZTMyOTFjZDExNTMxODE0MjU2NlwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCJiZjhmNDZlMVwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvcnMlRTklQkUlOTklRTUlOEQlOEUlRTUlOUIlQUQvIiwib3MiOiJ3ZWIiLCJ2IjoiMC4xIn0=");
+    private  boolean xinxi(ArrayList<LianJia> lianJias, String url, Date createDate,String city) throws IOException {
         Document document =null;
-        document = Jsoup.connect(url).cookies(cookies).timeout(30000).get();
+        if(city.equals("bj")){
+            Map<String, String> cookies = new HashMap<>();
+            cookies.put("hip", "-joY80KVl4McP6vbn3Z4obzoZTmGlnA7edcGsPfi1nHOCm_Rl8dwH1xuUAMEOfYSt8RkbkpfiymphKzqzR_FuUayIQyalOOWJ4N6vyXU64Hq-7diGksyzMYYMDfvh3Ys-hE1d_BehSMz7LO1E17ZlcfAWOIdbawoXlGyNjGp3lmULX-rM_pT4EP51g%3D%3D");
+            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1726223797");
+            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298");
+            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298");
+            cookies.put("HMACCOUNT", "FE28DC61974B5298");
+            cookies.put("lianjia_uuid","dff2e6e4-132f-4c5a-bd0b-8b809e4f1025");
+            cookies.put("select_city","110000");
+            cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiZTQ1ODlmYzNkMDM1MTE4OTA1ZmFhMGZmYzMyYjU2OTEyNDYyZTFmOTI2Njg2MzdmZTliMDUxMmVjZmEwZTJlY2EyOTEwMjQxYTVlYjdkNzAyZTVhYWVjNzEyNWFjMWQ4ZGYxNDQzZWU0YmI3YzJiOWNhYjk1NDUyMmM3ZTE1MzkxMGNlNDA4YjQ4ZGQyOGY5MjIxZjdiYzM3YmVkYjA5ZGUxMmU4ZTlhNjEwOTZkZjNjNTU3ZWJiMTY4NmQxMWQyYzEyNDc3NDU5ZTBkNjk2M2RmOTMxMDc1M2QzM2ExMDNkMzE3M2JlNWQ1YjA3ZTMyOTFjZDExNTMxODE0MjU2NlwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCJiZjhmNDZlMVwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvcnMlRTklQkUlOTklRTUlOEQlOEUlRTUlOUIlQUQvIiwib3MiOiJ3ZWIiLCJ2IjoiMC4xIn0=");
+            document = Jsoup.connect(url).cookies(cookies).timeout(30000).get();
+        }else{
+            Map<String, String> cookies = new HashMap<>();
+            cookies.put("beikeBaseData", "%7B%22parentSceneId%22%3A%22%22%7D");
+            cookies.put("crosSdkDT2019DeviceId", "x6sic0--y3e1di-3p2fnhbbl8wjiu3-zwl80wwuc");
+            cookies.put("ftkrc_", "6ce66a6c-9c3a-4728-9272-a7b85629e296");
+            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1726282585");
+            cookies.put("HMACCOUNT", "FE28DC61974B5298");
+            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e","1725533824,1726220298");
+            cookies.put("lfrc_","385590b8-9612-4be1-851c-ca1f07d3367f");
+            cookies.put("lianjia_ssid","b821766a-2206-42f0-8bba-69755d6226b6");
 
-//        document = Jsoup.parse(new URL(url), 30000);
+            cookies.put("lianjia_token","2.001008eac46af50b6801a5c3f5e6b13c6d");
+            cookies.put("lianjia_token_secure","2.001008eac46af50b6801a5c3f5e6b13c6d");
+            cookies.put("lianjia_uuid","dff2e6e4-132f-4c5a-bd0b-8b809e4f1025");
+            cookies.put("login_ucid","2000000006196288");
+            cookies.put("security_ticket","kiHKZ2/3uSfFI5GRfllb/LO/4NlI6gVrB6N+6aJwrD9A9mOcEkQtRegiu26sOdf5BsiWAgUaMbyVGIswaCxgokANurJB0Ramh71l0jH0FLX7t7l8Jp8gT/TFlxUJG2moKKfSIU1ssiEB3pQ/0iq/GNyIm8lVkypvod7cDaz4Jcg=");
+            if(city.equals("luoyang")){
+                cookies.put("select_city","410300");
+            }else if(city.equals("zz")){
+                cookies.put("select_city","410100");
+            }
+            cookies.put("sensorsdata2015jssdkcross","%7B%22distinct_id%22%3A%22191eaebd23f1add-09c17531646aae-17525637-4953600-191eaebd24014e5%22%2C%22%24device_id%22%3A%22191eaebd23f1add-09c17531646aae-17525637-4953600-191eaebd24014e5%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E8%87%AA%E7%84%B6%E6%90%9C%E7%B4%A2%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22https%3A%2F%2Fwww.google.com%2F%22%2C%22%24latest_referrer_host%22%3A%22www.google.com%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC%22%7D%7D");
+            cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiZTQ1ODlmYzNkMDM1MTE4OTA1ZmFhMGZmYzMyYjU2OTEyNDYyZTFmOTI2Njg2MzdmZTliMDUxMmVjZmEwZTJlY2EyOTEwMjQxYTVlYjdkNzAyZTVhYWVjNzEyNWFjMWQ4ZGYxNDQzZWU0YmI3YzJiOWNhYjk1NDUyMmM3ZTE1MzkxMGNlNDA4YjQ4ZGQyOGY5MjIxZjdiYzM3YmVkYjA5ZDBlNTgxODJmMWUzOTlhMjA5YmQzNmQ5M2U4NGFjNDE2YjMzYjIyZWEyM2U1ODhlZDA3YzQwNTc5MGRkZTNhMDkzZmJmNzI2NDU0MjE5Yjk1NWY2OTg5MmFhOWZhNjIwN1wiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCJlZjc5ODBlOVwifSIsInIiOiJodHRwczovL2x1b3lhbmcubGlhbmppYS5jb20vZXJzaG91ZmFuZy9ycyVFOSU5MiVCMCVFNiVCMyVCMC8iLCJvcyI6IndlYiIsInYiOiIwLjEifQ==");
+            document = Jsoup.connect(url).cookies(cookies).timeout(30000).get();
+        }
+
         if (document == null) {
             return true;
         }
