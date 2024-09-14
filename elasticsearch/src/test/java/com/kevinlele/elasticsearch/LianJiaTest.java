@@ -86,8 +86,8 @@ public class LianJiaTest {
 
     @Test
     public void beijing() throws Exception {
-//        String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
-       String[] bjCourts=new String[]{"新龙城"};
+        String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
+//        String[] bjCourts=new String[]{"新龙城"};
         String city="bj";
         for (String court : bjCourts) {
             lianjia(court,city);
