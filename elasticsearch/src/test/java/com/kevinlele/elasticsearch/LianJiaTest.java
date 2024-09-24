@@ -157,7 +157,7 @@ public class LianJiaTest {
         ArrayList<LianJia> lianJias = new ArrayList<>();
         Date createDate = new Date();
         for (int i = 1; i < 6; i++) {
-
+            log.info(" ======= 城市：{}，第 {} 页================",city,i);
             String url = "https://"+city+".lianjia.com/ershoufang/pg" + i + "rs"+court+"/";
             if (i == 1) {
                 url = "https://"+city+".lianjia.com/ershoufang/rs"+court+"/";
@@ -184,14 +184,14 @@ public void deleteAll() throws IOException {
         Document document =null;
         if(city.equals("bj")){
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("hip", "-joY80KVl4McP6vbn3Z4obzoZTmGlnA7edcGsPfi1nHOCm_Rl8dwH1xuUAMEOfYSt8RkbkpfiymphKzqzR_FuUayIQyalOOWJ4N6vyXU64Hq-7diGksyzMYYMDfvh3Ys-hE1d_BehSMz7LO1E17ZlcfAWOIdbawoXlGyNjGp3lmULX-rM_pT4EP51g%3D%3D");
-            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1726223797");
+            cookies.put("hip", "aImZEz1tr7q-1OrLZWlCZpxvhqxL29vWtvhWRR6My2AUSZPAFaYXxuAx7vQdRuOwe1PUtkKvoagOFCJ1zjKjKU8R9prHQw9XrOGPfp-iKiIlAiZ4e1rsLElRG4LNwgPjvOjbCouT-8_KB-gvJHBskcjDGf7an7fNDNAr6tn9zJPdYPsHcvzKsI3uMg%3D%3D");
+            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1727079286");
             cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298");
-            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298");
+
             cookies.put("HMACCOUNT", "FE28DC61974B5298");
             cookies.put("lianjia_uuid","dff2e6e4-132f-4c5a-bd0b-8b809e4f1025");
             cookies.put("select_city","110000");
-            cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiZTQ1ODlmYzNkMDM1MTE4OTA1ZmFhMGZmYzMyYjU2OTEyNDYyZTFmOTI2Njg2MzdmZTliMDUxMmVjZmEwZTJlY2EyOTEwMjQxYTVlYjdkNzAyZTVhYWVjNzEyNWFjMWQ4ZGYxNDQzZWU0YmI3YzJiOWNhYjk1NDUyMmM3ZTE1MzkxMGNlNDA4YjQ4ZGQyOGY5MjIxZjdiYzM3YmVkYjA5ZGUxMmU4ZTlhNjEwOTZkZjNjNTU3ZWJiMTY4NmQxMWQyYzEyNDc3NDU5ZTBkNjk2M2RmOTMxMDc1M2QzM2ExMDNkMzE3M2JlNWQ1YjA3ZTMyOTFjZDExNTMxODE0MjU2NlwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCJiZjhmNDZlMVwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvcnMlRTklQkUlOTklRTUlOEQlOEUlRTUlOUIlQUQvIiwib3MiOiJ3ZWIiLCJ2IjoiMC4xIn0=");
+            cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiYTgxMjY1OTk1NmQyM2Q3N2VmMjJkYThjNzM4MDA1YzAyMTYzYmZjZjJhY2NiNTgzNTAxMjhkOGQwMmE0YTBiOGJjOTg5NmUyNjYwZTkyMzQ0NDQ4NzczZjdjNjU1NDJiYzExNTVhMWI4ZWJjNGZjMjA3NTVhNjgxMDEwOGQ2MTAyODNhYmY4YjM1OGExY2ViZGMzMWIxYjllYjVhZTU3NWE2ZWUxMmQ5MWRjMTk2NjJiZWQyZWVlNmU3YjdkNzVjNTg2OTllZjEzYTRmZmJhNDZkYTE1MWMwMmU0NDk5ODQzODQzZmQwMGQzMWUyNDNjZjgzM2ZiYjBjOTkxYjBiZVwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCIxMjcwM2E2NFwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvcnMlRTklQkUlOTklRTUlOEQlOEUlRTUlOUIlQUQvIiwib3MiOiJ3ZWIiLCJ2IjoiMC4xIn0=");
             document = Jsoup.connect(url).cookies(cookies).timeout(30000).get();
         }else{
             Map<String, String> cookies = new HashMap<>();
@@ -202,10 +202,10 @@ public void deleteAll() throws IOException {
             cookies.put("HMACCOUNT", "FE28DC61974B5298");
             cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e","1725533824,1726220298");
             cookies.put("lfrc_","385590b8-9612-4be1-851c-ca1f07d3367f");
-            cookies.put("lianjia_ssid","b821766a-2206-42f0-8bba-69755d6226b6");
+            cookies.put("lianjia_ssid","f2e17c20-36de-4704-962c-5c431b6e2674");
 
-            cookies.put("lianjia_token","2.001008eac46af50b6801a5c3f5e6b13c6d");
-            cookies.put("lianjia_token_secure","2.001008eac46af50b6801a5c3f5e6b13c6d");
+            cookies.put("lianjia_token","2.0010abc3dd6a5622710106eaec9b46a622");
+            cookies.put("lianjia_token_secure","2.0010abc3dd6a5622710106eaec9b46a622");
             cookies.put("lianjia_uuid","dff2e6e4-132f-4c5a-bd0b-8b809e4f1025");
             cookies.put("login_ucid","2000000006196288");
             cookies.put("security_ticket","kiHKZ2/3uSfFI5GRfllb/LO/4NlI6gVrB6N+6aJwrD9A9mOcEkQtRegiu26sOdf5BsiWAgUaMbyVGIswaCxgokANurJB0Ramh71l0jH0FLX7t7l8Jp8gT/TFlxUJG2moKKfSIU1ssiEB3pQ/0iq/GNyIm8lVkypvod7cDaz4Jcg=");
