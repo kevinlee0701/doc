@@ -242,7 +242,7 @@ public void deleteAll() throws IOException {
                     String img = el.getElementsByClass("lj-lazy").attr("src");
                     String html = el.getElementsByClass("title").get(0).getElementsByTag("a").attr("href");
                     String area = houseInfo.split("\\|")[1].replace("平米", "");
-                    log.info("url={},houseInfo={},address={},totalPrice={}，unitPrice={},fang_url={}",url,houseInfo,, address, totalPrice, unitPrice,fang_url);
+                    log.info("url={},houseInfo={},address={},totalPrice={}，unitPrice={},fang_url={}",url,houseInfo, address, totalPrice, unitPrice,fang_url);
                     if (!address.contains(court)) {
                         log.warn("地址信息与输入地址信息不匹配，court ={},adress={}", court, address);
                         return true;
