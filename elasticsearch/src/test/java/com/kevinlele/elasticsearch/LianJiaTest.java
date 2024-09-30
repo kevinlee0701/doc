@@ -18,6 +18,12 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.Avg;
+import org.elasticsearch.search.aggregations.metrics.ParsedAvg;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -29,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.AggregationsContainer;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
@@ -48,6 +55,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 类 描 述： 龙华园在卖数据
@@ -61,7 +69,8 @@ public class LianJiaTest {
     @Resource
     private LianJiaDao lianJiaDao;
     String tt = "";
-
+    @Resource
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Test
     public void test1(){
         List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("ceshiyixia");
@@ -170,6 +179,8 @@ public class LianJiaTest {
         List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress(court);
         lianJiaDao.deleteAll(jiaByAddress);
         lianJiaDao.saveAll(lianJias);
+
+
         lianJias.clear();
     }
 @Test
@@ -349,17 +360,23 @@ public void deleteAll() throws IOException {
     }
 
 
-    @Resource
-    private ElasticsearchRestTemplate elasticsearchRestTemplate;
+
     @Test
     public void testLianjia2(){
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        boolQueryBuilder.must(QueryBuilders.prefixQuery("address.keyword","龙华苑"));
-        boolQueryBuilder.must(QueryBuilders.rangeQuery("totalPrice").gte(500).lte(600));
+        boolQueryBuilder.must(QueryBuilders.prefixQuery("address.keyword","龙华园"));
+        boolQueryBuilder.must(QueryBuilders.rangeQuery("area").gte(80).lte(83));
+        boolQueryBuilder.must(QueryBuilders.matchQuery("houseInfo","南 北"));
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder()
-                .withQuery(boolQueryBuilder);
+                .withQuery(boolQueryBuilder)
+                .withAggregations(AggregationBuilders.avg("avgeTotalPrice").field("totalPrice"))
+                .withAggregations(AggregationBuilders.avg("avgePrice").field("unitPrice"));
         NativeSearchQuery nativeSearchQuery = nativeSearchQueryBuilder.build();
         SearchHits<LianJia> searchHits = elasticsearchRestTemplate.search(nativeSearchQuery, LianJia.class);
+        Aggregations aggregations =(Aggregations) searchHits.getAggregations().aggregations();
+        aggregations.getAsMap().forEach((key,value)->{
+            System.out.println(key+"===="+((ParsedAvg) value).getValue());
+        });
 
         searchHits.forEach(personSearchHit -> {
             System.out.println(personSearchHit.getContent());
