@@ -86,8 +86,8 @@ public class LianJiaTest {
 
     @Test
     public void beijing() throws Exception {
-        String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
-//        String[] bjCourts=new String[]{"新龙城"};
+//        String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
+        String[] bjCourts=new String[]{"新龙城"};
         String city="bj";
         for (String court : bjCourts) {
             lianjia(court,city);
@@ -184,12 +184,13 @@ public void deleteAll() throws IOException {
         Document document =null;
         if(city.equals("bj")){
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("hip", "aImZEz1tr7q-1OrLZWlCZpxvhqxL29vWtvhWRR6My2AUSZPAFaYXxuAx7vQdRuOwe1PUtkKvoagOFCJ1zjKjKU8R9prHQw9XrOGPfp-iKiIlAiZ4e1rsLElRG4LNwgPjvOjbCouT-8_KB-gvJHBskcjDGf7an7fNDNAr6tn9zJPdYPsHcvzKsI3uMg%3D%3D");
-            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1727079286");
-            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298");
+            cookies.put("hip", "S4MYIfgGwmHyTb-LjFRIjKyaVDb-uqgqRaNKb-3iNGD5f32cerTEQp7oAGK7JgHUvCnuPiDcMYQuzyLuvEw9_B3gYbniUqI_t-nBzwko8Quu-sK1yyezL36PMR5BK-MNeCqOgnjCVynA_Zu16zwsWtryL8OW49_argMTbjrCkp-r5VjVI_w_0-huaSU%3D");
+            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1727679536");
+            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298,1727244521,1727678045");
 
-            cookies.put("HMACCOUNT", "FE28DC61974B5298");
-            cookies.put("lianjia_uuid","dff2e6e4-132f-4c5a-bd0b-8b809e4f1025");
+            cookies.put("HMACCOUNT", "D21A575A29D5136A");
+            cookies.put("lianjia_ssid","92924f52-ecfb-4e64-8d9e-c9dda517d839");
+            cookies.put("lianjia_uuid","100dc6aa-f9fe-4bee-9972-146ecd0662cf");
             cookies.put("select_city","110000");
             cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiYTgxMjY1OTk1NmQyM2Q3N2VmMjJkYThjNzM4MDA1YzAyMTYzYmZjZjJhY2NiNTgzNTAxMjhkOGQwMmE0YTBiOGJjOTg5NmUyNjYwZTkyMzQ0NDQ4NzczZjdjNjU1NDJiYzExNTVhMWI4ZWJjNGZjMjA3NTVhNjgxMDEwOGQ2MTAyODNhYmY4YjM1OGExY2ViZGMzMWIxYjllYjVhZTU3NWE2ZWUxMmQ5MWRjMTk2NjJiZWQyZWVlNmU3YjdkNzVjNTg2OTllZjEzYTRmZmJhNDZkYTE1MWMwMmU0NDk5ODQzODQzZmQwMGQzMWUyNDNjZjgzM2ZiYjBjOTkxYjBiZVwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCIxMjcwM2E2NFwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvcnMlRTklQkUlOTklRTUlOEQlOEUlRTUlOUIlQUQvIiwib3MiOiJ3ZWIiLCJ2IjoiMC4xIn0=");
             document = Jsoup.connect(url).cookies(cookies).timeout(30000).get();
@@ -220,11 +221,13 @@ public void deleteAll() throws IOException {
         }
 
         if (document == null) {
+            log.error("document没有查询到信息，退出操作。");
             return true;
         }
 
         Elements sellListContent = document.getElementsByClass("sellListContent");
         if (sellListContent == null || sellListContent.isEmpty()) {
+            log.error("sellListContent没有查询到信息，退出操作。");
             return true;
         }
 
