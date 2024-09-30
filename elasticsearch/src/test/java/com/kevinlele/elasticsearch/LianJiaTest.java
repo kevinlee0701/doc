@@ -157,7 +157,7 @@ public class LianJiaTest {
         ArrayList<LianJia> lianJias = new ArrayList<>();
         Date createDate = new Date();
         for (int i = 1; i < 6; i++) {
-            log.info(" ======= 城市：{}，第 {} 页================",city,i);
+            log.info(" ======= 城市：{},小区：{}，第 {} 页================",city,court,i);
             String url = "https://"+city+".lianjia.com/ershoufang/pg" + i + "rs"+court+"/";
             if (i == 1) {
                 url = "https://"+city+".lianjia.com/ershoufang/rs"+court+"/";
@@ -245,7 +245,7 @@ public void deleteAll() throws IOException {
                     log.info("url={},houseInfo={},fang_url={},address={},totalPrice={}，unitPrice={}",url,houseInfo,fang_url, address, totalPrice, unitPrice);
                     if (!address.contains(court)) {
                         log.warn("地址信息与输入地址信息不匹配，court ={},adress={}", court, address);
-                        return false;
+                        return true;
                     }
                     LianJia lianJia = new LianJia();
                     lianJia.setId(address + "-" + totalPrice + "-" + unitPrice + "-" + html);
