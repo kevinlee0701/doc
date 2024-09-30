@@ -162,7 +162,7 @@ public class LianJiaTest {
             if (i == 1) {
                 url = "https://"+city+".lianjia.com/ershoufang/rs"+court+"/";
             }
-            boolean xinxi = xinxi(lianJias, url, createDate,city);
+            boolean xinxi = xinxi(lianJias, url, createDate,city,court);
             if(xinxi){
                 break;
             }
@@ -180,7 +180,7 @@ public void deleteAll() throws IOException {
         lianJiaDao.deleteAll(list);
 }
 
-    private  boolean xinxi(ArrayList<LianJia> lianJias, String url, Date createDate,String city) throws IOException {
+    private  boolean xinxi(ArrayList<LianJia> lianJias, String url, Date createDate,String city,String court) throws IOException {
         Document document =null;
         if(city.equals("bj")){
             Map<String, String> cookies = new HashMap<>();
@@ -242,11 +242,15 @@ public void deleteAll() throws IOException {
                     String img = el.getElementsByClass("lj-lazy").attr("src");
                     String html = el.getElementsByClass("title").get(0).getElementsByTag("a").attr("href");
                     String area = houseInfo.split("\\|")[1].replace("平米", "");
-                    log.info("url={},address={},totalPrice={}，unitPrice={},img={}", url, address, totalPrice, unitPrice, img);
+                    log.info("url={},houseInfo={},fang_url={},address={},totalPrice={}，unitPrice={}",url,houseInfo,fang_url, address, totalPrice, unitPrice);
+                    if (!address.contains(court)) {
+                        log.warn("地址信息与输入地址信息不匹配，court ={},adress={}", court, address);
+                        return false;
+                    }
                     LianJia lianJia = new LianJia();
                     lianJia.setId(address + "-" + totalPrice + "-" + unitPrice + "-" + html);
-                    if(fang!=null){
-                        String remake = fang.get("taonei")+" ## "+fang.get("guapai")+" ## "+fang.get("shangci")+" ## "+fang.get("nianxian")+" ## "+fang.get("louceng")+" ## "+fang.get("mianji");
+                    if(fang !=null) {
+                        String remake = fang.get("taonei") + " ## " + fang.get("guapai") + " ## " + fang.get("shangci") + " ## " + fang.get("nianxian") + " ## " + fang.get("louceng") + " ## " + fang.get("mianji");
                         lianJia.setRemark(remake);
                     }else{
                         lianJia.setRemark(title);
