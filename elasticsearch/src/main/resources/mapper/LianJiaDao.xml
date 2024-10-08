@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kevinlee.elasticsearch.mybatis.LianJiaMapper">
+
+    <resultMap id="LianJiaMap" type="com.kevinlee.elasticsearch.mybatis.Lhy">
+        <result column="price" property="price"/>
+        <result column="court" property="court"/>
+        <result column="create_time" property="createTime"/>
+        <result column="total_price" property="totalPrice"/>
+        <result column="south_price" property="southPrice"/>
+        <result column="south_total_price" property="southTotalPrice"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+    <select id="findAll" resultMap="LianJiaMap">
+        SELECT * FROM lhy
+    </select>
+    <insert id="insert" parameterType="com.kevinlee.elasticsearch.mybatis.Lhy">
+            INSERT INTO lhy(price,court,create_time,total_price,south_price,south_total_price,remark)
+            VALUES(#{price},#{court},#{createTime},#{totalPrice},#{southPrice},#{southTotalPrice},#{remark})
+    </insert>
+</mapper>

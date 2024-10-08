@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.kevinlee.elasticsearch.ElasticsearchApplication;
 import com.kevinlee.elasticsearch.ResultData;
 import com.kevinlee.elasticsearch.config.JsoupWhitelistUntil;
+import com.kevinlee.elasticsearch.mybatis.Lhy;
+import com.kevinlee.elasticsearch.mybatis.LianJiaMapper;
 import com.kevinlee.elasticsearch.pachong.LianJia;
 import com.kevinlee.elasticsearch.pachong.LianJiaDao;
 import lombok.extern.slf4j.Slf4j;
@@ -71,6 +73,20 @@ public class LianJiaTest {
     String tt = "";
     @Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
+    @Resource
+    private LianJiaMapper lianJiaMapper;
+    @Test
+    public void lianJiaMapper(){
+//        List<Lhy> all = lianJiaMapper.findAll();
+//        for (Lhy lianJia : all) {
+//            System.out.println(lianJia);
+//        }
+        Lhy params = new Lhy();
+        params.setCourt("ceshi");
+        params.setPrice(Double.parseDouble("100"));
+        lianJiaMapper.insert(params);
+
+    }
     @Test
     public void test1(){
         List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("ceshiyixia");
@@ -109,11 +125,46 @@ public class LianJiaTest {
      */
     @Test
     public void luoyang() throws Exception {
-        String[] luoyangCourts=new String[]{"钰泰九龙苑"};
+        String xiaoqu ="鈺泰九龍苑";
+        String[] luoyangCourts=new String[]{xiaoqu};
         String city="luoyang";
         for (String court : luoyangCourts) {
-            lianjia(court,city);
+            boolean flag = lianjia(court, city);
+            log.info("开始数据库操作：flag={}",flag);
+            if(flag){
+                Map<String, Double> map = queryAvg(court, 100, 103, "南 北");
+                if (!map.isEmpty()){
+                    Double avgeTotalPrice = map.get("avgeTotalPrice");
+                    Double avgePrice = map.get("avgePrice");
+                    Lhy lhy = new Lhy();
+                    lhy.setPrice(avgeTotalPrice);
+                    lhy.setSouthPrice(avgeTotalPrice);
+                    lhy.setCreateTime(new Date());
+                    lhy.setPrice(avgePrice);
+                    lhy.setSouthPrice(avgePrice);
+                    lhy.setCourt("鈺泰九龍苑(100-103)");
+                    lianJiaMapper.insert(lhy);
+                }
+            }
         }
+    }
+    public Map queryAvg(String address,int gte,int lte,String houseInfo){
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.must(QueryBuilders.prefixQuery("address.keyword",address));
+        boolQueryBuilder.must(QueryBuilders.rangeQuery("area").gte(gte).lte(lte));
+        boolQueryBuilder.must(QueryBuilders.matchQuery("houseInfo",houseInfo));
+        NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder()
+                .withQuery(boolQueryBuilder)
+                .withAggregations(AggregationBuilders.avg("avgeTotalPrice").field("totalPrice"))
+                .withAggregations(AggregationBuilders.avg("avgePrice").field("unitPrice"));
+        NativeSearchQuery nativeSearchQuery = nativeSearchQueryBuilder.build();
+        SearchHits<LianJia> searchHits = elasticsearchRestTemplate.search(nativeSearchQuery, LianJia.class);
+        Aggregations aggregations =(Aggregations) searchHits.getAggregations().aggregations();
+        Map<String, Aggregation> asMap = aggregations.getAsMap();
+        Map result = new HashMap<String,Double>();
+        result.put("avgeTotalPrice",((ParsedAvg)asMap.get("avgeTotalPrice")).getValue());
+        result.put("avgePrice",((ParsedAvg)asMap.get("avgePrice")).getValue());
+        return result;
     }
     @Test
     public void jtest() throws ParseException {
@@ -162,7 +213,8 @@ public class LianJiaTest {
      * @param city 城市代码
      * @throws IOException
      */
-    private  void lianjia(String court,String city) throws IOException {
+    private  boolean lianjia(String court,String city) throws IOException {
+        boolean flag =false;
         ArrayList<LianJia> lianJias = new ArrayList<>();
         Date createDate = new Date();
         for (int i = 1; i < 6; i++) {
@@ -176,12 +228,14 @@ public class LianJiaTest {
                 break;
             }
         }
-        List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress(court);
-        lianJiaDao.deleteAll(jiaByAddress);
-        lianJiaDao.saveAll(lianJias);
-
-
+        if (!lianJias.isEmpty()){
+            flag= true;
+            List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress(court);
+            lianJiaDao.deleteAll(jiaByAddress);
+            lianJiaDao.saveAll(lianJias);
+        }
         lianJias.clear();
+        return flag;
     }
 @Test
 public void deleteAll() throws IOException {
