@@ -2,6 +2,7 @@ package com.kevinlele.elasticsearch;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.kevinlee.elasticsearch.ElasticsearchApplication;
 import com.kevinlee.elasticsearch.ResultData;
 import com.kevinlee.elasticsearch.config.JsoupWhitelistUntil;
@@ -111,13 +112,50 @@ public class LianJiaTest {
 
     @Test
     public void beijing() throws Exception {
-//        String[] bjCourts=new String[]{"龙华园","龙腾苑","新龙城"};
-        String[] bjCourts=new String[]{"新龙城"};
-        String city="bj";
+        //String[] bjCourtss = new String[]{"龙华园", "龙腾苑", "新龙城"};
+        List<String> bjCourts = Arrays.asList("龙华园");
+        String city = "bj";
         for (String court : bjCourts) {
-            lianjia(court,city);
+            boolean flag = lianjia(court, city);
+            log.info("开始数据库操作：flag={}", flag);
+            Thread.sleep(1000);
+            if (flag) {
+                if (bjCourts.contains("龙华园")) {
+                    Map<String, Double> map = this.queryAvg(court, 80, 120, "南 北");
+                    log.info("搜索引擎查询结果：map={}", map);
+                    if (!map.isEmpty()) {
+                        Double avgeTotalPrice = map.get("avgeTotalPrice");
+                        Double avgePrice = map.get("avgePrice");
+                        Lhy lhy = new Lhy();
+                        lhy.setPrice(avgeTotalPrice);
+                        lhy.setSouthPrice(avgeTotalPrice);
+                        lhy.setCreateTime(new Date());
+                        lhy.setPrice(avgePrice);
+                        lhy.setSouthPrice(avgePrice);
+                        lhy.setCourt("鈺泰九龍苑(100-103)");
+                        lianJiaMapper.insert(lhy);
+                    }
+                }else if (bjCourts.contains("龙腾苑")) {
+                        Map<String, Double> map = this.queryAvg(court, 80, 120, "南 北");
+                        log.info("搜索引擎查询结果：map={}", map);
+                        if (!map.isEmpty()) {
+                            Double avgeTotalPrice = map.get("avgeTotalPrice");
+                            Double avgePrice = map.get("avgePrice");
+                            Lhy lhy = new Lhy();
+                            lhy.setPrice(avgeTotalPrice);
+                            lhy.setSouthPrice(avgeTotalPrice);
+                            lhy.setCreateTime(new Date());
+                            lhy.setPrice(avgePrice);
+                            lhy.setSouthPrice(avgePrice);
+                            lhy.setCourt("龙腾苑（80-120）");
+                            lianJiaMapper.insert(lhy);
+                        }
+                    }
+
+                }
+            }
         }
-    }
+
 
     /**
      * 洛阳房价
