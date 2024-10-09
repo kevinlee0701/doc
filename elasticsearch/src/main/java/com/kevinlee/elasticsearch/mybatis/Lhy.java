@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * 类 描 述：TODO
+ * 类 描 述：小区总价，均价
  * 创建时间：2024/9/30 下午6:16
  * 创 建 人：lifeng
  */

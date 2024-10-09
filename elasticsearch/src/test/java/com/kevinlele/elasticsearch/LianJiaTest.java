@@ -3,6 +3,7 @@ package com.kevinlele.elasticsearch;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
+import com.kevinlee.elasticsearch.Court;
 import com.kevinlee.elasticsearch.ElasticsearchApplication;
 import com.kevinlee.elasticsearch.ResultData;
 import com.kevinlee.elasticsearch.config.JsoupWhitelistUntil;
@@ -78,14 +79,6 @@ public class LianJiaTest {
     private LianJiaMapper lianJiaMapper;
     @Test
     public void lianJiaMapper(){
-//        List<Lhy> all = lianJiaMapper.findAll();
-//        for (Lhy lianJia : all) {
-//            System.out.println(lianJia);
-//        }
-        Lhy params = new Lhy();
-        params.setCourt("ceshi");
-        params.setPrice(Double.parseDouble("100"));
-        lianJiaMapper.insert(params);
 
     }
     @Test
@@ -109,52 +102,69 @@ public class LianJiaTest {
         System.out.println(baseContent);
     }
 
-
     @Test
     public void beijing() throws Exception {
-        //String[] bjCourtss = new String[]{"龙华园", "龙腾苑", "新龙城"};
-        List<String> bjCourts = Arrays.asList("龙华园");
+        //List<Court> bjCourts = Arrays.asList(Court.LONGHUAYUAN,Court.XINLONGCHENG,Court.LONGTENGYUAN);
+        List<Court> bjCourts = Arrays.asList(Court.LONGHUAYUAN);
         String city = "bj";
-        for (String court : bjCourts) {
-            boolean flag = lianjia(court, city);
-            log.info("开始数据库操作：flag={}", flag);
-            Thread.sleep(1000);
-            if (flag) {
-                if (bjCourts.contains("龙华园")) {
-                    Map<String, Double> map = this.queryAvg(court, 80, 120, "南 北");
-                    log.info("搜索引擎查询结果：map={}", map);
-                    if (!map.isEmpty()) {
-                        Double avgeTotalPrice = map.get("avgeTotalPrice");
-                        Double avgePrice = map.get("avgePrice");
-                        Lhy lhy = new Lhy();
-                        lhy.setPrice(avgeTotalPrice);
-                        lhy.setSouthPrice(avgeTotalPrice);
-                        lhy.setCreateTime(new Date());
-                        lhy.setPrice(avgePrice);
-                        lhy.setSouthPrice(avgePrice);
-                        lhy.setCourt("鈺泰九龍苑(100-103)");
-                        lianJiaMapper.insert(lhy);
-                    }
-                }else if (bjCourts.contains("龙腾苑")) {
-                        Map<String, Double> map = this.queryAvg(court, 80, 120, "南 北");
-                        log.info("搜索引擎查询结果：map={}", map);
-                        if (!map.isEmpty()) {
-                            Double avgeTotalPrice = map.get("avgeTotalPrice");
-                            Double avgePrice = map.get("avgePrice");
-                            Lhy lhy = new Lhy();
-                            lhy.setPrice(avgeTotalPrice);
-                            lhy.setSouthPrice(avgeTotalPrice);
-                            lhy.setCreateTime(new Date());
-                            lhy.setPrice(avgePrice);
-                            lhy.setSouthPrice(avgePrice);
-                            lhy.setCourt("龙腾苑（80-120）");
-                            lianJiaMapper.insert(lhy);
-                        }
-                    }
+        for (Court bjCourt : bjCourts) {
+            boolean flag = lianjia(bjCourt.getCourt(), city);
+            saveMysql(bjCourt, flag);
+        }
+    }
 
+    private void saveMysql(Court bjCourt, boolean flag) throws InterruptedException {
+        log.info("开始数据库操作：flag={}", flag);
+        Thread.sleep(1000);
+        if (flag) {
+            if(bjCourt == Court.LONGHUAYUAN){//龙华园多查一次70-80平米的数据
+                Map<String, Double> map70 = this.queryAvg(Court.LONGHUAYUAN70.getCourt(), Court.LONGHUAYUAN70.getGteArea(), Court.LONGHUAYUAN70.getLteArea(), Court.LONGHUAYUAN70.getHourseInfo());
+                log.info("搜索引擎查询结果：map={}", map70);
+                if (!map70.isEmpty()) {
+                    Double avgeTotalPrice = Math.round(map70.get("avgeTotalPrice") * 100.0) / 100.0;
+                    Double avgePrice = Math.round(map70.get("avgePrice") * 100.0) / 100.0;
+                    Lhy lhy = new Lhy();
+                    lhy.setTotalPrice(avgeTotalPrice);
+                    lhy.setSouthTotalPrice(avgeTotalPrice);
+                    lhy.setCreateTime(new Date());
+                    lhy.setPrice(avgePrice);
+                    lhy.setSouthPrice(avgePrice);
+                    lhy.setCourt(Court.LONGHUAYUAN70.getAddress());
+                    lianJiaMapper.insert(lhy);
                 }
             }
+            if(bjCourt == Court.JINKECHENG){//金科城多查一次80平米的房子
+                Map<String, Double> map70 = this.queryAvg(Court.JINKECHENG80.getCourt(), Court.JINKECHENG80.getGteArea(), Court.JINKECHENG80.getLteArea(), Court.JINKECHENG80.getHourseInfo());
+                log.info("搜索引擎查询结果：map={}", map70);
+                if (!map70.isEmpty()) {
+                    Double avgeTotalPrice = Math.round(map70.get("avgeTotalPrice") * 100.0) / 100.0;
+                    Double avgePrice = Math.round(map70.get("avgePrice") * 100.0) / 100.0;
+                    Lhy lhy = new Lhy();
+                    lhy.setTotalPrice(avgeTotalPrice);
+                    lhy.setSouthTotalPrice(avgeTotalPrice);
+                    lhy.setCreateTime(new Date());
+                    lhy.setPrice(avgePrice);
+                    lhy.setSouthPrice(avgePrice);
+                    lhy.setCourt(Court.JINKECHENG80.getAddress());
+                    lianJiaMapper.insert(lhy);
+                }
+            }
+            Map<String, Double> map = this.queryAvg(bjCourt.getCourt(), bjCourt.getGteArea(), bjCourt.getLteArea(), bjCourt.getHourseInfo());
+            log.info("搜索引擎查询结果：map={}", map);
+            if (!map.isEmpty()) {
+                Double avgeTotalPrice = Math.round(map.get("avgeTotalPrice") * 100.0) / 100.0;
+                Double avgePrice = Math.round(map.get("avgePrice") * 100.0) / 100.0;
+                Lhy lhy = new Lhy();
+                lhy.setTotalPrice(avgeTotalPrice);
+                lhy.setSouthTotalPrice(avgeTotalPrice);
+                lhy.setCreateTime(new Date());
+                lhy.setPrice(avgePrice);
+                lhy.setSouthPrice(avgePrice);
+                lhy.setCourt(bjCourt.getAddress());
+                lianJiaMapper.insert(lhy);
+            }
         }
+    }
 
 
     /**
@@ -287,15 +297,15 @@ public void deleteAll() throws IOException {
         Document document =null;
         if(city.equals("bj")){
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("hip", "S4MYIfgGwmHyTb-LjFRIjKyaVDb-uqgqRaNKb-3iNGD5f32cerTEQp7oAGK7JgHUvCnuPiDcMYQuzyLuvEw9_B3gYbniUqI_t-nBzwko8Quu-sK1yyezL36PMR5BK-MNeCqOgnjCVynA_Zu16zwsWtryL8OW49_argMTbjrCkp-r5VjVI_w_0-huaSU%3D");
-            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1727679536");
-            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1725533824,1726220298,1727244521,1727678045");
+            cookies.put("hip", "D-6cMuFNWUoBW3EVx54hyKi69GM8YR6UY_ap2UZ1vajuR7kKNvGO5UkvQeBWwjnxgCCebpwALhiwyhVigI6sGyyRJy-iwE84EVjndrn5e3R5Y09pQuUdOTQuKLVz1OlGls-THGAOumBLwVZ6LWLNdgKPWtRtk9ExV3vV7V5zEmQIsq52NsHiwh-inw%3D%3D");
+            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1728442820");
+            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1726220298,1727244521,1727678045");
 
             cookies.put("HMACCOUNT", "D21A575A29D5136A");
-            cookies.put("lianjia_ssid","92924f52-ecfb-4e64-8d9e-c9dda517d839");
+            cookies.put("lianjia_ssid","98220bd2-a3e2-4b76-8b01-002c0092d150");
             cookies.put("lianjia_uuid","100dc6aa-f9fe-4bee-9972-146ecd0662cf");
             cookies.put("select_city","110000");
-            cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiYTgxMjY1OTk1NmQyM2Q3N2VmMjJkYThjNzM4MDA1YzAyMTYzYmZjZjJhY2NiNTgzNTAxMjhkOGQwMmE0YTBiOGJjOTg5NmUyNjYwZTkyMzQ0NDQ4NzczZjdjNjU1NDJiYzExNTVhMWI4ZWJjNGZjMjA3NTVhNjgxMDEwOGQ2MTAyODNhYmY4YjM1OGExY2ViZGMzMWIxYjllYjVhZTU3NWE2ZWUxMmQ5MWRjMTk2NjJiZWQyZWVlNmU3YjdkNzVjNTg2OTllZjEzYTRmZmJhNDZkYTE1MWMwMmU0NDk5ODQzODQzZmQwMGQzMWUyNDNjZjgzM2ZiYjBjOTkxYjBiZVwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCIxMjcwM2E2NFwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvcnMlRTklQkUlOTklRTUlOEQlOEUlRTUlOUIlQUQvIiwib3MiOiJ3ZWIiLCJ2IjoiMC4xIn0=");
+            cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiNjI3NjVhZWFkZTkwNjk2MDAzOGNjMDU0NDE2Mjc1MzMyMjYzMjkzNWZlYjExMWJhYWE3YjYzMmQyNzNjNTJjNWNjNmFiMzAwNWIwZmQ0ZTViODYyM2FkNGQwZjc0NzNiN2Y1OTczMjQyOGQ2Y2EyMGNkN2ExNGJjNmQ1ZGMxMWQ5Nzc1YTkxMWIxMDJmNDMwN2Q0MjlhZjI4MWVhYWU1ZTMwZGZkMjdkYWZmMjcyZmYyNmU5NzFlNjFkZjVmMmNhOWZlMGNlYmFlMzlkYjI3MmJmMjBjZWExMjlhODdlOGY0MWI3MzUzNDg5Y2FkMjA3ZmE2NzMyOThlMzkyNDg3MVwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCI5N2UzMzk2YVwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvMTAxMTI1NzE4MzM0Lmh0bWwiLCJvcyI6IndlYiIsInYiOiIwLjEifQ==");
             document = Jsoup.connect(url).cookies(cookies).timeout(30000).get();
         }else{
             Map<String, String> cookies = new HashMap<>();
