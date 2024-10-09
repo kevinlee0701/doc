@@ -1,32 +1,20 @@
 package com.kevinlele.elasticsearch;
 
 
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Lists;
 import com.kevinlee.elasticsearch.Court;
 import com.kevinlee.elasticsearch.ElasticsearchApplication;
 import com.kevinlee.elasticsearch.ResultData;
-import com.kevinlee.elasticsearch.config.JsoupWhitelistUntil;
 import com.kevinlee.elasticsearch.mybatis.Lhy;
 import com.kevinlee.elasticsearch.mybatis.LianJiaMapper;
 import com.kevinlee.elasticsearch.pachong.LianJia;
 import com.kevinlee.elasticsearch.pachong.LianJiaDao;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.metrics.Avg;
 import org.elasticsearch.search.aggregations.metrics.ParsedAvg;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -35,31 +23,19 @@ import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.elasticsearch.core.AggregationsContainer;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
-import org.springframework.stereotype.Repository;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.rmi.server.ExportException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * 类 描 述： 龙华园在卖数据
@@ -79,7 +55,7 @@ public class LianJiaTest {
     private LianJiaMapper lianJiaMapper;
     @Test
     public void lianJiaMapper(){
-        Map<String, Double> map = queryAvg(Court.LONGTENGYUAN.getCourt(), Court.LONGTENGYUAN.getGteArea(), Court.LONGTENGYUAN.getLteArea(), "南 北");
+        Map<String, Double> map = queryAvg(Court.LONG_TENG_YUAN.getCourt(), Court.LONG_TENG_YUAN.getGteArea(), Court.LONG_TENG_YUAN.getLteArea(), "南 北");
         System.out.println(Math.round(map.get("avgeTotalPrice") * 100.0) / 100.0);
     }
     @Test
@@ -106,7 +82,7 @@ public class LianJiaTest {
     @Test
     public void beijing() throws Exception {
         //List<Court> bjCourts = Arrays.asList(Court.LONGHUAYUAN,Court.XINLONGCHENG,Court.LONGTENGYUAN);
-        List<Court> bjCourts = Arrays.asList(Court.LONGHUAYUAN);
+        List<Court> bjCourts = Arrays.asList(Court.LONG_HUA_YUAN);
         String city = "bj";
         for (Court bjCourt : bjCourts) {
             boolean flag = lianjia(bjCourt.getCourt(), city);
@@ -118,8 +94,8 @@ public class LianJiaTest {
         log.info("开始数据库操作：flag={}", flag);
         Thread.sleep(1000);
         if (flag) {
-            if(bjCourt == Court.LONGHUAYUAN){//龙华园多查一次70-80平米的数据
-                Map<String, Double> map70 = this.queryAvg(Court.LONGHUAYUAN70.getCourt(), Court.LONGHUAYUAN70.getGteArea(), Court.LONGHUAYUAN70.getLteArea(), Court.LONGHUAYUAN70.getHourseInfo());
+            if(bjCourt == Court.LONG_HUA_YUAN){//龙华园多查一次70-80平米的数据
+                Map<String, Double> map70 = this.queryAvg(Court.LONG_HUA_YUAN70.getCourt(), Court.LONG_HUA_YUAN70.getGteArea(), Court.LONG_HUA_YUAN70.getLteArea(), Court.LONG_HUA_YUAN70.getHourseInfo());
                 log.info("搜索引擎查询结果：map={}", map70);
                 if (!map70.isEmpty()) {
                     Double avgeTotalPrice = map70.get("avgeTotalPrice");
@@ -130,12 +106,12 @@ public class LianJiaTest {
                     lhy.setCreateTime(new Date());
                     lhy.setPrice(avgePrice);
                     lhy.setSouthPrice(avgePrice);
-                    lhy.setCourt(Court.LONGHUAYUAN70.getAddress());
+                    lhy.setCourt(Court.LONG_HUA_YUAN70.getAddress());
                     lianJiaMapper.insert(lhy);
                 }
             }
-            if(bjCourt == Court.JINKECHENG){//金科城多查一次80平米的房子
-                Map<String, Double> map70 = this.queryAvg(Court.JINKECHENG80.getCourt(), Court.JINKECHENG80.getGteArea(), Court.JINKECHENG80.getLteArea(), Court.JINKECHENG80.getHourseInfo());
+            if(bjCourt == Court.JIN_KE_CHENG){//金科城多查一次80平米的房子
+                Map<String, Double> map70 = this.queryAvg(Court.JIN_KE_CHENG80.getCourt(), Court.JIN_KE_CHENG80.getGteArea(), Court.JIN_KE_CHENG80.getLteArea(), Court.JIN_KE_CHENG80.getHourseInfo());
                 log.info("搜索引擎查询结果：map={}", map70);
                 if (!map70.isEmpty()) {
                     Double avgeTotalPrice = map70.get("avgeTotalPrice");
@@ -146,7 +122,7 @@ public class LianJiaTest {
                     lhy.setCreateTime(new Date());
                     lhy.setPrice(avgePrice);
                     lhy.setSouthPrice(avgePrice);
-                    lhy.setCourt(Court.JINKECHENG80.getAddress());
+                    lhy.setCourt(Court.JIN_KE_CHENG80.getAddress());
                     lianJiaMapper.insert(lhy);
                 }
             }
