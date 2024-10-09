@@ -79,7 +79,8 @@ public class LianJiaTest {
     private LianJiaMapper lianJiaMapper;
     @Test
     public void lianJiaMapper(){
-
+        Map<String, Double> map = queryAvg(Court.LONGTENGYUAN.getCourt(), Court.LONGTENGYUAN.getGteArea(), Court.LONGTENGYUAN.getLteArea(), "南 北");
+        System.out.println(Math.round(map.get("avgeTotalPrice") * 100.0) / 100.0);
     }
     @Test
     public void test1(){
@@ -121,8 +122,8 @@ public class LianJiaTest {
                 Map<String, Double> map70 = this.queryAvg(Court.LONGHUAYUAN70.getCourt(), Court.LONGHUAYUAN70.getGteArea(), Court.LONGHUAYUAN70.getLteArea(), Court.LONGHUAYUAN70.getHourseInfo());
                 log.info("搜索引擎查询结果：map={}", map70);
                 if (!map70.isEmpty()) {
-                    Double avgeTotalPrice = Math.round(map70.get("avgeTotalPrice") * 100.0) / 100.0;
-                    Double avgePrice = Math.round(map70.get("avgePrice") * 100.0) / 100.0;
+                    Double avgeTotalPrice = map70.get("avgeTotalPrice");
+                    Double avgePrice = map70.get("avgePrice");
                     Lhy lhy = new Lhy();
                     lhy.setTotalPrice(avgeTotalPrice);
                     lhy.setSouthTotalPrice(avgeTotalPrice);
@@ -137,8 +138,8 @@ public class LianJiaTest {
                 Map<String, Double> map70 = this.queryAvg(Court.JINKECHENG80.getCourt(), Court.JINKECHENG80.getGteArea(), Court.JINKECHENG80.getLteArea(), Court.JINKECHENG80.getHourseInfo());
                 log.info("搜索引擎查询结果：map={}", map70);
                 if (!map70.isEmpty()) {
-                    Double avgeTotalPrice = Math.round(map70.get("avgeTotalPrice") * 100.0) / 100.0;
-                    Double avgePrice = Math.round(map70.get("avgePrice") * 100.0) / 100.0;
+                    Double avgeTotalPrice = map70.get("avgeTotalPrice");
+                    Double avgePrice =  map70.get("avgePrice");
                     Lhy lhy = new Lhy();
                     lhy.setTotalPrice(avgeTotalPrice);
                     lhy.setSouthTotalPrice(avgeTotalPrice);
@@ -152,8 +153,8 @@ public class LianJiaTest {
             Map<String, Double> map = this.queryAvg(bjCourt.getCourt(), bjCourt.getGteArea(), bjCourt.getLteArea(), bjCourt.getHourseInfo());
             log.info("搜索引擎查询结果：map={}", map);
             if (!map.isEmpty()) {
-                Double avgeTotalPrice = Math.round(map.get("avgeTotalPrice") * 100.0) / 100.0;
-                Double avgePrice = Math.round(map.get("avgePrice") * 100.0) / 100.0;
+                Double avgeTotalPrice = map.get("avgeTotalPrice");
+                Double avgePrice =  map.get("avgePrice");
                 Lhy lhy = new Lhy();
                 lhy.setTotalPrice(avgeTotalPrice);
                 lhy.setSouthTotalPrice(avgeTotalPrice);
@@ -210,7 +211,9 @@ public class LianJiaTest {
         Aggregations aggregations =(Aggregations) searchHits.getAggregations().aggregations();
         Map<String, Aggregation> asMap = aggregations.getAsMap();
         Map result = new HashMap<String,Double>();
-        result.put("avgeTotalPrice",((ParsedAvg)asMap.get("avgeTotalPrice")).getValue());
+        double avgeTotalPrice = Math.round(((ParsedAvg) asMap.get("avgeTotalPrice")).getValue() * 100.0) / 100.0;
+        double avgePrice = Math.round(((ParsedAvg) asMap.get("avgePrice")).getValue() * 100.0) / 100.0;
+        result.put("avgeTotalPrice",avgeTotalPrice);
         result.put("avgePrice",((ParsedAvg)asMap.get("avgePrice")).getValue());
         return result;
     }
@@ -358,9 +361,9 @@ public void deleteAll() throws IOException {
                     String img = el.getElementsByClass("lj-lazy").attr("src");
                     String html = el.getElementsByClass("title").get(0).getElementsByTag("a").attr("href");
                     String area = houseInfo.split("\\|")[1].replace("平米", "");
-                    log.info("url={},houseInfo={},address={},totalPrice={}，unitPrice={},fang_url={}",url,houseInfo, address, totalPrice, unitPrice,fang_url);
+
                     if (!address.contains(court)) {
-                        log.warn("地址信息与输入地址信息不匹配，court ={},adress={}", court, address);
+                        log.warn("地址信息与输入地址信息不匹配，court ={},address={}", court, address);
                         return true;
                     }
                     LianJia lianJia = new LianJia();
@@ -371,6 +374,7 @@ public void deleteAll() throws IOException {
                     }else{
                         lianJia.setRemark(title);
                     }
+                    log.info("url={},houseInfo={},address={},totalPrice={}，unitPrice={},楼层：{},fang_url={}",url,houseInfo, address, totalPrice, unitPrice,fang== null?"":fang.get("taonei"),fang_url);
                     lianJia.setHouseInfo(houseInfo);
                     lianJia.setArea(Double.parseDouble(area));
                     lianJia.setAddress(address);
