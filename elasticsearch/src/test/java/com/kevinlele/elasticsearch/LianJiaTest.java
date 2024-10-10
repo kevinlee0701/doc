@@ -150,27 +150,11 @@ public class LianJiaTest {
      */
     @Test
     public void luoyang() throws Exception {
-        String xiaoqu ="鈺泰九龍苑";
-        String[] luoyangCourts=new String[]{xiaoqu};
-        String city="luoyang";
-        for (String court : luoyangCourts) {
-            boolean flag = lianjia(court, city);
-            log.info("开始数据库操作：flag={}",flag);
-            if(flag){
-                Map<String, Double> map = queryAvg(court, 100, 103, "南 北");
-                if (!map.isEmpty()){
-                    Double avgeTotalPrice = map.get("avgeTotalPrice");
-                    Double avgePrice = map.get("avgePrice");
-                    Lhy lhy = new Lhy();
-                    lhy.setPrice(avgeTotalPrice);
-                    lhy.setSouthPrice(avgeTotalPrice);
-                    lhy.setCreateTime(new Date());
-                    lhy.setPrice(avgePrice);
-                    lhy.setSouthPrice(avgePrice);
-                    lhy.setCourt("鈺泰九龍苑(100-103)");
-                    lianJiaMapper.insert(lhy);
-                }
-            }
+        List<Court> bjCourts = Arrays.asList(Court.YU_TAI_JIU_LONG_YUAN);
+        String city = "luoyang";
+        for (Court bjCourt : bjCourts) {
+            boolean flag = lianjia(bjCourt.getCourt(), city);
+            saveMysql(bjCourt, flag);
         }
     }
     public Map queryAvg(String address,int gte,int lte,String houseInfo){
@@ -227,10 +211,11 @@ public class LianJiaTest {
      */
     @Test
     public void zhengzhou() throws Exception {
-        String[] luoyangCourts=new String[]{"金科城"};
-        String city="zz";
-        for (String court : luoyangCourts) {
-            lianjia(court,city);
+        List<Court> bjCourts = Arrays.asList(Court.JIN_KE_CHENG);
+        String city = "zz";
+        for (Court bjCourt : bjCourts) {
+            boolean flag = lianjia(bjCourt.getCourt(), city);
+            saveMysql(bjCourt, flag);
         }
     }
 
