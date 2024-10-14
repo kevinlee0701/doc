@@ -66,6 +66,14 @@ public class LianJiaTest {
         }
     }
     @Test
+    public void test12(){
+      LianJia lianJia = new LianJia();
+      lianJia.setId("ceshi");
+      lianJia.setCreateTime(new Date());
+      lianJiaDao.save(lianJia);
+    }
+
+    @Test
     public void test11(){
         String baseContent = "<p></p>\n" +
                 "<div id=\"ai-assist-root-text\" data-v-app=\"\">\n" +

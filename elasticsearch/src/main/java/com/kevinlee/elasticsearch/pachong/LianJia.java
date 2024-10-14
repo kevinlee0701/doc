@@ -3,6 +3,7 @@ package com.kevinlee.elasticsearch.pachong;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -17,7 +18,7 @@ import java.util.Date;
  **/
 @Data
 @ToString
-@Document(indexName = "lianjia")
+@Document(indexName = "lianjia_new1")
 public class LianJia {
     @Id
     private String id;
@@ -46,7 +47,7 @@ public class LianJia {
     @Field(type = FieldType.Auto)
     private String remark;
     //创建时间
-    @Field(type = FieldType.Auto)
+    @Field(type = FieldType.Date, format = DateFormat.custom, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
 
