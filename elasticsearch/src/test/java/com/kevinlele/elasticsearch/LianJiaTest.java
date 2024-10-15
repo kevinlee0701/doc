@@ -60,15 +60,13 @@ public class LianJiaTest {
     }
     @Test
     public void test1(){
-        List<LianJia> jiaByAddress = lianJiaDao.findLianJiaByAddress("ceshiyixia");
-        for (LianJia byAddress : jiaByAddress) {
-            System.out.println(byAddress);
-        }
+        System.out.println(lianJiaDao.findById("ceshi"));
+
     }
     @Test
     public void test12(){
       LianJia lianJia = new LianJia();
-      lianJia.setId("ceshi");
+      lianJia.setId("ceshi2");
       lianJia.setCreateTime(new Date());
       lianJiaDao.save(lianJia);
     }
@@ -89,64 +87,42 @@ public class LianJiaTest {
 
     @Test
     public void beijing() throws Exception {
-        List<Court> bjCourts = Arrays.asList(Court.LONG_HUA_YUAN,Court.XIN_LONG_CHENG,Court.LONG_TENG_YUAN,Court.YUN_QU_YUAN);
-//        List<Court> bjCourts = Arrays.asList(Court.LONG_HUA_YUAN);
+//        List<Court> bjCourts = Arrays.asList(Court.LONG_TENG_YUAN,Court.YUN_QU_YUAN);
+        List<Court> bjCourts = Arrays.asList(Court.LIU_XING_HUA_YUAN);
         String city = "bj";
         for (Court bjCourt : bjCourts) {
             boolean flag = lianjia(bjCourt.getCourt(), city);
-            saveMysql(bjCourt, flag);
+            saveMysqlNew(bjCourt, flag);
         }
     }
 
-    private void saveMysql(Court bjCourt, boolean flag) throws InterruptedException {
+    @Test
+    public void testMysql() throws InterruptedException {
+        this.saveMysqlNew(Court.LONG_HUA_YUAN,true);
+    }
+    private void saveMysqlNew(Court bjCourt, boolean flag) throws InterruptedException {
         log.info("开始数据库操作：flag={}", flag);
         Thread.sleep(1000);
         if (flag) {
-            if(bjCourt == Court.LONG_HUA_YUAN){//龙华园多查一次70-80平米的数据
-                Map<String, Double> map70 = this.queryAvg(Court.LONG_HUA_YUAN70.getCourt(), Court.LONG_HUA_YUAN70.getGteArea(), Court.LONG_HUA_YUAN70.getLteArea(), Court.LONG_HUA_YUAN70.getHourseInfo());
-                log.info("搜索引擎查询结果：map={}", map70);
-                if (!map70.isEmpty()) {
-                    Double avgeTotalPrice = map70.get("avgeTotalPrice");
-                    Double avgePrice = map70.get("avgePrice");
-                    Lhy lhy = new Lhy();
-                    lhy.setTotalPrice(avgeTotalPrice);
-                    lhy.setSouthTotalPrice(avgeTotalPrice);
-                    lhy.setCreateTime(new Date());
-                    lhy.setPrice(avgePrice);
-                    lhy.setSouthPrice(avgePrice);
-                    lhy.setCourt(Court.LONG_HUA_YUAN70.getAddress());
-                    lianJiaMapper.insert(lhy);
+            for (Court yuan : bjCourt.values()) {
+                if(yuan.getCourt().equals(bjCourt.getCourt())){
+                    Map<String, Double> map = this.queryAvg(yuan.getCourt(), yuan.getGteArea(), yuan.getLteArea(), yuan.getHourseInfo());
+                    log.info("搜索引擎查询结果：map={}", map);
+                    if (!map.isEmpty()) {
+                        Double avgeTotalPrice = map.get("avgeTotalPrice");
+                        Double avgePrice =  map.get("avgePrice");
+                        Lhy lhy = new Lhy();
+                        lhy.setTotalPrice(avgeTotalPrice);
+                        lhy.setSouthTotalPrice(avgeTotalPrice);
+                        lhy.setCreateTime(new Date());
+                        lhy.setPrice(avgePrice);
+                        lhy.setSouthPrice(avgePrice);
+                        lhy.setCourt(yuan.getCourt());
+                        lhy.setRemark(yuan.getAddress());
+                        lianJiaMapper.insert(lhy);
+                    }
                 }
-            }
-            if(bjCourt == Court.JIN_KE_CHENG){//金科城多查一次80平米的房子
-                Map<String, Double> map70 = this.queryAvg(Court.JIN_KE_CHENG80.getCourt(), Court.JIN_KE_CHENG80.getGteArea(), Court.JIN_KE_CHENG80.getLteArea(), Court.JIN_KE_CHENG80.getHourseInfo());
-                log.info("搜索引擎查询结果：map={}", map70);
-                if (!map70.isEmpty()) {
-                    Double avgeTotalPrice = map70.get("avgeTotalPrice");
-                    Double avgePrice =  map70.get("avgePrice");
-                    Lhy lhy = new Lhy();
-                    lhy.setTotalPrice(avgeTotalPrice);
-                    lhy.setSouthTotalPrice(avgeTotalPrice);
-                    lhy.setCreateTime(new Date());
-                    lhy.setPrice(avgePrice);
-                    lhy.setSouthPrice(avgePrice);
-                    lhy.setCourt(Court.JIN_KE_CHENG80.getAddress());
-                    lianJiaMapper.insert(lhy);
-                }
-            }
-            Map<String, Double> map = this.queryAvg(bjCourt.getCourt(), bjCourt.getGteArea(), bjCourt.getLteArea(), bjCourt.getHourseInfo());
-            log.info("搜索引擎查询结果：map={}", map);
-            if (!map.isEmpty()) {
-                Double avgeTotalPrice = map.get("avgeTotalPrice");
-                Double avgePrice =  map.get("avgePrice");
-                Lhy lhy = new Lhy();
-                lhy.setTotalPrice(avgeTotalPrice);
-                lhy.setSouthTotalPrice(avgeTotalPrice);
-                lhy.setCreateTime(new Date());
-                lhy.setPrice(avgePrice);
-                lhy.setSouthPrice(avgePrice);
-                lhy.setCourt(bjCourt.getAddress());
-                lianJiaMapper.insert(lhy);
+
             }
         }
     }
@@ -158,11 +134,11 @@ public class LianJiaTest {
      */
     @Test
     public void luoyang() throws Exception {
-        List<Court> bjCourts = Arrays.asList(Court.YU_TAI_JIU_LONG_YUAN);
+        List<Court> bjCourts = Arrays.asList(Court.LIU_XING_HUA_YUAN);
         String city = "luoyang";
         for (Court bjCourt : bjCourts) {
             boolean flag = lianjia(bjCourt.getCourt(), city);
-            saveMysql(bjCourt, flag);
+            saveMysqlNew(bjCourt, flag);
         }
     }
     public Map queryAvg(String address,int gte,int lte,String houseInfo){
@@ -182,7 +158,7 @@ public class LianJiaTest {
         double avgeTotalPrice = Math.round(((ParsedAvg) asMap.get("avgeTotalPrice")).getValue() * 100.0) / 100.0;
         double avgePrice = Math.round(((ParsedAvg) asMap.get("avgePrice")).getValue() * 100.0) / 100.0;
         result.put("avgeTotalPrice",avgeTotalPrice);
-        result.put("avgePrice",((ParsedAvg)asMap.get("avgePrice")).getValue());
+        result.put("avgePrice",avgePrice);
         return result;
     }
     @Test
@@ -223,7 +199,7 @@ public class LianJiaTest {
         String city = "zz";
         for (Court bjCourt : bjCourts) {
             boolean flag = lianjia(bjCourt.getCourt(), city);
-            saveMysql(bjCourt, flag);
+            saveMysqlNew(bjCourt, flag);
         }
     }
 
@@ -269,15 +245,15 @@ public void deleteAll() throws IOException {
         Document document =null;
         if(city.equals("bj")){
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("hip", "D-6cMuFNWUoBW3EVx54hyKi69GM8YR6UY_ap2UZ1vajuR7kKNvGO5UkvQeBWwjnxgCCebpwALhiwyhVigI6sGyyRJy-iwE84EVjndrn5e3R5Y09pQuUdOTQuKLVz1OlGls-THGAOumBLwVZ6LWLNdgKPWtRtk9ExV3vV7V5zEmQIsq52NsHiwh-inw%3D%3D");
-            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1728442820");
-            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1726220298,1727244521,1727678045");
+            cookies.put("hip", "jYd0UzsMVwhErNXenTs7m4k-qjp0x_LJMHD-bxHSAO13L9ZqdBubDFb1YCtnGDgsvjGkN8F4GcswhRZoNUIYHscAixmuwrNhh_hlXaUQBviBS4v0BgOT-xZrFehNiYwuEODspF89m8HnzA4uNOTson7rTWKtO_jygwaFfQuTGnwMH6OqoBeHhjx5KQ%3D%3D");
+            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1728899234");
+            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1727244521,1727678045,1728896803,1728899119");
 
             cookies.put("HMACCOUNT", "D21A575A29D5136A");
-            cookies.put("lianjia_ssid","98220bd2-a3e2-4b76-8b01-002c0092d150");
+            cookies.put("lianjia_ssid","799cb2bc-1171-4946-b98e-b33b8c37d50b");
             cookies.put("lianjia_uuid","100dc6aa-f9fe-4bee-9972-146ecd0662cf");
             cookies.put("select_city","110000");
-            cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiNjI3NjVhZWFkZTkwNjk2MDAzOGNjMDU0NDE2Mjc1MzMyMjYzMjkzNWZlYjExMWJhYWE3YjYzMmQyNzNjNTJjNWNjNmFiMzAwNWIwZmQ0ZTViODYyM2FkNGQwZjc0NzNiN2Y1OTczMjQyOGQ2Y2EyMGNkN2ExNGJjNmQ1ZGMxMWQ5Nzc1YTkxMWIxMDJmNDMwN2Q0MjlhZjI4MWVhYWU1ZTMwZGZkMjdkYWZmMjcyZmYyNmU5NzFlNjFkZjVmMmNhOWZlMGNlYmFlMzlkYjI3MmJmMjBjZWExMjlhODdlOGY0MWI3MzUzNDg5Y2FkMjA3ZmE2NzMyOThlMzkyNDg3MVwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCI5N2UzMzk2YVwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvMTAxMTI1NzE4MzM0Lmh0bWwiLCJvcyI6IndlYiIsInYiOiIwLjEifQ==");
+            cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiMWY1NTYzMzNjN2IxYTU4YWJmMjM0MTZkNjFmMzE1NDY3ODJkNWU2MTEzNjc1YTU1NDA5YWVjMDM5MWQwMGExMTY5MmYwYzNiMTQwNjVkMzFjMGY0NGZkYjQ3NGQ5OTQ2YjU4MDc0MzZjMWExODQzM2QyMzA5YzJmMmMzZjJmYzQ3NTZmZDBkMTBkZmY2YTNjNTcwZWQ1NTE5NDBlNmJjMWIwZDA0NTUyZGJmY2Y2ZjE2Y2NkOGE0ZDNhOWZjNzY1ODNiNTkxZTc2ZDk0Mzg4MjQyNTY3ZWY5MmI2NTIwNjU4Mjc1NTdhNmFlZGNiY2NjZDkyMGIwZjdjNjliYWVjYVwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCI5YmY3MjExZFwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvdHQycnMlRTklQkUlOTklRTUlOEQlOEUlRTUlOUIlQUQvIiwib3MiOiJ3ZWIiLCJ2IjoiMC4xIn0=");
             document = Jsoup.connect(url).cookies(cookies).timeout(30000).get();
         }else{
             Map<String, String> cookies = new HashMap<>();

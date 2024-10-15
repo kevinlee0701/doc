@@ -10,6 +10,7 @@ public enum Court {
     LONG_HUA_YUAN70("龙华园", "龙华园（70-80）",70,80,"南 北"),
     JIN_KE_CHENG("金科城", "金科城（130-200）",130,130,"南 北"),
     JIN_KE_CHENG80("金科城", "金科城（80-90）",80,90,"南 北"),
+    LIU_XING_HUA_YUAN("流星花园三区", "流星花园三区（80-120）",80,120,"南 北"),
     YU_TAI_JIU_LONG_YUAN("鈺泰九龍苑", "鈺泰九龍苑(100-103)",100,103,"南 北");
 
     private final String court;
