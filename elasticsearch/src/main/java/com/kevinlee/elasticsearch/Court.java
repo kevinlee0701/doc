@@ -2,15 +2,16 @@ package com.kevinlee.elasticsearch;
 
 public enum Court {
 
-
+    LIU_XING_HUA_YUAN("流星花园三区", "流星花园三区（80-120）",80,120,"南 北"),
     YUN_QU_YUAN("云趣园", "云趣园一区",90,110,"南 北"),
     LONG_HUA_YUAN("龙华园", "龙华园",80,83,"南 北"),
     XIN_LONG_CHENG("新龙城", "新龙城（80-120）",80,120,"南 北"),
     LONG_TENG_YUAN("龙腾苑二区", "龙腾苑（80-120）",80,120,"南 北"),
     LONG_HUA_YUAN70("龙华园", "龙华园（70-80）",70,80,"南 北"),
+
     JIN_KE_CHENG("金科城", "金科城（130-200）",130,130,"南 北"),
     JIN_KE_CHENG80("金科城", "金科城（80-90）",80,90,"南 北"),
-    LIU_XING_HUA_YUAN("流星花园三区", "流星花园三区（80-120）",80,120,"南 北"),
+
     YU_TAI_JIU_LONG_YUAN("鈺泰九龍苑", "鈺泰九龍苑(100-103)",100,103,"南 北");
 
     private final String court;
