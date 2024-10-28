@@ -3,7 +3,7 @@ package com.kevinlee.elasticsearch;
 public enum Court {
 
     LIU_XING_HUA_YUAN("流星花园三区", "流星花园三区（80-120）",80,120,"南 北"),
-    YUN_QU_YUAN("云趣园", "云趣园一区",90,110,"南 北"),
+    YUN_QU_YUAN("云趣园一区", "云趣园一区(90-110)",90,110,""),
     LONG_HUA_YUAN("龙华园", "龙华园",80,83,"南 北"),
     XIN_LONG_CHENG("新龙城", "新龙城（80-120）",80,120,"南 北"),
     LONG_TENG_YUAN("龙腾苑二区", "龙腾苑（80-120）",80,120,"南 北"),

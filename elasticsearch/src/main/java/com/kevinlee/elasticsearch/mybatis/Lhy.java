@@ -18,4 +18,5 @@ public class Lhy {
     private Double southPrice;
     private Double southTotalPrice;
     private String remark;
+    private Double totalHits;
 }
