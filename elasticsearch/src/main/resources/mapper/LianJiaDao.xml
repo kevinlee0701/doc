@@ -10,12 +10,13 @@
         <result column="south_price" property="southPrice"/>
         <result column="south_total_price" property="southTotalPrice"/>
         <result column="remark" property="remark"/>
+        <result column="totalHits" property="totalHits"/>
     </resultMap>
     <select id="findAll" resultMap="LianJiaMap">
         SELECT * FROM lhy
     </select>
     <insert id="insert" parameterType="com.kevinlee.elasticsearch.mybatis.Lhy">
-            INSERT INTO lhy(price,court,create_time,total_price,south_price,south_total_price,remark)
-            VALUES(#{price},#{court},#{createTime},#{totalPrice},#{southPrice},#{southTotalPrice},#{remark})
+            INSERT INTO lhy(price,court,create_time,total_price,south_price,south_total_price,remark,totalHits)
+            VALUES(#{price},#{court},#{createTime},#{totalPrice},#{southPrice},#{southTotalPrice},#{remark},#{totalHits})
     </insert>
 </mapper>
