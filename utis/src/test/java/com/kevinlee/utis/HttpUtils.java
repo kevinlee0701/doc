@@ -21,7 +21,7 @@ import java.util.Set;
 public class HttpUtils {
     @Test
     public void test1(){
-       String url="https://daxue-cos.koocdn.com/shark/attachment/2144d34096be480bbd1f427811a24301/音频(纯单词版)Unit 01.mp3";
+       String url="https://daxue-cos..com/shark/attachment/2144d34096be480bbd1f427811a24301/音频(纯单词版)Unit 01.mp3";
        url = url.replace(" ", "%20");
        System.out.println(url);
        URI uri = URI.create(url);
