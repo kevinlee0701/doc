@@ -88,7 +88,7 @@ public class LianJiaTest {
     @Test
     public void beijing() throws Exception {
 //        List<Court> bjCourts = Arrays.asList(Court.LONG_TENG_YUAN,Court.YUN_QU_YUAN);
-        List<Court> bjCourts = Arrays.asList(Court.LONG_HUA_YUAN);
+        List<Court> bjCourts = Arrays.asList(Court.LONG_TENG_YUAN);
         String city = "bj";
         for (Court bjCourt : bjCourts) {
             boolean flag = lianjia(bjCourt.getCourt(), city);
@@ -107,7 +107,7 @@ public class LianJiaTest {
             for (Court yuan : bjCourt.values()) {
                 if(yuan.getCourt().equals(bjCourt.getCourt())){
                     Map<String, Double> map = this.queryAvg(yuan.getCourt(), yuan.getGteArea(), yuan.getLteArea(), yuan.getHourseInfo());
-                    log.info("搜索引擎查询结果：map={}", map);
+                    log.info("搜索引擎查询结果：yuan={}，map={}",yuan,map);
                     if (!map.isEmpty()) {
                         Double avgeTotalPrice = map.get("avgeTotalPrice");
                         Double avgePrice =  map.get("avgePrice");
@@ -119,6 +119,7 @@ public class LianJiaTest {
                         lhy.setSouthPrice(avgePrice);
                         lhy.setCourt(yuan.getCourt());
                         lhy.setRemark(yuan.getAddress());
+                        lhy.setTotalHits(map.get("totalHits"));
                         lianJiaMapper.insert(lhy);
                     }
                 }
@@ -142,23 +143,33 @@ public class LianJiaTest {
         }
     }
     public Map queryAvg(String address,int gte,int lte,String houseInfo){
+        log.info("queryAvg == 参数：address={},gte={},lte={},houseInfo={}", address,gte,lte,houseInfo);
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.must(QueryBuilders.prefixQuery("address.keyword",address));
         boolQueryBuilder.must(QueryBuilders.rangeQuery("area").gte(gte).lte(lte));
-        boolQueryBuilder.must(QueryBuilders.matchQuery("houseInfo",houseInfo));
+        if(!houseInfo.isEmpty()){
+            boolQueryBuilder.must(QueryBuilders.matchQuery("houseInfo",houseInfo));
+        }
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder()
                 .withQuery(boolQueryBuilder)
                 .withAggregations(AggregationBuilders.avg("avgeTotalPrice").field("totalPrice"))
                 .withAggregations(AggregationBuilders.avg("avgePrice").field("unitPrice"));
         NativeSearchQuery nativeSearchQuery = nativeSearchQueryBuilder.build();
         SearchHits<LianJia> searchHits = elasticsearchRestTemplate.search(nativeSearchQuery, LianJia.class);
-        Aggregations aggregations =(Aggregations) searchHits.getAggregations().aggregations();
-        Map<String, Aggregation> asMap = aggregations.getAsMap();
+        long totalHits = searchHits.getTotalHits();
+        double avgeTotalPrice=0;
+        double avgePrice=0;
         Map result = new HashMap<String,Double>();
-        double avgeTotalPrice = Math.round(((ParsedAvg) asMap.get("avgeTotalPrice")).getValue() * 100.0) / 100.0;
-        double avgePrice = Math.round(((ParsedAvg) asMap.get("avgePrice")).getValue() * 100.0) / 100.0;
+        if(totalHits>0){
+            Aggregations aggregations =(Aggregations) searchHits.getAggregations().aggregations();
+            Map<String, Aggregation> asMap = aggregations.getAsMap();
+            avgeTotalPrice = Math.round(((ParsedAvg) asMap.get("avgeTotalPrice")).getValue() * 100.0) / 100.0;
+            avgePrice = Math.round(((ParsedAvg) asMap.get("avgePrice")).getValue() * 100.0) / 100.0;
+
+        }
         result.put("avgeTotalPrice",avgeTotalPrice);
         result.put("avgePrice",avgePrice);
+        result.put("totalHits",Double.parseDouble(totalHits+""));
         return result;
     }
     @Test
@@ -235,7 +246,7 @@ public class LianJiaTest {
     }
 @Test
 public void deleteAll() throws IOException {
-    List<LianJia> list = lianJiaDao.findLianJiaByAddress("龙华苑");
+    List<LianJia> list = lianJiaDao.findLianJiaByAddress("云趣园");
     System.out.println(list);
     if(!list.isEmpty())
         lianJiaDao.deleteAll(list);
@@ -243,20 +254,28 @@ public void deleteAll() throws IOException {
 
     private  boolean xinxi(ArrayList<LianJia> lianJias, String url, Date createDate,String city,String court) throws IOException {
         Document document =null;
+        Map<String, String> cookies = new HashMap<>();
         if(city.equals("bj")){
-            Map<String, String> cookies = new HashMap<>();
-            cookies.put("hip", "jYd0UzsMVwhErNXenTs7m4k-qjp0x_LJMHD-bxHSAO13L9ZqdBubDFb1YCtnGDgsvjGkN8F4GcswhRZoNUIYHscAixmuwrNhh_hlXaUQBviBS4v0BgOT-xZrFehNiYwuEODspF89m8HnzA4uNOTson7rTWKtO_jygwaFfQuTGnwMH6OqoBeHhjx5KQ%3D%3D");
-            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1728899234");
+            cookies.put("crosSdkDT2019DeviceId", "-bfft8o--oqcgyn-ooymqheu0ridbdk-jan5ftdej");
+            cookies.put("digv_extends", "%7B%22utmTrackId%22%3A%22%22%7D");
             cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e", "1727244521,1727678045,1728896803,1728899119");
 
-            cookies.put("HMACCOUNT", "D21A575A29D5136A");
-            cookies.put("lianjia_ssid","799cb2bc-1171-4946-b98e-b33b8c37d50b");
-            cookies.put("lianjia_uuid","100dc6aa-f9fe-4bee-9972-146ecd0662cf");
+            cookies.put("HMACCOUNT", "164EB95D10285F27");
+            cookies.put("ftkrc_","134883fa-fd15-4d9c-a495-d91d589d51cb");
+            cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1730715809");
+            cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e","1728896803,1728899119,1729587242");
+
+            cookies.put("lianjia_ssid", "0e6f7378-97cc-4b08-a473-55fbf079268a");
+            cookies.put("lianjia_token","2.0012c0dbd86a23f98b036df2e90dc1ac3d");
+            cookies.put("security_ticket","dHDvXM9g4mPD1RZu2gH1fHqo5H/flCr7zoHcGW/rJswvJXM7QDSpZDXU3Jk5lAFmpFjJ44XVFZZqxPRPxM7vfO34wGEwTYHtZXtmSJNJL6R2N6Y+At9KnErr9/gFKjQQG4BZTQFF8NAZz84JaZEmm1Y5ZDD0sFr9JB/BJRxeHUQ=");
+            cookies.put("lianjia_token_secure","2.0012c0dbd86a23f98b036df2e90dc1ac3d");
+            cookies.put("lianjia_uuid","193f5ee0-a409-449b-bb77-d500c19d83d9");
+            cookies.put("login_ucid","2000000040390591");
+
             cookies.put("select_city","110000");
-            cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiMWY1NTYzMzNjN2IxYTU4YWJmMjM0MTZkNjFmMzE1NDY3ODJkNWU2MTEzNjc1YTU1NDA5YWVjMDM5MWQwMGExMTY5MmYwYzNiMTQwNjVkMzFjMGY0NGZkYjQ3NGQ5OTQ2YjU4MDc0MzZjMWExODQzM2QyMzA5YzJmMmMzZjJmYzQ3NTZmZDBkMTBkZmY2YTNjNTcwZWQ1NTE5NDBlNmJjMWIwZDA0NTUyZGJmY2Y2ZjE2Y2NkOGE0ZDNhOWZjNzY1ODNiNTkxZTc2ZDk0Mzg4MjQyNTY3ZWY5MmI2NTIwNjU4Mjc1NTdhNmFlZGNiY2NjZDkyMGIwZjdjNjliYWVjYVwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCI5YmY3MjExZFwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvdHQycnMlRTklQkUlOTklRTUlOEQlOEUlRTUlOUIlQUQvIiwib3MiOiJ3ZWIiLCJ2IjoiMC4xIn0=");
+            cookies.put("srcid","eyJ0Ijoie1wiZGF0YVwiOlwiNDkyMzhjMjRjMGEwNmRmNzZjMzRhNDUxYmFmNTFjN2E1MzBiODdkZDVkNDgyYzc0ZGE5ODk1NmU5Yzc2ZDQ5YmUxZjliZmI5MmI4N2Y3N2Y2MDZkZWEyNGVkNzUyYzUyMzE1ZjcwMGNiMTBiYzkwOWE4NjU2ZDVjNzRmOTQ1Yzk4ZjI5ZGM1ZDcyOGI3NjRhZTQyYjdmZjAxMTU2YmRiZGY0ZDQwMjNhYjJiMzAyODNiNjFiYWIwYWM4NDk2ZDMyNTI4MjIyMjQyOGU1MTU2OTFiYjQ3MWYxNjNiODVkNDY1NWUyNzc1ZDYyOWUzNDFiZGRhMDk0NmJkNjUyY2YxZlwiLFwia2V5X2lkXCI6XCIxXCIsXCJzaWduXCI6XCI4YTVhMzBiMFwifSIsInIiOiJodHRwczovL2JqLmxpYW5qaWEuY29tL2Vyc2hvdWZhbmcvcnMlRTklQkUlOTklRTUlOEQlOEUlRTUlOUIlQUQvIiwib3MiOiJ3ZWIiLCJ2IjoiMC4xIn0=");
             document = Jsoup.connect(url).cookies(cookies).timeout(30000).get();
         }else{
-            Map<String, String> cookies = new HashMap<>();
             cookies.put("beikeBaseData", "%7B%22parentSceneId%22%3A%22%22%7D");
             cookies.put("crosSdkDT2019DeviceId", "x6sic0--y3e1di-3p2fnhbbl8wjiu3-zwl80wwuc");
             cookies.put("ftkrc_", "6ce66a6c-9c3a-4728-9272-a7b85629e296");
@@ -264,13 +283,14 @@ public void deleteAll() throws IOException {
             cookies.put("HMACCOUNT", "FE28DC61974B5298");
             cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e","1725533824,1726220298");
             cookies.put("lfrc_","385590b8-9612-4be1-851c-ca1f07d3367f");
+            //需要测试一下,是否中账户登录
             cookies.put("lianjia_ssid","f2e17c20-36de-4704-962c-5c431b6e2674");
-
             cookies.put("lianjia_token","2.0010abc3dd6a5622710106eaec9b46a622");
+            cookies.put("security_ticket","kiHKZ2/3uSfFI5GRfllb/LO/4NlI6gVrB6N+6aJwrD9A9mOcEkQtRegiu26sOdf5BsiWAgUaMbyVGIswaCxgokANurJB0Ramh71l0jH0FLX7t7l8Jp8gT/TFlxUJG2moKKfSIU1ssiEB3pQ/0iq/GNyIm8lVkypvod7cDaz4Jcg=");
             cookies.put("lianjia_token_secure","2.0010abc3dd6a5622710106eaec9b46a622");
             cookies.put("lianjia_uuid","dff2e6e4-132f-4c5a-bd0b-8b809e4f1025");
             cookies.put("login_ucid","2000000006196288");
-            cookies.put("security_ticket","kiHKZ2/3uSfFI5GRfllb/LO/4NlI6gVrB6N+6aJwrD9A9mOcEkQtRegiu26sOdf5BsiWAgUaMbyVGIswaCxgokANurJB0Ramh71l0jH0FLX7t7l8Jp8gT/TFlxUJG2moKKfSIU1ssiEB3pQ/0iq/GNyIm8lVkypvod7cDaz4Jcg=");
+
             if(city.equals("luoyang")){
                 cookies.put("select_city","410300");
             }else if(city.equals("zz")){
@@ -298,7 +318,7 @@ public void deleteAll() throws IOException {
                 for (Element el : els) {
                     String title = el.getElementsByClass("title").eq(0).text();
                     String fang_url = el.getElementsByClass("title").select("a").first().attr("abs:href");
-                    Map<String, String> fang = fang(fang_url);
+                    Map<String, String> fang = fang(fang_url,cookies);
                     String houseInfo = el.getElementsByClass("houseInfo").eq(0).text();
                     String address = el.getElementsByClass("positionInfo").eq(0).text();
                     String totalPrice = el.getElementsByClass("totalPrice").eq(0).text().replace("万", "");
@@ -314,12 +334,13 @@ public void deleteAll() throws IOException {
                     LianJia lianJia = new LianJia();
                     lianJia.setId(address + "-" + totalPrice + "-" + unitPrice + "-" + html);
                     if(fang !=null) {
-                        String remake = fang.get("taonei") + " ## " + fang.get("guapai") + " ## " + fang.get("shangci") + " ## " + fang.get("nianxian") + " ## " + fang.get("louceng") + " ## " + fang.get("mianji");
+                        String remake = fang.get("taonei") + " ## " + fang.get("guapai") + " ## " + fang.get("shangci") + " ## " + fang.get("nianxian") + " ## " + fang.get("louceng") + " ## " + fang.get("mianji") +" ## "+fang.get("chaoxiang");
                         lianJia.setRemark(remake);
                     }else{
                         lianJia.setRemark(title);
                     }
-                    log.info("url={},houseInfo={},address={},totalPrice={}，unitPrice={},楼层：{},fang_url={}",url,houseInfo, address, totalPrice, unitPrice,fang== null?"":fang.get("taonei"),fang_url);
+                    houseInfo = houseInfo+(",楼层："+fang== null?"无信息":fang.get("louceng"));
+                    log.info("url={},houseInfo={},address={},totalPrice={}，unitPrice={},楼层：{},朝向：{},fang_url={}",url,houseInfo, address, totalPrice, unitPrice,fang== null?"":fang.get("louceng"),fang== null?"":fang.get("chaoxiang"),fang_url);
                     lianJia.setHouseInfo(houseInfo);
                     lianJia.setArea(Double.parseDouble(area));
                     lianJia.setAddress(address);
@@ -334,10 +355,10 @@ public void deleteAll() throws IOException {
         }
         return false;
     }
-    public static Map<String, String> fang(String url)  {
+    public static Map<String, String> fang(String url,Map<String, String> cookies)  {
         try {
             Random random = new Random();
-            int num = random.nextInt(9)+1;
+            int num =8 + random.nextInt(20 - 8 + 1);
             log.info("====== 睡眠时间【{}】秒",num);
             Thread.sleep(num*1000);
 
@@ -350,7 +371,7 @@ public void deleteAll() throws IOException {
         }
         Document document = null;
         try {
-            document = Jsoup.parse(new URL(url), 30000);
+            document = Jsoup.connect(url).cookies(cookies).timeout(30000).get();
             if (document == null) {
                 return null;
             }
@@ -401,6 +422,10 @@ public void deleteAll() throws IOException {
                 if(li.size()>4){
                     String taonei= li.get(4).text();
                     result.put("taonei",taonei);
+                }
+                if(li.size()>=7){
+                    String chaoxiang= li.get(6).text();
+                    result.put("chaoxiang",chaoxiang);//房屋朝向
                 }
                 result.put("louceng",louceng);//楼层
                 result.put("mianji",mianji);//面积
