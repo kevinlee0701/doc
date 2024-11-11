@@ -264,7 +264,7 @@ public void deleteAll() throws IOException {
             cookies.put("ftkrc_","134883fa-fd15-4d9c-a495-d91d589d51cb");
             cookies.put("Hm_lpvt_46bf127ac9b856df503ec2dbf942b67e", "1730715809");
             cookies.put("Hm_lvt_46bf127ac9b856df503ec2dbf942b67e","1728896803,1728899119,1729587242");
-
+            //需要测试一下,是否中账户登录
             cookies.put("lianjia_ssid", "0e6f7378-97cc-4b08-a473-55fbf079268a");
             cookies.put("lianjia_token","2.0012c0dbd86a23f98b036df2e90dc1ac3d");
             cookies.put("security_ticket","dHDvXM9g4mPD1RZu2gH1fHqo5H/flCr7zoHcGW/rJswvJXM7QDSpZDXU3Jk5lAFmpFjJ44XVFZZqxPRPxM7vfO34wGEwTYHtZXtmSJNJL6R2N6Y+At9KnErr9/gFKjQQG4BZTQFF8NAZz84JaZEmm1Y5ZDD0sFr9JB/BJRxeHUQ=");
