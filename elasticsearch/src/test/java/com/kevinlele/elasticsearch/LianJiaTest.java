@@ -98,7 +98,7 @@ public class LianJiaTest {
 
     @Test
     public void testMysql() throws InterruptedException {
-        this.saveMysqlNew(Court.LONG_HUA_YUAN,true);
+        this.saveMysqlNew(Court.JIN_KE_CHENG,true);
     }
     private void saveMysqlNew(Court bjCourt, boolean flag) throws InterruptedException {
         log.info("开始数据库操作：flag={}", flag);
