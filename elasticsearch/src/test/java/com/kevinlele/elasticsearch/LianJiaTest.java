@@ -88,7 +88,7 @@ public class LianJiaTest {
     @Test
     public void beijing() throws Exception {
 //        List<Court> bjCourts = Arrays.asList(Court.LONG_TENG_YUAN,Court.YUN_QU_YUAN,Court.LONG_HUA_YUAN);
-        List<Court> bjCourts = Arrays.asList(Court.XIN_LONG_CHENG);
+        List<Court> bjCourts = Arrays.asList(Court.XIN_LONG_CHENG,Court.LONG_HUA_YUAN,Court.LONG_TENG_YUAN);
         String city = "bj";
         for (Court bjCourt : bjCourts) {
             boolean flag = lianjia(bjCourt.getCourt(), city);
