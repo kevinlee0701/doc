@@ -347,10 +347,10 @@ public void deleteAll() throws IOException {
 
     private static void loginLianjia(Map<String, String> cookies) {
         //需要测试一下,是否中账户登录
-        cookies.put("lianjia_ssid", "5699ec39-c8bb-4659-b164-f04fc1ddbd7b");
-        cookies.put("lianjia_token","2.00121f4be068e2aa4c03b262d1a9d3aa9f");
-        cookies.put("security_ticket","pqJXVYs/7NOULaPjWRr0ConMgjSa+oB4tnVRxwmAtUlmF6udDo9k5toe0yrdI/Wv1h1ViYGCD/sKY76YO0AFdMDnhEke48qWK26VEDx0XDKRiRI0Wo862JONnGkoTB+y5QmNnnXyfi8U3zaa/34C7NlD7rQ+2xiPtY+U8XRZ9C8=");
-        cookies.put("lianjia_token_secure","2.00121f4be068e2aa4c03b262d1a9d3aa9f");
+        cookies.put("lianjia_ssid", "657feeda-5de3-4f7e-a068-8c9427021f86");
+        cookies.put("lianjia_token","2.001325c2f969d823550288ebc8fcbf8749");
+        cookies.put("security_ticket","I5BaCZ1VreMPaBR4WPe4uXZ32HIhDCs0/RgI8JyUn8Zmk6oZMSf7bOJXyGW6Qb6ynNq54IJA1/n70fZ/Euvh0rIgFiAKTRKXqzmDOQ9rgoFsh6EnRo4KzBj2VaDplGK8kT45hm5C2nbCix5sdFZEuGvNqwBHSE9dRT2Ss+eROg8=");
+        cookies.put("lianjia_token_secure","2.001325c2f969d823550288ebc8fcbf8749");
         cookies.put("lianjia_uuid","0933268e-3a4d-4dbc-b539-f8f9bcf267e9");
         cookies.put("login_ucid","2000000006196288");
     }
