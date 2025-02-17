@@ -88,7 +88,7 @@ public class LianJiaTest {
     @Test
     public void beijing() throws Exception {
 //        List<Court> bjCourts = Arrays.asList(Court.LONG_TENG_YUAN,Court.YUN_QU_YUAN,Court.LONG_HUA_YUAN);
-        List<Court> bjCourts = Arrays.asList(Court.XIN_LONG_CHENG,Court.LONG_HUA_YUAN,Court.LONG_TENG_YUAN);
+        List<Court> bjCourts = Arrays.asList(Court.LONG_HUA_YUAN,Court.XIN_LONG_CHENG,Court.LONG_TENG_YUAN);
         String city = "bj";
         for (Court bjCourt : bjCourts) {
             boolean flag = lianjia(bjCourt.getCourt(), city);
@@ -347,11 +347,11 @@ public void deleteAll() throws IOException {
 
     private static void loginLianjia(Map<String, String> cookies) {
         //需要测试一下,是否中账户登录
-        cookies.put("lianjia_ssid", "4aa8f5ff-2ea8-4a93-b62a-62a739812bc7");
-        cookies.put("lianjia_token","2.001220089068dde93c038d21a17fffbab6");
-        cookies.put("security_ticket","RhQuAk+3vtIY9c/JIMlLxQY8/BGKREKH8/wVQbmkd4hu25n/MdOO4BRigfBn8yq96DFfayo5/WzUYy+Iad+IFjQhiD8E4hoHPdAUzCosUiNY3/c3aqqGfb+jbFYOiuozLYn005pYzxZwZ6BWZKtphCiDrMVd+7ww0FtWYtZEwNU=");
-        cookies.put("lianjia_token_secure","2.001220089068dde93c038d21a17fffbab6");
-        cookies.put("lianjia_uuid","0933268e-3a4d-4dbc-b539-f8f9bcf267e9");
+        cookies.put("lianjia_ssid", "8150e5a2-10c3-4a96-8381-a36f2651f6b0");
+        cookies.put("lianjia_token","2.0015a9d1fb6f5430570404f8ca4db075aa");
+        cookies.put("security_ticket","iyCzmJSCkwHcmrR5uYD4IwlWlgO/jDfzkBEcbGISHXPsR70XlfbiVddbskkRSaPEnloV3FnW2ZYVD28m+5YmOGfq/OQ/1d17gZY2mS9r4U8bjOzYGxN8Gst8KJ0O7royFcD3aLAqRmTol1iMS8CC0ZMCGRGL5I/4aW8DpuBnhbI=");
+        cookies.put("lianjia_token_secure","2.0015a9d1fb6f5430570404f8ca4db075aa");
+        cookies.put("lianjia_uuid","125c6724-9897-4e73-b481-7d20b2416ecb");
         cookies.put("login_ucid","2000000006196288");
     }
 
