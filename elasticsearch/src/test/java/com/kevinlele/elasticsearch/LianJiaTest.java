@@ -91,6 +91,10 @@ public class LianJiaTest {
         System.out.println(baseContent);
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     @Test
     public void beijing() throws Exception {
 //        List<Court> bjCourts = Arrays.asList(Court.LONG_TENG_YUAN,Court.YUN_QU_YUAN,Court.LONG_HUA_YUAN);
