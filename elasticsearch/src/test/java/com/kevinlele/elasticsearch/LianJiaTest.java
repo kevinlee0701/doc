@@ -355,6 +355,11 @@ public void deleteAll() throws IOException {
         return false;
     }
 
+    /**
+     * 目前链家已做了防刷,会将手机号码加入黑名单
+     * @param cookies
+     */
+
     private static void loginLianjia(Map<String, String> cookies) {
         //需要测试一下,是否中账户登录
         cookies.put("lianjia_ssid", "5bf24c0a-23cb-441a-a58c-84c9b9206f78");
