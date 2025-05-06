@@ -42,7 +42,7 @@ public class HttpUtils {
     @Test
     public void testHttp(){
         String domain="http://basa.learn.com";
-       String application="koo-oa-payroll-service";
+       String application="jiaofu-dubbo-klb";
        int pageSize =5;
        int page=1;
        String url= domain+"/api/dev/service?pattern=application&filter="+application+"&page="+0+"&size="+pageSize;
